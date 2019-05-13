@@ -8,15 +8,31 @@ import csv
 import RPi.GPIO as GPIO
 from adafruit_servokit import ServoKit
 global kit
+
+
+
 kit = ServoKit(channels=16)
 ##### double check which servo is which. I'm writing this as:
 ##### kit[0] = food lever
 ##### kit[1] = partner lever
 ##### kit[2] = door
 
-servo_dict = {'food':kit.servo[0], 'social':kit.servo[1], 'door':kit.servo[2]}
 
-GPIO.setmode(GPIO.BOARD)
+servo_dict = {'food':kit.servo[0], 'social':kit.servo[1], 'door':kit.servo[2],
+            'dispense_pellet':kit.servo[3]}
+
+#setup our pins. Lever pins are input, all else are output
+GPIO.setmode(GPIO.BCM)
+pins = {'lever_food':4,'step':17,'direction':18, 'sleep':27, 'micro16':22,
+'led_food':23, 'read_pellet':24}
+for k in pins.keys():
+    if 'lever' or 'read' in k:
+        GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    elif 'led' or 'dispence' in k:
+        GPIO.setup(pins[k], GPIO.OUT)
+        GPIO.output(pins[k], 0)
+    else:
+        GPIO.setup(pins[k], GPIO.OUT)
 
 
 round_time = 7
@@ -31,6 +47,7 @@ loops = 5
 do_stuff_queue = queue.Queue()
 timestamp_queue = queue.Queue()
 lever_press_queue = queue.Queue()
+pellet_queue = queue.Queue()
 
 
 
@@ -44,18 +61,7 @@ monitor = False
 global start_time
 start_time = time.time()
 
-#setup our pins. Lever pins are input, all else are output
-pins = {'lever_food':36,'step':35,'direction':33, 'sleep':37, 'micro16':38,
-'led_food':40, 'dispense_pellet':100, 'read_pellet_out':101,
-'read_pellet_retrieve':101}
-for k in pins.keys():
-    if 'lever' or 'read' in k:
-        GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    elif 'led' or 'dispence' in k:
-        GPIO.setup(pins[k], GPIO.OUT)
-        GPIO.output(pins[k], 0)
-    else:
-        GPIO.setup(pins[k], GPIO.OUT)
+
 
 
 #turn motor on
@@ -74,7 +80,8 @@ def run_job(job, q, args = None):
             'retract lever':retract_lever,
             'start tone':experiment_start_tone,
             'pellet tone':pellet_tone,
-            'monitor lever':monitor_lever
+            'monitor lever':monitor_lever,
+            'dispense pellet':dispence_pellet
             }
     if args:
         jobs[job](q, args)
@@ -182,25 +189,7 @@ def pellet_tone(q):
     q.task_done()'''
 
 def dispence_pellet(q):
-    print('sending dispence pellet signal')
-    GPIO.output(pins['dispense_pellet'], 1)
-    q.task_done()
-    start_mon = time.time()
-    timeout = round_time - timeII - timeIV - 1 #round time minus intervals and start tone time
-    pellet_out = False
-
-    while time.time()- start_mon  < timeout:
-        if GPIO.input(pins['read_pellet_out']):
-            not_lever +=1
-        else:
-            lever +=1
-        #just guessing on this value, should probably check somehow empirically
-        if lever > 4:
-            GPIO.output(pins['dispense_pellet'], 0)
-            timestamp_queue.put('pellet out, %f'%(time.time()-start_time))
-            print('pellet out')
-            break
-        time.sleep(0.05)
+    
 
 
     if pellet_out:
