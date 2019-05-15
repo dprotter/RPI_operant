@@ -16,31 +16,44 @@ kit = ServoKit(channels=16)
 ##### kit[0] = food lever
 ##### kit[1] = partner lever
 ##### kit[2] = door
+##### kit[3] = food dispenser
 
 
-servo_dict = {'food':kit.servo[0], 'social':kit.servo[1], 'door':kit.servo[2],
-            'dispense_pellet':kit.continuous_servo[3]}
+servo_dict = {'food':kit.servo[0], 'dispense_pellet':kit.continuous_servo[1]}
+kit.continuous_servo[1].throttle = 0.1
+kit.servo[0].angle = 34
+
+'''servo_dict = {'food':kit.servo[0], 'social':kit.servo[1], 'door':kit.servo[2],
+            'dispense_pellet':kit.continuous_servo[3]}'''
 
 #setup our pins. Lever pins are input, all else are output
 GPIO.setmode(GPIO.BCM)
 pins = {'lever_food':4,'step':17,'direction':18, 'sleep':27, 'micro16':22,
-'led_food':23, 'read_pellet':24}
+'led_food':23, 'read_pellet':24, 'pellet_tone':21}
 
 for k in pins.keys():
-    if 'lever' or 'read' in k:
+    print(k)
+    if 'lever' in k:
+        print(k + ": IN")
+        GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    elif 'read' in k:
+        print(k + ": IN")
         GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    elif 'led' or 'dispence' in k:
+    elif 'led' in k or 'dispence' in k or 'tone' in k:
         GPIO.setup(pins[k], GPIO.OUT)
         GPIO.output(pins[k], 0)
+        print(k + ": OUT")
     else:
         GPIO.setup(pins[k], GPIO.OUT)
+        print(k + ": OUT")
+
 
 
 round_time = 7
 pellet_tone_time = 2 #how long the pellet tone plays
-timeII = 2 #time after levers out before pellet
-timeIV = 2 #time after pellet delivered before levers retracted
-loops = 5
+timeII = 3 #time after levers out before pellet
+timeIV = 3 #time after pellet delivered before levers retracted
+loops = 3
 
 
 
@@ -95,13 +108,10 @@ def monitor_lever(ds_queue, args):
     lever_q, lever_ID = args
     "monitor a lever. If lever pressed, put lever_ID in queue. "
     lever=0
-    not_lever = 0
 
     ds_queue.task_done()
     while monitor:
         if GPIO.input(pins["lever_%s"%lever_ID]):
-            not_lever +=1
-        else:
             lever +=1
 
         #just guessing on this value, should probably check somehow empirically
@@ -110,7 +120,7 @@ def monitor_lever(ds_queue, args):
                 #send the lever_ID to the lever_q to trigger a  do_stuff.put in
                 #the main thread/loop
                 lever_q.put(lever_ID)
-                timestamp_queue.put('%s lever pressed with interrupt, %f'%(time.time()-start_time))
+                timestamp_queue.put('%s lever pressed with interrupt, %f'%(lever_ID, time.time()-start_time))
                 while GPIO.input(pins["lever_%s"%lever_ID]):
                     'hanging till lever not pressed'
                 lever = 0
@@ -132,7 +142,7 @@ def extend_lever(q, args):
     lever_ID = args[0]
     print('extending lever %s'%lever_ID)
     print('LEDs on')
-    servo_dict{'lever_ID'}.angle = 145
+    servo_dict[lever_ID].angle = 140
     GPIO.output(pins['led_%s'%lever_ID], 1)
     timestamp_queue.put('Levers out, %f'%(time.time()-start_time))
     q.task_done()
@@ -143,7 +153,7 @@ def retract_lever(q, args):
     lever_ID = args[0]
     print('LEDs off')
     GPIO.output(pins['led_%s'%lever_ID], 0)
-    servo_dict[lever_ID].angle(0)
+    servo_dict[lever_ID].angle = 35
     print('retracting levers')
     timestamp_queue.put('Levers retracted, %f'%(time.time()-start_time))
     q.task_done()
@@ -151,8 +161,10 @@ def retract_lever(q, args):
 def pellet_tone(q):
     global start_time
     print('starting pellet tone')
+    GPIO.output(pins['pellet_tone'], 1)
     timestamp_queue.put('pellet tone start, %f'%(time.time()-start_time))
     time.sleep(1)
+    GPIO.output(pins['pellet_tone'], 0)
     print('pellet tone complete')
     timestamp_queue.put('pellet tone complete, %f'%(time.time()-start_time))
     q.task_done()
@@ -165,31 +177,33 @@ def dispence_pellet(q):
 
     read = 0
 
-
+    print('starting pellet dispensing %f'%(time.time()-start_time))
     #we're just gonna turn the servo on and keep monitoring. probably
     #want this to be a little slow
-    servo_dict['dispence_pellet'].throttle = 0.7
+    servo_dict['dispense_pellet'].throttle = 0.5
 
     #set a timeout on dispensing. with this, that will be a bit less than
     #6 attempts to disp, but does give the vole 2 sec in which they could nose
     #poke and trigger this as "dispensed"
     while time.time()-timeout < 2:
 
-        if GPIO.input(pins['read_pellet']):
+        if not GPIO.input(pins['read_pellet']):
+            print('blocked')
             read +=1
 
         if read > 2:
-            servo_dict['dispence_pellet'].throttle = 0
+            servo_dict['dispense_pellet'].throttle = 0.1
             timestamp_queue.put('Pellet dispensed, %f'%(time.time()-start_time))
+            print('Pellet dispensed, %f'%(time.time()-start_time))
             #offload monitoring to a new thread
-            do_stuff_queue.put('read_pellet')
+            do_stuff_queue.put(('read pellet',))
             return ''
 
         else:
             #wait to give other threads time to do stuff, but fast enough
             #that we check pretty quick if there's a pellet
             time.sleep(0.025)
-
+    servo_dict['dispense_pellet'].throttle = 0.1
     timestamp_queue.put('Pellet dispense failure, %f'%(time.time()-start_time))
     return ''
 
@@ -197,12 +211,16 @@ def read_pellet(q):
     global start_time
     q.task_done()
     disp = False
+    #retrieved, IE empty trough
     read_retr = 0
+
+    #dispensed pellet there, IE full trough
     read_disp = 0
     timeout = 60
-    while read < 5 and time.time() - start_time < timeout:
+
+    while read_retr < 5 and time.time() - start_time < timeout:
         #note this is opposite of the dispense function
-        if not GPIO.input(pins['read_pellet']):
+        if GPIO.input(pins['read_pellet']):
             read_retr += 1
         else:
             read_disp += 1
@@ -213,12 +231,12 @@ def read_pellet(q):
 
         time.sleep(0.05)
 
-    if read_plus < 5:
+    if read_retr < 5:
         timestamp_queue.put('pellet retreival timeout, %f'%(time.time()-start_time))
         return ''
 
     else:
-        print('pellet taken')
+        print('Pellet taken! %f'%(time.time()-start_time))
         timestamp_queue.put('Pellet retrieved, %f'%(time.time()-start_time))
         return ''
 
@@ -226,8 +244,14 @@ def read_pellet(q):
 def experiment_start_tone(q):
     global start_time
     print('starting experiment tone')
+    GPIO.output(pins['pellet_tone'], 1)
     timestamp_queue.put('experiment start tone start, %f'%(time.time()-start_time))
-    time.sleep(2)
+    time.sleep(0.25)
+    GPIO.output(pins['pellet_tone'], 0)
+    time.sleep(0.1)
+    GPIO.output(pins['pellet_tone'], 1)
+    time.sleep(0.25)
+    GPIO.output(pins['pellet_tone'], 0)
     print('experiment tone complete')
     timestamp_queue.put('experiment start tone start complete, %f'%(time.time()-start_time))
     q.task_done()
@@ -257,7 +281,7 @@ for x in range(4):
 ### master looper ###
 for i in range(loops):
     round_start = time.time()
-    print("new round #%i!!!"%i)
+    print("#-#-#-#-#-# new round #%i!!!-#-#-#-#-#"%i)
     timestamp_queue.put('Starting new round, %f'%(time.time()-start_time))
     do_stuff_queue.put(('start tone',))
 
