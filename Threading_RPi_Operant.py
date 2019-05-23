@@ -8,28 +8,81 @@ import csv
 import RPi.GPIO as GPIO
 from adafruit_servokit import ServoKit
 global kit
+import email_push
+import datetime
+
+
+"""the following sets up the output file and gets some user input. """
+
+save_dir = '/home/pi/Operant_Output/'
+#get user info
+#get vole number
+#push to email after done?
+
+no_user = True
+while no_user:
+    user = input('who is doing this experiment? \n')
+    check = input('so send the data to %s ? (y/n) \n'%user)
+    if check.lower() in ['y', 'yes']:
+        no_user = False
+
+no_vole = True
+while no_vole:
+    vole = input('Vole number? \n')
+    check = input('vole# is %s ? (y/n) \n'%vole)
+    if check.lower() in ['y', 'yes']:
+        no_vole = False
+
+push = input('should I push the results folder to email after this session? (y/n) \n')
+if push.lower() in 'y':
+    print("ok, your results will be emailed to you after this session.")
+else:
+    print("Ok, I won't email you.")
+
+"""fname will be of format m_d_y__h_m_vole_#_fresh.csv. fresh will be removed
+once the file has been send via email."""
+
+date = datetime.datetime.now()
+fdate = '%s_%s_%s__%s_%s_'%(date.month, date.day, date.year, date.hour, date.minute)
+print('date is: \n')
+print(datetime.date.today())
+
+fname = fdate+'_vole_%s_fresh.csv'%vole
+path = os.path.join(save_dir, fname)
+print('Path is: ')
+print(path)
+with open(path, 'w') as file:
+    writer = csv.writer(file, delimiter = ',')
+    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date])
 
 
 
-kit = ServoKit(channels=16)
 ##### double check which servo is which. I'm writing this as:
 ##### kit[0] = food lever
 ##### kit[1] = partner lever
 ##### kit[2] = door
 ##### kit[3] = food dispenser
+kit = ServoKit(channels=16)
+
+#values for continuous_servo
+stop = 0.04
+forward = 0.1
+
+#values Levers [extended, retracted]
+lever_angles = {'food':[50, 130], 'social':[34,145]}
 
 
 servo_dict = {'food':kit.servo[0], 'dispense_pellet':kit.continuous_servo[1]}
-kit.continuous_servo[1].throttle = 0.1
-kit.servo[0].angle = 34
 
-'''servo_dict = {'food':kit.servo[0], 'social':kit.servo[1], 'door':kit.servo[2],
-            'dispense_pellet':kit.continuous_servo[3]}'''
+kit.continuous_servo[1].throttle = stop
+
+kit.servo[0].angle = lever_angles['food'][0]
+
 
 #setup our pins. Lever pins are input, all else are output
 GPIO.setmode(GPIO.BCM)
-pins = {'lever_food':4,'step':17,'direction':18, 'sleep':27, 'micro16':22,
-'led_food':23, 'read_pellet':24, 'pellet_tone':21}
+pins = {'lever_food':4,'step':17,'led_food':23, 'read_pellet':24,
+    'pellet_tone':21, 'start_tone':20}
 
 for k in pins.keys():
     print(k)
@@ -53,7 +106,7 @@ round_time = 7
 pellet_tone_time = 2 #how long the pellet tone plays
 timeII = 3 #time after levers out before pellet
 timeIV = 3 #time after pellet delivered before levers retracted
-loops = 3
+loops = 10
 
 
 
@@ -96,9 +149,6 @@ def run_job(job, q, args = None):
     else:
         jobs[job](q)
 
-def flush_timestamp_to_CSV(q):
-    """flush the timestamp queue to a csv file"""
-
 def monitor_lever(ds_queue, args):
     global monitor
     global start_time
@@ -115,7 +165,7 @@ def monitor_lever(ds_queue, args):
             lever +=1
 
         #just guessing on this value, should probably check somehow empirically
-        if lever > 4:
+        if lever > 2:
             if not interrupt:
                 #send the lever_ID to the lever_q to trigger a  do_stuff.put in
                 #the main thread/loop
@@ -133,16 +183,16 @@ def monitor_lever(ds_queue, args):
                     'hanging till lever not pressed'
                 lever = 0
 
-        time.sleep(50/1000.0)
+        time.sleep(25/1000.0)
     print('halting monitoring of %s lever'%lever_ID)
 
 def extend_lever(q, args):
     global start_time
     global servo_dict
-    lever_ID = args[0]
+    lever_ID, retract, extend = args
     print('extending lever %s'%lever_ID)
     print('LEDs on')
-    servo_dict[lever_ID].angle = 140
+    servo_dict[lever_ID].angle = extend
     GPIO.output(pins['led_%s'%lever_ID], 1)
     timestamp_queue.put('Levers out, %f'%(time.time()-start_time))
     q.task_done()
@@ -150,10 +200,10 @@ def extend_lever(q, args):
 def retract_lever(q, args):
     global start_time
     global servo_dict
-    lever_ID = args[0]
+    lever_ID, retract, extend = args
     print('LEDs off')
     GPIO.output(pins['led_%s'%lever_ID], 0)
-    servo_dict[lever_ID].angle = 35
+    servo_dict[lever_ID].angle = retract
     print('retracting levers')
     timestamp_queue.put('Levers retracted, %f'%(time.time()-start_time))
     q.task_done()
@@ -163,7 +213,7 @@ def pellet_tone(q):
     print('starting pellet tone')
     GPIO.output(pins['pellet_tone'], 1)
     timestamp_queue.put('pellet tone start, %f'%(time.time()-start_time))
-    time.sleep(1)
+    time.sleep(2)
     GPIO.output(pins['pellet_tone'], 0)
     print('pellet tone complete')
     timestamp_queue.put('pellet tone complete, %f'%(time.time()-start_time))
@@ -180,19 +230,19 @@ def dispence_pellet(q):
     print('starting pellet dispensing %f'%(time.time()-start_time))
     #we're just gonna turn the servo on and keep monitoring. probably
     #want this to be a little slow
-    servo_dict['dispense_pellet'].throttle = 0.5
+    servo_dict['dispense_pellet'].throttle = forward
 
     #set a timeout on dispensing. with this, that will be a bit less than
     #6 attempts to disp, but does give the vole 2 sec in which they could nose
     #poke and trigger this as "dispensed"
-    while time.time()-timeout < 2:
+    while time.time()-timeout < 3:
 
         if not GPIO.input(pins['read_pellet']):
             print('blocked')
             read +=1
 
         if read > 2:
-            servo_dict['dispense_pellet'].throttle = 0.1
+            servo_dict['dispense_pellet'].throttle = stop
             timestamp_queue.put('Pellet dispensed, %f'%(time.time()-start_time))
             print('Pellet dispensed, %f'%(time.time()-start_time))
             #offload monitoring to a new thread
@@ -203,7 +253,7 @@ def dispence_pellet(q):
             #wait to give other threads time to do stuff, but fast enough
             #that we check pretty quick if there's a pellet
             time.sleep(0.025)
-    servo_dict['dispense_pellet'].throttle = 0.1
+    servo_dict['dispense_pellet'].throttle = stop
     timestamp_queue.put('Pellet dispense failure, %f'%(time.time()-start_time))
     return ''
 
@@ -244,14 +294,10 @@ def read_pellet(q):
 def experiment_start_tone(q):
     global start_time
     print('starting experiment tone')
-    GPIO.output(pins['pellet_tone'], 1)
+    GPIO.output(pins['start_tone'], 1)
     timestamp_queue.put('experiment start tone start, %f'%(time.time()-start_time))
-    time.sleep(0.25)
-    GPIO.output(pins['pellet_tone'], 0)
-    time.sleep(0.1)
-    GPIO.output(pins['pellet_tone'], 1)
-    time.sleep(0.25)
-    GPIO.output(pins['pellet_tone'], 0)
+    time.sleep(2)
+    GPIO.output(pins['start_tone'], 0)
     print('experiment tone complete')
     timestamp_queue.put('experiment start tone start complete, %f'%(time.time()-start_time))
     q.task_done()
@@ -289,7 +335,8 @@ for i in range(loops):
     do_stuff_queue.join()
 
 
-    do_stuff_queue.put(('extend lever', ('food',)))
+    do_stuff_queue.put(('extend lever',
+                        ('food',lever_angles['food'][0],lever_angles['food'][1])))
 
     #wait till levers are out before we do anything else. Depending on how
     #fast the voles react to the lever, we may start monitoring before it is
@@ -325,26 +372,45 @@ for i in range(loops):
 
     time.sleep(0.05)
 
-    do_stuff_queue.put(('retract lever', ('food',)))
+    do_stuff_queue.put(('retract lever',
+                        ('food', lever_angles['food'][0],lever_angles['food'][1])))
 
     time.sleep(timeIV)
     print('entering ITI')
 
     #wait for ITI to pass
-    while time.time() - round_start < round_time:
-        '''just hanging'''
 
+    '''a good time to write some stuff to file'''
+    with open('output.txt', 'w') as csv_file:
+        while time.time() - round_start < round_time:
+            csv_writer = csv.writer(csv_file)
+            if not timestamp_queue.empty():
+                print('writing ###### %s'%timestamp_queue.get().split(','))
+                csv_writer.writerow(timestamp_queue.get().split(','))
+            time.sleep(0.01)
     #reset our global values interrupt and monitor. This will turn off the lever
     #if it is still being monitored. This resets the inerrupt value for the next
     #loop of the training.
     interrupt = False
     monitor = False
 
+'''append current timestamp queue contents to csv file'''
+with open(path, 'a') as file:
+    writer = csv.writer(file, delimiter = ',')
+    while not timestamp_queue.empty():
+        print('writing ###### %s'%timestamp_queue.get().split(','))
+        writer.writerow(timestamp_queue.get().split(','))
 
 print("all Done")
-'''os.chdir('/Users/davidprotter/Desktop/Testing Pi stuff/')
+#reset levers to retracted
+kit.servo[0].angle = lever_angles['food'][0]
+kit.continuous_servo[1].throttle = stop
 
-with open('output.txt', 'w') as csv_file:
-    csv_writer = csv.writer(csv_file)
+
+
+with open(path, 'a') as file:
+    writer = csv.writer(file, delimiter = ',')
     while not timestamp_queue.empty():
-        csv_writer.writerow(timestamp_queue.get().split(','))'''
+        writer.writerow(timestamp_queue.get().split(','))
+if 'y' in push.lower():
+    email_push.email_push(user = user)
