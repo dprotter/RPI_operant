@@ -11,6 +11,12 @@ global kit
 import email_push
 import datetime
 
+round_time = 60
+pellet_tone_time = 2 #how long the pellet tone plays
+timeII = 3 #time after levers out before pellet
+timeIV = 3 #time after pellet delivered before levers retracted
+loops = 10
+
 
 """the following sets up the output file and gets some user input. """
 
@@ -99,15 +105,6 @@ for k in pins.keys():
     else:
         GPIO.setup(pins[k], GPIO.OUT)
         print(k + ": OUT")
-
-
-
-round_time = 7
-pellet_tone_time = 2 #how long the pellet tone plays
-timeII = 3 #time after levers out before pellet
-timeIV = 3 #time after pellet delivered before levers retracted
-loops = 10
-
 
 
 #our queues for doign stuff and saving
