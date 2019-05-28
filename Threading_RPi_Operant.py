@@ -11,12 +11,14 @@ global kit
 import email_push
 import datetime
 
-round_time = 60
+round_time = 120
 pellet_tone_time = 2 #how long the pellet tone plays
-timeII = 3 #time after levers out before pellet
-timeIV = 3 #time after pellet delivered before levers retracted
-loops = 10
+timeII = 2 #time after levers out before pellet
+timeIV = 2 #time after pellet delivered before levers retracted
+loops = 15
 
+pins = {'lever_food':4,'step':17,'led_food':23, 'read_pellet':24,
+    'pellet_tone':21, 'start_tone':20}
 
 """the following sets up the output file and gets some user input. """
 
@@ -75,10 +77,11 @@ stop = 0.04
 forward = 0.1
 
 #values Levers [extended, retracted]
-lever_angles = {'food':[50, 130], 'social':[34,145]}
+lever_angles = {'food':[50, 130], 'social':[50,130]}
 
 
-servo_dict = {'food':kit.servo[0], 'dispense_pellet':kit.continuous_servo[1]}
+servo_dict = {'food':kit.servo[0], 'dispense_pellet':kit.continuous_servo[1],
+                'social':kit.servo[2]}
 
 kit.continuous_servo[1].throttle = stop
 
@@ -87,8 +90,7 @@ kit.servo[0].angle = lever_angles['food'][0]
 
 #setup our pins. Lever pins are input, all else are output
 GPIO.setmode(GPIO.BCM)
-pins = {'lever_food':4,'step':17,'led_food':23, 'read_pellet':24,
-    'pellet_tone':21, 'start_tone':20}
+
 
 for k in pins.keys():
     print(k)
@@ -255,7 +257,7 @@ def dispence_pellet(q):
     return ''
 
 def read_pellet(q):
-    global start_time
+    disp_start = time.time()
     q.task_done()
     disp = False
     #retrieved, IE empty trough
@@ -263,14 +265,19 @@ def read_pellet(q):
 
     #dispensed pellet there, IE full trough
     read_disp = 0
-    timeout = 60
+    timeout = 200
 
-    while read_retr < 5 and time.time() - start_time < timeout:
+    while time.time() - disp_start < timeout:
         #note this is opposite of the dispense function
         if GPIO.input(pins['read_pellet']):
             read_retr += 1
         else:
             read_disp += 1
+
+        if read_retr > 5:
+            print('Pellet taken! %f'%(time.time()-start_time))
+            timestamp_queue.put('Pellet retrieved, %f'%(time.time()-start_time))
+            return ''
 
         if read_disp > 3:
             read_retr = 0
@@ -278,14 +285,11 @@ def read_pellet(q):
 
         time.sleep(0.05)
 
-    if read_retr < 5:
-        timestamp_queue.put('pellet retreival timeout, %f'%(time.time()-start_time))
-        return ''
 
-    else:
-        print('Pellet taken! %f'%(time.time()-start_time))
-        timestamp_queue.put('Pellet retrieved, %f'%(time.time()-start_time))
-        return ''
+    timestamp_queue.put('pellet retreival timeout, %f'%(time.time()-start_time))
+    return ''
+
+
 
 
 def experiment_start_tone(q):
@@ -293,8 +297,12 @@ def experiment_start_tone(q):
     print('starting experiment tone')
     GPIO.output(pins['start_tone'], 1)
     timestamp_queue.put('experiment start tone start, %f'%(time.time()-start_time))
-    time.sleep(2)
-    GPIO.output(pins['start_tone'], 0)
+
+    for i in range(10):
+        time.sleep(0.05)
+        GPIO.output(pins['start_tone'], 1)
+        time.sleep(0.1)
+        GPIO.output(pins['start_tone'], 0)
     print('experiment tone complete')
     timestamp_queue.put('experiment start tone start complete, %f'%(time.time()-start_time))
     q.task_done()
@@ -314,7 +322,7 @@ def thread_distributor():
             time.sleep(0.05)
 
 
-for x in range(4):
+for x in range(8):
     t = threading.Thread(target = thread_distributor)
     t.daemon = True
     t.start()
@@ -378,12 +386,13 @@ for i in range(loops):
     #wait for ITI to pass
 
     '''a good time to write some stuff to file'''
-    with open('output.txt', 'w') as csv_file:
+    with open(path, 'a') as csv_file:
+        csv_writer = csv.writer(csv_file)
         while time.time() - round_start < round_time:
-            csv_writer = csv.writer(csv_file)
             if not timestamp_queue.empty():
-                print('writing ###### %s'%timestamp_queue.get().split(','))
-                csv_writer.writerow(timestamp_queue.get().split(','))
+                line = timestamp_queue.get().split(',')
+                print('writing ###### %s'%line)
+                csv_writer.writerow(line)
             time.sleep(0.01)
     #reset our global values interrupt and monitor. This will turn off the lever
     #if it is still being monitored. This resets the inerrupt value for the next
@@ -395,8 +404,9 @@ for i in range(loops):
 with open(path, 'a') as file:
     writer = csv.writer(file, delimiter = ',')
     while not timestamp_queue.empty():
-        print('writing ###### %s'%timestamp_queue.get().split(','))
-        writer.writerow(timestamp_queue.get().split(','))
+        line = timestamp_queue.get().split(',')
+        print('writing ###### %s'%line)
+        writer.writerow(line)
 
 print("all Done")
 #reset levers to retracted
@@ -405,9 +415,5 @@ kit.continuous_servo[1].throttle = stop
 
 
 
-with open(path, 'a') as file:
-    writer = csv.writer(file, delimiter = ',')
-    while not timestamp_queue.empty():
-        writer.writerow(timestamp_queue.get().split(','))
 if 'y' in push.lower():
     email_push.email_push(user = user)
