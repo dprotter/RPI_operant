@@ -109,7 +109,7 @@ for k in pins.keys():
         print(k + ": OUT")
 
 
-#our queues for doign stuff and saving
+#our queues for doign stuff and saving stuff
 do_stuff_queue = queue.Queue()
 timestamp_queue = queue.Queue()
 lever_press_queue = queue.Queue()
@@ -127,6 +127,8 @@ monitor = False
 global start_time
 start_time = time.time()
 
+global pellet_state
+pellet_state = False
 
 def run_job(job, q, args = None):
     print('job: ' + str(job) + '    args: ' +str(args))
@@ -223,40 +225,56 @@ def dispence_pellet(q):
     global start_time
     q.task_done()
     timeout = time.time()
+    global pellet_state
 
     read = 0
 
-    print('starting pellet dispensing %f'%(time.time()-start_time))
-    #we're just gonna turn the servo on and keep monitoring. probably
-    #want this to be a little slow
-    servo_dict['dispense_pellet'].throttle = forward
+    #only dispense if there is no pellet, otherwise skip
+    if not pellet_state:
+        print('starting pellet dispensing %f'%(time.time()-start_time))
 
-    #set a timeout on dispensing. with this, that will be a bit less than
-    #6 attempts to disp, but does give the vole 2 sec in which they could nose
-    #poke and trigger this as "dispensed"
-    while time.time()-timeout < 3:
+        #we're just gonna turn the servo on and keep monitoring. probably
+        #want this to be a little slow
 
-        if not GPIO.input(pins['read_pellet']):
-            print('blocked')
-            read +=1
+        servo_dict['dispense_pellet'].throttle = forward
 
-        if read > 2:
-            servo_dict['dispense_pellet'].throttle = stop
-            timestamp_queue.put('Pellet dispensed, %f'%(time.time()-start_time))
-            print('Pellet dispensed, %f'%(time.time()-start_time))
-            #offload monitoring to a new thread
-            do_stuff_queue.put(('read pellet',))
-            return ''
+        #set a timeout on dispensing. with this, that will be a bit less than
+        #6 attempts to disp, but does give the vole 2 sec in which they could nose
+        #poke and trigger this as "dispensed"
+        while time.time()-timeout < 3:
 
-        else:
-            #wait to give other threads time to do stuff, but fast enough
-            #that we check pretty quick if there's a pellet
-            time.sleep(0.025)
-    servo_dict['dispense_pellet'].throttle = stop
-    timestamp_queue.put('Pellet dispense failure, %f'%(time.time()-start_time))
-    return ''
+            if not GPIO.input(pins['read_pellet']):
+                print('blocked')
+                read +=1
+
+            if read > 2:
+                servo_dict['dispense_pellet'].throttle = stop
+                timestamp_queue.put('Pellet dispensed, %f'%(time.time()-start_time))
+                print('Pellet dispensed, %f'%(time.time()-start_time))
+
+                #now there is a pellet!
+                pellet_state = True
+
+                #offload monitoring to a new thread
+                do_stuff_queue.put(('read pellet',))
+                return ''
+
+            else:
+                #wait to give other threads time to do stuff, but fast enough
+                #that we check pretty quick if there's a pellet
+                time.sleep(0.025)
+        servo_dict['dispense_pellet'].throttle = stop
+        timestamp_queue.put('Pellet dispense failure, %f'%(time.time()-start_time))
+        return ''
+    else:
+        print("skipping pellet dispense due to pellet not retrieved")
+        timestamp_queue.put('skip pellet dispense, %f'%(time.time()-start_time))
+        return ''
 
 def read_pellet(q):
+    global start_time
+    global pellet_state
+
     disp_start = time.time()
     q.task_done()
     disp = False
@@ -277,6 +295,9 @@ def read_pellet(q):
         if read_retr > 5:
             print('Pellet taken! %f'%(time.time()-start_time))
             timestamp_queue.put('Pellet retrieved, %f'%(time.time()-start_time))
+
+            #no pellet in trough
+            pellet_state = False
             return ''
 
         if read_disp > 3:
