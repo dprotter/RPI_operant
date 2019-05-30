@@ -62,6 +62,8 @@ print(path)
 with open(path, 'w') as file:
     writer = csv.writer(file, delimiter = ',')
     writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date])
+    writer.writerow(['Event', 'Time'])
+    
 
 
 
