@@ -13,8 +13,8 @@ import datetime
 
 round_time = 120
 pellet_tone_time = 2 #how long the pellet tone plays
-timeII = 2 #time after levers out before pellet
-timeIV = 2 #time after pellet delivered before levers retracted
+timeII = 30 #time after levers out before pellet
+timeIV = 0 #time after pellet delivered before levers retracted
 loops = 15
 
 pins = {'lever_food':4,'step':17,'led_food':23, 'read_pellet':24,
@@ -61,7 +61,7 @@ print('Path is: ')
 print(path)
 with open(path, 'w') as file:
     writer = csv.writer(file, delimiter = ',')
-    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date])
+    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Autoshape'])
     writer.writerow(['Event', 'Time'])
 
 
@@ -76,10 +76,10 @@ kit = ServoKit(channels=16)
 
 #values for continuous_servo
 stop = 0.04
-forward = 0.1
+forward = 0.09
 
 #values Levers [extended, retracted]
-lever_angles = {'food':[50, 130], 'social':[50,130]}
+lever_angles = {'food':[50, 116], 'social':[50,130]}
 
 
 servo_dict = {'food':kit.servo[0], 'dispense_pellet':kit.continuous_servo[1],
@@ -181,7 +181,7 @@ def monitor_lever(ds_queue, args):
                 #we can still record from the lever until monitoring is turned
                 #off. note that this wont place anything in the lever_press queue,
                 #as that is just to tell the main thread the vole did something
-                timestamp_queue.put('%s lever pressed, %f'%(time.time()-start_time))
+                timestamp_queue.put('%s lever pressed, %f'%(lever_ID, time.time()-start_time))
                 while GPIO.input(pins["lever_%s"%lever_ID]):
                     'hanging till lever not pressed'
                 lever = 0
@@ -204,10 +204,13 @@ def retract_lever(q, args):
     global start_time
     global servo_dict
     lever_ID, retract, extend = args
-    print('LEDs off')
+
+    while GPIO.input(pins["lever_%s"%lever_ID]):
+        'hanging till lever not pressed'
+        time.sleep(0.05)
+
     GPIO.output(pins['led_%s'%lever_ID], 0)
     servo_dict[lever_ID].angle = retract
-    print('retracting levers')
     timestamp_queue.put('Levers retracted, %f'%(time.time()-start_time))
     q.task_done()
 
@@ -387,6 +390,11 @@ for i in range(loops):
             timestamp_queue.put('a lever was pressed! woweeeee, %f'%(time.time()-start_time))
             do_stuff_queue.put(('pellet tone',))
             do_stuff_queue.put(('dispence pellet',))
+
+            #wait 0.5 seconds for the vole to move before retracting lever
+            time.sleep(0.5)
+            do_stuff_queue.put(('retract lever',
+                                ('food', lever_angles['food'][0],lever_angles['food'][1])))
             do_stuff_queue.join()
         time.sleep(0.05)
 
@@ -395,13 +403,13 @@ for i in range(loops):
         print('the vole is dumb and didnt press a lever')
         do_stuff_queue.put(('pellet tone',))
         do_stuff_queue.put(('dispence pellet',))
-        time.sleep(0.05)
+        do_stuff_queue.put(('retract lever',
+                            ('food', lever_angles['food'][0],lever_angles['food'][1])))
         do_stuff_queue.join()
 
     time.sleep(0.05)
 
-    do_stuff_queue.put(('retract lever',
-                        ('food', lever_angles['food'][0],lever_angles['food'][1])))
+
 
     time.sleep(timeIV)
     print('entering ITI')

@@ -13,15 +13,34 @@ import datetime
 
 round_time = 120
 pellet_tone_time = 2 #how long the pellet tone plays
-timeII = 2 #time after levers out before pellet
-timeIV = 2 #time after pellet delivered before levers retracted
+timeII = 30 #time after levers out before pellet
+timeIV = 0 #time after pellet delivered before levers retracted
 loops = 15
 
+#dictionary of pi pins
 pins = {'lever_food':4,'step':17,'led_food':23, 'read_pellet':24,
-    'pellet_tone':21, 'start_tone':20}
+    'pellet_tone':21, 'start_tone':20, 'lever_override':14}
+
+#setup our pins. Lever/read pins are input, all else are output
+GPIO.setmode(GPIO.BCM)
+for k in pins.keys():
+    print(k)
+    if 'lever' in k:
+        print(k + ": IN")
+        GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    elif 'read' in k:
+        print(k + ": IN")
+        GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    elif 'led' in k or 'dispense' in k or 'tone' in k:
+        GPIO.setup(pins[k], GPIO.OUT)
+        GPIO.output(pins[k], 0)
+        print(k + ": OUT")
+    else:
+        GPIO.setup(pins[k], GPIO.OUT)
+        print(k + ": OUT")
+
 
 """the following sets up the output file and gets some user input. """
-
 save_dir = '/home/pi/Operant_Output/'
 #get user info
 #get vole number
@@ -48,20 +67,17 @@ else:
     print("Ok, I won't email you.")
 
 """fname will be of format m_d_y__h_m_vole_#_fresh.csv. fresh will be removed
-once the file has been send via email."""
+once the file has been send via email. """
 
 date = datetime.datetime.now()
-fdate = '%s_%s_%s__%s_%s_'%(date.month, date.day, date.year, date.hour, date.minute)
-print('date is: \n')
-print(datetime.date.today())
 
-fname = fdate+'_vole_%s_fresh.csv'%vole
+fname = f'{date.strftime("%m_%d_%Y")}_vole_{vole}_fresh.csv'
 path = os.path.join(save_dir, fname)
 print('Path is: ')
 print(path)
 with open(path, 'w') as file:
     writer = csv.writer(file, delimiter = ',')
-    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date])
+    writer.writerow([f'user: {user}', f'vole: {vole}', f'date: {date.strftime("%m_%d_%Y")}'])
     writer.writerow(['Event', 'Time'])
 
 
@@ -76,39 +92,19 @@ kit = ServoKit(channels=16)
 
 #values for continuous_servo
 stop = 0.04
-forward = 0.1
+forward = 0.09
 
 #values Levers [extended, retracted]
 lever_angles = {'food':[50, 130], 'social':[50,130]}
 
-
+#dictionary of levers we can access to control
 servo_dict = {'food':kit.servo[0], 'dispense_pellet':kit.continuous_servo[1],
                 'social':kit.servo[2]}
 
 kit.continuous_servo[1].throttle = stop
-
 kit.servo[0].angle = lever_angles['food'][0]
 
 
-#setup our pins. Lever pins are input, all else are output
-GPIO.setmode(GPIO.BCM)
-
-
-for k in pins.keys():
-    print(k)
-    if 'lever' in k:
-        print(k + ": IN")
-        GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    elif 'read' in k:
-        print(k + ": IN")
-        GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    elif 'led' in k or 'dispence' in k or 'tone' in k:
-        GPIO.setup(pins[k], GPIO.OUT)
-        GPIO.output(pins[k], 0)
-        print(k + ": OUT")
-    else:
-        GPIO.setup(pins[k], GPIO.OUT)
-        print(k + ": OUT")
 
 
 #our queues for doign stuff and saving stuff
@@ -138,12 +134,12 @@ def run_job(job, q, args = None):
     '''parse and run jobs'''
 
     jobs = {'extend lever':extend_lever,
-            'dispence pellet':dispence_pellet,
+            'dispense pellet':dispense_pellet,
             'retract lever':retract_lever,
             'start tone':experiment_start_tone,
             'pellet tone':pellet_tone,
             'monitor lever':monitor_lever,
-            'dispense pellet':dispence_pellet,
+            'dispense pellet':dispense_pellet,
             'read pellet':read_pellet
             }
 
@@ -187,17 +183,17 @@ def monitor_lever(ds_queue, args):
                 lever = 0
 
         time.sleep(25/1000.0)
-    print('halting monitoring of %s lever'%lever_ID)
+    print(f'halting monitoring of {lever_ID} lever')
 
 def extend_lever(q, args):
     global start_time
     global servo_dict
     lever_ID, retract, extend = args
-    print('extending lever %s'%lever_ID)
+    print(f'extending lever {lever_ID}')
     print('LEDs on')
     servo_dict[lever_ID].angle = extend
     GPIO.output(pins['led_%s'%lever_ID], 1)
-    timestamp_queue.put('Levers out, %f'%(time.time()-start_time))
+    timestamp_queue.put(f'Levers out, {(time.time()-start_time)}')
     q.task_done()
 
 def retract_lever(q, args):
@@ -205,10 +201,10 @@ def retract_lever(q, args):
     global servo_dict
     lever_ID, retract, extend = args
     print('LEDs off')
-    GPIO.output(pins['led_%s'%lever_ID], 0)
+    GPIO.output(pins[f'led_{lever_ID}'], 0)
     servo_dict[lever_ID].angle = retract
     print('retracting levers')
-    timestamp_queue.put('Levers retracted, %f'%(time.time()-start_time))
+    timestamp_queue.put(f'Levers retracted, {(time.time()-start_time)}')
     q.task_done()
 
 def pellet_tone(q):
@@ -223,7 +219,7 @@ def pellet_tone(q):
     q.task_done()
 
 
-def dispence_pellet(q):
+def dispense_pellet(q):
     global start_time
     q.task_done()
     timeout = time.time()
@@ -251,8 +247,8 @@ def dispence_pellet(q):
 
             if read > 2:
                 servo_dict['dispense_pellet'].throttle = stop
-                timestamp_queue.put('Pellet dispensed, %f'%(time.time()-start_time))
-                print('Pellet dispensed, %f'%(time.time()-start_time))
+                timestamp_queue.put(f'Pellet dispensed, {(time.time()-start_time)}')
+                print(f'Pellet dispensed, {(time.time()-start_time)}')
 
                 #now there is a pellet!
                 pellet_state = True
@@ -266,11 +262,11 @@ def dispence_pellet(q):
                 #that we check pretty quick if there's a pellet
                 time.sleep(0.025)
         servo_dict['dispense_pellet'].throttle = stop
-        timestamp_queue.put('Pellet dispense failure, %f'%(time.time()-start_time))
+        timestamp_queue.put(f'Pellet dispense failure, {(time.time()-start_time)}')
         return ''
     else:
         print("skipping pellet dispense due to pellet not retrieved")
-        timestamp_queue.put('skip pellet dispense, %f'%(time.time()-start_time))
+        timestamp_queue.put(f'skip pellet dispense, {(time.time()-start_time)}')
         return ''
 
 def read_pellet(q):
@@ -296,7 +292,7 @@ def read_pellet(q):
 
         if read_retr > 5:
             print('Pellet taken! %f'%(time.time()-start_time))
-            timestamp_queue.put('Pellet retrieved, %f'%(time.time()-start_time))
+            timestamp_queue.put(f'Pellet retrieved, {(time.time()-start_time)}')
 
             #no pellet in trough
             pellet_state = False
@@ -309,10 +305,16 @@ def read_pellet(q):
         time.sleep(0.05)
 
 
-    timestamp_queue.put('pellet retreival timeout, %f'%(time.time()-start_time))
+    timestamp_queue.put(f'pellet retreival timeout, {(time.time()-start_time)}')
     return ''
 
-
+"""def override(q):
+    '''this will be a hand trigger override, and will be running all the time,
+    waiting. '''
+    global start_time
+    q.task_done()
+    while True:
+        if GPIO.input"""
 
 
 def experiment_start_tone(q):
@@ -349,13 +351,13 @@ for x in range(8):
     t = threading.Thread(target = thread_distributor)
     t.daemon = True
     t.start()
-    print("started %i"%x )
+    print(f"started {x}" )
 
 
 ### master looper ###
 for i in range(loops):
     round_start = time.time()
-    print("#-#-#-#-#-# new round #%i!!!-#-#-#-#-#"%i)
+    print(f"#-#-#-#-#-# new round #{i}!!!-#-#-#-#-#")
     timestamp_queue.put('Starting new round, %f'%(time.time()-start_time))
     do_stuff_queue.put(('start tone',))
 
@@ -373,7 +375,7 @@ for i in range(loops):
 
     #begin tracking the lever in a thread
     do_stuff_queue.put(('monitor lever', (lever_press_queue, 'food',)))
-
+    do_stuff_queue.put(('monitor lever', (lever_press_queue, 'override',)))
     timeII_start = time.time()
 
     #for the timeII interval, monitor lever and overide pellet timing if pressed
@@ -383,10 +385,10 @@ for i in range(loops):
         if not interrupt and not lever_press_queue.empty():
             interrupt = True
             lever_ID = lever_press_queue.get()
-            print('the %s lever was pressed! woweeeee'%lever_ID)
-            timestamp_queue.put('a lever was pressed! woweeeee, %f'%(time.time()-start_time))
-            do_stuff_queue.put(('pellet tone',))
-            do_stuff_queue.put(('dispence pellet',))
+            print(f'the {lever_ID} lever was pressed! woweeeee')
+            timestamp_queue.put(f'the {lever_ID} lever was pressed! woweeeee, {(time.time()-start_time)}')
+|           do_stuff_queue.put(('pellet tone',))
+            do_stuff_queue.put(('dispense pellet',))
             do_stuff_queue.join()
         time.sleep(0.05)
 
@@ -394,7 +396,7 @@ for i in range(loops):
     if not interrupt:
         print('the vole is dumb and didnt press a lever')
         do_stuff_queue.put(('pellet tone',))
-        do_stuff_queue.put(('dispence pellet',))
+        do_stuff_queue.put(('dispense pellet',))
         time.sleep(0.05)
         do_stuff_queue.join()
 
