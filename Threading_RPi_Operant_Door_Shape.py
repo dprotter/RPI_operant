@@ -458,6 +458,7 @@ for i in range(loops):
 
     #close the door, wait 20s to manually move the vole
     do_stuff_queue.put(('door close tone',))
+    time.sleep(2)
     do_stuff_queue.put(('close door',))
     time.sleep(10)
 
