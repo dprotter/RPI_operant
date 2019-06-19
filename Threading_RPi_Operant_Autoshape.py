@@ -72,7 +72,7 @@ with open(path, 'w') as file:
 ##### kit[1] = partner lever
 ##### kit[2] = door
 ##### kit[3] = food dispenser
-kit = ServoKit(channels=16)
+
 
 servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
 servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
