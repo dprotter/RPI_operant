@@ -10,7 +10,7 @@ lever_angles = {'food':[40, 115], 'social':[40,100]}
 
 continuous_servo_speeds = {
                         'dispense_pellet':{'stop':0.04, 'fwd':0.09},
-                        'door':{'stop':0.04, 'open':0.9, 'close':0-0.9+0.04
+                        'door':{'stop':0.04, 'open':0.9, 'close':0-0.9+0.04,
                                 'open time':1.25, 'close time':2.7}
                                                                             }
 
