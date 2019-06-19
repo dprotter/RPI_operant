@@ -245,7 +245,7 @@ def door_close_tone(q):
     print('door close tone')
     timestamp_queue.put('door close tone start, %f'%(time.time()-start_time))
     GPIO.output(pins['door_close_tone'], 1)
-    time.sleep(2)
+    time.sleep(3)
     GPIO.output(pins['door_close_tone'], 0)
     timestamp_queue.put('door close tone complete, %f'%(time.time()-start_time))
     q.task_done()
@@ -458,7 +458,7 @@ for i in range(loops):
 
     #close the door, wait 20s to manually move the vole
     do_stuff_queue.put(('door close tone',))
-    time.sleep(2)
+    time.sleep(4)
     do_stuff_queue.put(('close door',))
     time.sleep(10)
 
