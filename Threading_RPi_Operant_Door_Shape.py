@@ -472,8 +472,10 @@ with open(path, 'a') as file:
 
 print("all Done")
 #reset levers to retracted
-kit.servo[0].angle = lever_angles['food'][0]
-kit.continuous_servo[1].throttle = stop
+servo_dict['food'].angle = lever_angles['food'][0]
+servo_dict['social'].angle = lever_angles['social'][0]
+servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
+servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
 
 
 
