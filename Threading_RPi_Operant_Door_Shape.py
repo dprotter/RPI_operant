@@ -16,7 +16,7 @@ round_time = 20
 pellet_tone_time = 2 #how long the pellet tone plays
 timeII = 10 #time after levers out before pellet
 timeIV = 0 #time after pellet delivered before levers retracted
-loops = 15
+loops = 3
 
 
 
