@@ -136,7 +136,7 @@ def run_job(job, q, args = None):
             'read pellet':read_pellet,
             'close door':close_door,
             'open door':open_door,
-            'door close tone', door_close_tone
+            'door close tone': door_close_tone
             }
 
     if args:
