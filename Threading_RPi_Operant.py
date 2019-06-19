@@ -204,6 +204,9 @@ def retract_lever(q, args):
     global start_time
     global servo_dict
     lever_ID, retract, extend = args
+    while GPIO.input(pins["lever_%s"%lever_ID]):
+        'hanging till lever not pressed'
+        time.sleep(0.05)
     print('LEDs off')
     GPIO.output(pins['led_%s'%lever_ID], 0)
     servo_dict[lever_ID].angle = retract
@@ -361,7 +364,6 @@ for i in range(loops):
 
     #wait till tone is done
     do_stuff_queue.join()
-
 
     do_stuff_queue.put(('extend lever',
                         ('food',lever_angles['food'][0],lever_angles['food'][1])))

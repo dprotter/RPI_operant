@@ -74,11 +74,9 @@ with open(path, 'w') as file:
 ##### kit[3] = food dispenser
 kit = ServoKit(channels=16)
 
-servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet'][0]
+servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
 servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
-
 servo_dict['food'].angle = lever_angles['food'][0]
-
 servo_dict['social'].angle = lever_angles['social'][0]
 
 #setup our pins. Lever pins are input, all else are output

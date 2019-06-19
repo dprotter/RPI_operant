@@ -24,20 +24,20 @@ pins = {'lever_food':4,'step':17,'led_food':23, 'read_pellet':24,
 #setup our pins. Lever/read pins are input, all else are output
 GPIO.setmode(GPIO.BCM)
 for k in pins.keys():
-    print(k)
+    #print(k)
     if 'lever' in k:
-        print(k + ": IN")
+        #print(k + ": IN")
         GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
     elif 'read' in k:
-        print(k + ": IN")
+        #print(k + ": IN")
         GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_UP)
     elif 'led' in k or 'dispense' in k or 'tone' in k:
         GPIO.setup(pins[k], GPIO.OUT)
         GPIO.output(pins[k], 0)
-        print(k + ": OUT")
+        #print(k + ": OUT")
     else:
         GPIO.setup(pins[k], GPIO.OUT)
-        print(k + ": OUT")
+        #print(k + ": OUT")
 
 
 """the following sets up the output file and gets some user input. """
@@ -66,11 +66,10 @@ if push.lower() in 'y':
 else:
     print("Ok, I won't email you.")
 
-"""fname will be of format m_d_y__h_m_vole_#_fresh.csv. fresh will be removed
+"""fname will be of format m_d_y_h_m_vole_#_fresh.csv. fresh will be removed
 once the file has been send via email. """
 
 date = datetime.datetime.now()
-
 fname = f'{date.strftime("%m_%d_%Y")}_vole_{vole}_fresh.csv'
 path = os.path.join(save_dir, fname)
 print('Path is: ')
@@ -129,10 +128,12 @@ global pellet_state
 pellet_state = False
 
 def run_job(job, q, args = None):
-    print('job: ' + str(job) + '    args: ' +str(args))
+    # useful when testing new jobs to see that args are passed correctly
+    #print('job: ' + str(job) + '    args: ' +str(args))
 
     '''parse and run jobs'''
 
+    #this dictionary points to the actual functions
     jobs = {'extend lever':extend_lever,
             'dispense pellet':dispense_pellet,
             'retract lever':retract_lever,
@@ -319,7 +320,6 @@ def read_pellet(q):
 
 def experiment_start_tone(q):
     global start_time
-    print('starting experiment tone')
     GPIO.output(pins['start_tone'], 1)
     timestamp_queue.put('experiment start tone start, %f'%(time.time()-start_time))
 
@@ -328,7 +328,7 @@ def experiment_start_tone(q):
         GPIO.output(pins['start_tone'], 1)
         time.sleep(0.1)
         GPIO.output(pins['start_tone'], 0)
-    print('experiment tone complete')
+
     timestamp_queue.put('experiment start tone start complete, %f'%(time.time()-start_time))
     q.task_done()
 
