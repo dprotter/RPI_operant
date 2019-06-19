@@ -10,7 +10,7 @@ from adafruit_servokit import ServoKit
 global kit
 import email_push
 import datetime
-from operant_cage_settings import pins, servo_dict, continuous_servo_speeds
+from operant_cage_settings import pins, servo_dict, continuous_servo_speeds, lever_angles
 
 round_time = 120
 pellet_tone_time = 2 #how long the pellet tone plays
