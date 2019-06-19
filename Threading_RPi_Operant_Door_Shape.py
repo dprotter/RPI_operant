@@ -242,6 +242,7 @@ def pellet_tone(q):
 
 def door_close_tone(q):
     global start_time
+    print('door close tone')
     timestamp_queue.put('door close tone start, %f'%(time.time()-start_time))
     GPIO.output(pins['door_close_tone'], 1)
     time.sleep(2)

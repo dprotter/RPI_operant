@@ -5,7 +5,7 @@ pins = {'lever_food':4,'lever_social':17,'led_food':18, 'read_pellet':24,
 
 
 #values Levers [extended, retracted]
-lever_angles = {'food':[40, 115], 'social':[40,100]}
+lever_angles = {'food':[40, 115], 'social':[43,100]}
 
 
 continuous_servo_speeds = {
