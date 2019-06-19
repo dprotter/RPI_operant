@@ -230,7 +230,7 @@ def dispence_pellet(q):
         #we're just gonna turn the servo on and keep monitoring. probably
         #want this to be a little slow
 
-        servo_dict['dispense_pellet'].throttle = forward
+        servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispence_pellet']['fwd']
 
         #set a timeout on dispensing. with this, that will be a bit less than
         #6 attempts to disp, but does give the vole 2 sec in which they could nose
@@ -242,7 +242,7 @@ def dispence_pellet(q):
                 read +=1
 
             if read > 2:
-                servo_dict['dispense_pellet'].throttle = stop
+                servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispence_pellet']['stop']
                 timestamp_queue.put('Pellet dispensed, %f'%(time.time()-start_time))
                 print('Pellet dispensed, %f'%(time.time()-start_time))
 
@@ -257,7 +257,7 @@ def dispence_pellet(q):
                 #wait to give other threads time to do stuff, but fast enough
                 #that we check pretty quick if there's a pellet
                 time.sleep(0.025)
-        servo_dict['dispense_pellet'].throttle = stop
+        servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispence_pellet']['stop']
         timestamp_queue.put('Pellet dispense failure, %f'%(time.time()-start_time))
         return ''
     else:
