@@ -121,6 +121,9 @@ start_time = time.time()
 global pellet_state
 pellet_state = False
 
+global door_override
+door_override = False
+
 def run_job(job, q, args = None):
     print('job: ' + str(job) + '    args: ' +str(args))
 
@@ -194,10 +197,28 @@ def extend_lever(q, args):
     timestamp_queue.put('Levers out, %f'%(time.time()-start_time))
     q.task_done()
 
+def override_door():
+    global start_time
+    global door_override
+    while True:
+        if pins['read_door_override_open']:
+            door_override = True
+            servo_dict['door'].throttle = continuous_servo_speeds['door']['open']
+            while pins['read_door_override_open']:
+                time.sleep(0.05)
+            servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
+        if pins['read_door_override_close']:
+            door_override = True
+            servo_dict['door'].throttle = continuous_servo_speeds['door']['close_full']
+            while pins['read_door_override_close']:
+                time.sleep(0.05)
+            servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
+        door_override = False
+        time.sleep(0.1)
+
 def open_door(q):
     global start_time
     global servo_dict
-
     timestamp_queue.put('Door open begin, %f'%(time.time()-start_time))
     servo_dict['door'].throttle = continuous_servo_speeds['door']['open']
     time.sleep(continuous_servo_speeds['door']['open time'])
@@ -208,12 +229,18 @@ def open_door(q):
 def close_door(q):
     global start_time
     global servo_dict
-
+    global door_override
     timestamp_queue.put('Door close begin, %f'%(time.time()-start_time))
-    servo_dict['door'].throttle = continuous_servo_speeds['door']['close']
-    time.sleep(continuous_servo_speeds['door']['close time'])
-    servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
-    timestamp_queue.put('Door close finish, %f'%(time.time()-start_time))
+    if not door_override:
+        start = time.time()
+        servo_dict['door'].throttle = continuous_servo_speeds['door']['close']
+        while time.time()-start < continuous_servo_speeds['door']['close time']
+            and not door_override:
+            '''just hanging around'''
+            time.sleep(0.05)
+        if not door_override:
+            servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
+
     q.task_done()
 
 def retract_lever(q, args):
