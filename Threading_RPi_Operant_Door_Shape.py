@@ -202,6 +202,7 @@ def extend_lever(q, args):
 def override_door(q):
     global start_time
     global door_override
+    q.task_done()
     while True:
         if GPIO.input(pins['lever_door_override_open']):
             door_override = True
@@ -217,7 +218,7 @@ def override_door(q):
             servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
         door_override = False
         time.sleep(0.1)
-    q.task_done()
+
 
 def open_door(q):
     global start_time
