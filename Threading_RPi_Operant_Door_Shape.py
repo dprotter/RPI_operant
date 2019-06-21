@@ -140,7 +140,8 @@ def run_job(job, q, args = None):
             'read pellet':read_pellet,
             'close door':close_door,
             'open door':open_door,
-            'door close tone': door_close_tone
+            'door close tone': door_close_tone,
+            'door override':override_door
             }
 
     if args:
@@ -399,13 +400,13 @@ def thread_distributor():
             time.sleep(0.05)
 
 
-for x in range(8):
+for x in range(9):
     t = threading.Thread(target = thread_distributor)
     t.daemon = True
     t.start()
     print("started %i"%x )
 
-
+do_stuff_queue.put('door override')
 ### master looper ###
 for i in range(loops):
     round_start = time.time()
