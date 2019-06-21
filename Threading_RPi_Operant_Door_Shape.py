@@ -235,7 +235,7 @@ def close_door(q):
     if not door_override:
         start = time.time()
         servo_dict['door'].throttle = continuous_servo_speeds['door']['close']
-        while time.time()-start < continuous_servo_speeds['door']['close time']
+        while time.time()-start < continuous_servo_speeds['door']['close time']:
             and not door_override:
             '''just hanging around'''
             time.sleep(0.05)
