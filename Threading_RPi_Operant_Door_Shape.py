@@ -203,16 +203,16 @@ def override_door(q):
     global start_time
     global door_override
     while True:
-        if pins['read_door_override_open']:
+        if pins['lever_door_override_open']:
             door_override = True
             servo_dict['door'].throttle = continuous_servo_speeds['door']['open']
-            while pins['read_door_override_open']:
+            while pins['lever_door_override_open']:
                 time.sleep(0.05)
             servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
-        if pins['read_door_override_close']:
+        if pins['lever_door_override_close']:
             door_override = True
             servo_dict['door'].throttle = continuous_servo_speeds['door']['close_full']
-            while pins['read_door_override_close']:
+            while pins['lever_door_override_close']:
                 time.sleep(0.05)
             servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
         door_override = False
