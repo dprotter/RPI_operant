@@ -2,7 +2,7 @@ from adafruit_servokit import ServoKit
 kit = ServoKit(channels=16)
 pins = {'lever_food':4,'lever_social':17,'led_food':18, 'read_pellet':24,
     'pellet_tone':21, 'start_tone':20, 'door_close_tone':22, 'led_social':19,
-    'read_door_override_open':, 'read_door_override_close':}
+    'read_door_override_open':13, 'read_door_override_close':16}
 
 
 #values Levers [extended, retracted]

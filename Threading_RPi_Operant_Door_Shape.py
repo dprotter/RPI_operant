@@ -12,11 +12,11 @@ import email_push
 import datetime
 from operant_cage_settings import pins, servo_dict, continuous_servo_speeds, lever_angles
 
-round_time = 20
+round_time = 70
 pellet_tone_time = 2 #how long the pellet tone plays
-timeII = 10 #time after levers out before pellet
+timeII = 45 #time after levers out before pellet
 timeIV = 0 #time after pellet delivered before levers retracted
-loops = 3
+loops = 10
 
 
 
@@ -487,7 +487,7 @@ for i in range(loops):
     do_stuff_queue.put(('door close tone',))
     time.sleep(4)
     do_stuff_queue.put(('close door',))
-    time.sleep(10)
+    time.sleep(20)
 
 '''append current timestamp queue contents to csv file'''
 with open(path, 'a') as file:
