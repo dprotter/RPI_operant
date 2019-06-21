@@ -406,7 +406,7 @@ for x in range(9):
     t.start()
     print("started %i"%x )
 
-do_stuff_queue.put('door override')
+do_stuff_queue.put(('door override',))
 ### master looper ###
 for i in range(loops):
     round_start = time.time()
