@@ -199,7 +199,7 @@ def extend_lever(q, args):
     timestamp_queue.put('Levers out, %f'%(time.time()-start_time))
     q.task_done()
 
-def override_door():
+def override_door(q):
     global start_time
     global door_override
     while True:
@@ -217,6 +217,7 @@ def override_door():
             servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
         door_override = False
         time.sleep(0.1)
+    q.task_done()
 
 def open_door(q):
     global start_time
