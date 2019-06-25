@@ -25,7 +25,7 @@ VERSION = '0.1.0'
 
 
 if os.path.isfile('requirements.txt'):
-    with open(requirementPath) as f:
+    with open('requirements.txt') as f:
         REQUIRED = f.read().splitlines()
 print(REQUIRED)
 
