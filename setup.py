@@ -40,7 +40,7 @@ setup(
     url=URL,
 
     # If your package is a single module, use this instead of 'packages':
-    py_modules=['mypackage'],
+    py_modules=['RPI_operant'],
 
     install_requires=REQUIRED,
     extras_require=EXTRAS,
