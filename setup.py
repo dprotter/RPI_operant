@@ -10,6 +10,10 @@ from setuptools import find_packages, setup, Command
 # Package meta-data.
 NAME = 'RPI_operant'
 DESCRIPTION = 'A Rasbperry Pi based operant test chamber package'
+long_description = '''
+
+The scripts that run the Donaldson labs custom operant cages.'''
+
 URL = 'https://github.com/dprotter/RPI_operant'
 EMAIL = 'david.protter@colorado.edu'
 AUTHOR = 'David Protter'
