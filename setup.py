@@ -26,7 +26,7 @@ VERSION = '0.1.0'
 
 if os.path.isfile('requirements.txt'):
     with open(requirementPath) as f:
-        REQUIRED = [line for f.readline() in f]
+        REQUIRED = [line for next(f) in f]
 print(REQUIRED)
 
 # Where the magic happens:
