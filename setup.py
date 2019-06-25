@@ -28,7 +28,7 @@ REQUIRED = [] # Examples: ["gunicorn", "docutils>=0.3", "lxml==0.5a7"]
 if os.path.isfile(requirementPath):
     with open(requirementPath) as f:
         REQUIRED = f.read().splitlines()
-
+print(REQUIRED)
 
 # Where the magic happens:
 setup(
