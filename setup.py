@@ -25,7 +25,7 @@ REQUIRED = [
     'numpy', 'RPi.GPIO', 'adafruit-circuitpython-servokit', 'netifaces', 'smtplib',
 ]
 
-EXTRAS = []
+
 
 # Where the magic happens:
 setup(
@@ -43,7 +43,7 @@ setup(
     py_modules=['RPI_operant'],
 
     install_requires=REQUIRED,
-    extras_require=EXTRAS,
+
     include_package_data=True,
     license='University of Colorado, Donaldson Lab',
 
