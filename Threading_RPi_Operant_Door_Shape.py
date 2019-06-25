@@ -62,7 +62,7 @@ print('Path is: ')
 print(path)
 with open(path, 'w') as file:
     writer = csv.writer(file, delimiter = ',')
-    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Autoshape'])
+    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Door Shaping'])
     writer.writerow(['Event', 'Time'])
 
 
@@ -456,6 +456,7 @@ for i in range(loops):
     #waited the interval for timeII, nothing happened
     if not interrupt:
         print('the vole is dumb and didnt press a lever')
+        imestamp_queue.put('no lever press, %f'%(time.time()-start_time))
         do_stuff_queue.put(('open door',))
         do_stuff_queue.put(('retract lever',
                             ('social', lever_angles['social'][0],lever_angles['social'][1])))
