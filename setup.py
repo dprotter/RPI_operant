@@ -25,6 +25,7 @@ REQUIRED = [
     'numpy', 'RPi.GPIO', 'adafruit-circuitpython-servokit', 'netifaces', 'smtplib',
 ]
 
+EXTRAS = []
 
 # Where the magic happens:
 setup(
