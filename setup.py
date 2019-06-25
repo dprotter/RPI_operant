@@ -43,7 +43,7 @@ setup(
     url=URL,
 
     # If your package is a single module, use this instead of 'packages':
-    py_modules=['RPI_operant'],
+     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
 
     install_requires=REQUIRED,
 
