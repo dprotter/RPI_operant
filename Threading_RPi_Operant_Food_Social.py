@@ -193,8 +193,7 @@ def extend_lever(q, args):
     global start_time
     global servo_dict
     lever_ID, retract, extend = args
-    print('extending lever %s'%lever_ID)
-    print('LEDs on')
+    
     servo_dict[lever_ID].angle = extend
     GPIO.output(pins['led_%s'%lever_ID], 1)
     timestamp_queue.put('Levers out, %f'%(time.time()-start_time))
@@ -216,12 +215,12 @@ def retract_lever(q, args):
 
 def pellet_tone(q):
     global start_time
-    print('starting pellet tone')
+
     GPIO.output(pins['pellet_tone'], 1)
     timestamp_queue.put('pellet tone start, %f'%(time.time()-start_time))
     time.sleep(2)
     GPIO.output(pins['pellet_tone'], 0)
-    print('pellet tone complete')
+
     timestamp_queue.put('pellet tone complete, %f'%(time.time()-start_time))
     q.task_done()
 
@@ -236,7 +235,7 @@ def dispence_pellet(q):
 
     #only dispense if there is no pellet, otherwise skip
     if not pellet_state:
-        print('starting pellet dispensing %f'%(time.time()-start_time))
+
 
         #we're just gonna turn the servo on and keep monitoring. probably
         #want this to be a little slow
@@ -320,7 +319,7 @@ def read_pellet(q):
 
 def experiment_start_tone(q):
     global start_time
-    print('starting experiment tone')
+
     GPIO.output(pins['start_tone'], 1)
     timestamp_queue.put('experiment start tone start, %f'%(time.time()-start_time))
 
@@ -329,7 +328,7 @@ def experiment_start_tone(q):
         GPIO.output(pins['start_tone'], 1)
         time.sleep(0.1)
         GPIO.output(pins['start_tone'], 0)
-    print('experiment tone complete')
+
     timestamp_queue.put('experiment start tone start complete, %f'%(time.time()-start_time))
     q.task_done()
 
@@ -401,6 +400,7 @@ for i in range(loops):
     #waited the interval for timeII, nothing happened
     if not interrupt:
         print('the vole is dumb and didnt press a lever')
+        timestamp_queue.put('no lever press, %f'%(time.time()-start_time))
         do_stuff_queue.put(('pellet tone',))
         do_stuff_queue.put(('dispence pellet',))
         do_stuff_queue.put(('retract lever',

@@ -395,6 +395,7 @@ for i in range(loops):
     #waited the interval for timeII, nothing happened
     if not interrupt:
         print('the vole is dumb and didnt press a lever')
+        timestamp_queue.put(f'no lever press, {(time.time()-start_time)}')
         do_stuff_queue.put(('pellet tone',))
         do_stuff_queue.put(('dispense pellet',))
         time.sleep(0.05)

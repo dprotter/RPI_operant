@@ -192,8 +192,8 @@ def extend_lever(q, args):
     global start_time
     global servo_dict
     lever_ID, retract, extend = args
-    print('extending lever %s'%lever_ID)
-    print('LEDs on')
+
+
     servo_dict[lever_ID].angle = extend
     GPIO.output(pins['led_%s'%lever_ID], 1)
     timestamp_queue.put('Levers out, %f'%(time.time()-start_time))
@@ -272,7 +272,7 @@ def pellet_tone(q):
 
 def door_close_tone(q):
     global start_time
-    print('door close tone')
+
     timestamp_queue.put('door close tone start, %f'%(time.time()-start_time))
     GPIO.output(pins['door_close_tone'], 1)
     time.sleep(3)
@@ -374,7 +374,7 @@ def read_pellet(q):
 
 def experiment_start_tone(q):
     global start_time
-    print('starting experiment tone')
+
     GPIO.output(pins['start_tone'], 1)
     timestamp_queue.put('experiment start tone start, %f'%(time.time()-start_time))
 
@@ -383,7 +383,7 @@ def experiment_start_tone(q):
         GPIO.output(pins['start_tone'], 1)
         time.sleep(0.1)
         GPIO.output(pins['start_tone'], 0)
-    print('experiment tone complete')
+
     timestamp_queue.put('experiment start tone start complete, %f'%(time.time()-start_time))
     q.task_done()
 
@@ -456,7 +456,7 @@ for i in range(loops):
     #waited the interval for timeII, nothing happened
     if not interrupt:
         print('the vole is dumb and didnt press a lever')
-        imestamp_queue.put('no lever press, %f'%(time.time()-start_time))
+        timestamp_queue.put('no lever press, %f'%(time.time()-start_time))
         do_stuff_queue.put(('open door',))
         do_stuff_queue.put(('retract lever',
                             ('social', lever_angles['social'][0],lever_angles['social'][1])))
@@ -468,7 +468,7 @@ for i in range(loops):
 
 
     time.sleep(timeIV)
-    print('entering ITI')
+    print('entering ITI for #-#-# round #%i -#-#-# '%i )
 
     #wait for ITI to pass
     '''a good time to write some stuff to file'''

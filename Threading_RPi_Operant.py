@@ -10,6 +10,7 @@ from adafruit_servokit import ServoKit
 global kit
 import email_push
 import datetime
+from operant_cage_settings import pins, servo_dict, continuous_servo_speeds, lever_angles
 
 round_time = 120
 pellet_tone_time = 2 #how long the pellet tone plays
@@ -17,8 +18,6 @@ timeII = 2 #time after levers out before pellet
 timeIV = 2 #time after pellet delivered before levers retracted
 loops = 15
 
-pins = {'lever_food':4,'step':17,'led_food':23, 'read_pellet':24,
-    'pellet_tone':21, 'start_tone':20}
 
 """the following sets up the output file and gets some user input. """
 
@@ -64,31 +63,10 @@ with open(path, 'w') as file:
     writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date])
     writer.writerow(['Event', 'Time'])
 
-
-
-
-##### double check which servo is which. I'm writing this as:
-##### kit[0] = food lever
-##### kit[1] = partner lever
-##### kit[2] = door
-##### kit[3] = food dispenser
-kit = ServoKit(channels=16)
-
-#values for continuous_servo
-stop = 0.04
-forward = 0.1
-
-#values Levers [extended, retracted]
-lever_angles = {'food':[50, 130], 'social':[50,130]}
-
-
-servo_dict = {'food':kit.servo[0], 'dispense_pellet':kit.continuous_servo[1],
-                'social':kit.servo[2]}
-
-kit.continuous_servo[1].throttle = stop
-
-kit.servo[0].angle = lever_angles['food'][0]
-
+servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
+servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
+servo_dict['food'].angle = lever_angles['food'][0]
+servo_dict['social'].angle = lever_angles['social'][0]
 
 #setup our pins. Lever pins are input, all else are output
 GPIO.setmode(GPIO.BCM)
@@ -395,6 +373,7 @@ for i in range(loops):
     #waited the interval for timeII, nothing happened
     if not interrupt:
         print('the vole is dumb and didnt press a lever')
+        timestamp_queue.put('no lever press, %f'%(time.time()-start_time))
         do_stuff_queue.put(('pellet tone',))
         do_stuff_queue.put(('dispence pellet',))
         time.sleep(0.05)
@@ -406,7 +385,7 @@ for i in range(loops):
                         ('food', lever_angles['food'][0],lever_angles['food'][1])))
 
     time.sleep(timeIV)
-    print('entering ITI')
+    print('entering ITI for #-#-# round #%i -#-#-# '%i )
 
     #wait for ITI to pass
 
@@ -435,10 +414,10 @@ with open(path, 'a') as file:
 
 print("all Done")
 #reset levers to retracted
-kit.servo[0].angle = lever_angles['food'][0]
-kit.continuous_servo[1].throttle = stop
-
-
+servo_dict['food'].angle = lever_angles['food'][0]
+servo_dict['social'].angle = lever_angles['social'][0]
+servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
+servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
 
 if 'y' in push.lower():
     email_push.email_push(user = user)
