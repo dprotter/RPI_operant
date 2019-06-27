@@ -2,17 +2,19 @@ from adafruit_servokit import ServoKit
 import time
 kit = ServoKit(channels = 16)
 ser = kit.continuous_servo[3]
-open_throttle = 0.7
-stop = 0.065
-close_throttle = 0-open_throttle+stop
+open_throttle = 0.8
+stop = 0.07
 
-open_time = 1
-close_time = 1
-for i in range(3):
+close_throttle = -0.1
+
+open_time = 1.25
+close_time = 2.7
+for i in range(20):
     ser.throttle = open_throttle
     time.sleep(open_time)
     ser.throttle = stop
-    time.sleep(1)
+    time.sleep(0.5)
     ser.throttle = close_throttle
     time.sleep(close_time)
-ser.throttle = stop
+    ser.throttle = stop
+    time.sleep(0.5)

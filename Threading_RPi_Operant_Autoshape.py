@@ -402,7 +402,7 @@ for i in range(loops):
 
 
     time.sleep(timeIV)
-    print('entering ITI')
+    print('entering ITI for #-#-# round #%i -#-#-# '%i )
 
     #wait for ITI to pass
 

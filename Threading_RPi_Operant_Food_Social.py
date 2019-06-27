@@ -61,7 +61,7 @@ print('Path is: ')
 print(path)
 with open(path, 'w') as file:
     writer = csv.writer(file, delimiter = ',')
-    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Autoshape'])
+    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Food Social Test'])
     writer.writerow(['Event', 'Time'])
 
 
@@ -193,7 +193,7 @@ def extend_lever(q, args):
     global start_time
     global servo_dict
     lever_ID, retract, extend = args
-    
+
     servo_dict[lever_ID].angle = extend
     GPIO.output(pins['led_%s'%lever_ID], 1)
     timestamp_queue.put('Levers out, %f'%(time.time()-start_time))
@@ -412,7 +412,7 @@ for i in range(loops):
 
 
     time.sleep(timeIV)
-    print('entering ITI')
+    print('entering ITI for #-#-# round #%i -#-#-# '%i )
 
     #wait for ITI to pass
 

@@ -60,7 +60,7 @@ print('Path is: ')
 print(path)
 with open(path, 'w') as file:
     writer = csv.writer(file, delimiter = ',')
-    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date])
+    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'experiment: Magazine'])
     writer.writerow(['Event', 'Time'])
 
 servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
@@ -266,7 +266,7 @@ def read_pellet(q):
 
     #dispensed pellet there, IE full trough
     read_disp = 0
-    timeout = 200
+    timeout = 20000
 
     while time.time() - disp_start < timeout:
         #note this is opposite of the dispense function
@@ -290,10 +290,8 @@ def read_pellet(q):
         time.sleep(0.05)
 
 
-    timestamp_queue.put('pellet retreival timeout, %f'%(time.time()-start_time))
+
     return ''
-
-
 
 
 def experiment_start_tone(q):
@@ -412,6 +410,8 @@ with open(path, 'a') as file:
         print('writing ###### %s'%line)
         writer.writerow(line)
 
+if pellet_state:
+timestamp_queue.put('final pellet not retrieved, %f'%(time.time()-start_time))
 print("all Done")
 #reset levers to retracted
 servo_dict['food'].angle = lever_angles['food'][0]
