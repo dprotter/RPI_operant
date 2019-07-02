@@ -41,6 +41,9 @@ while no_vole:
     if check.lower() in ['y', 'yes']:
         no_vole = False
 
+day = input('Which autoshaping training day is this? \n')
+day = int(day)
+
 push = input('should I push the results folder to email after this session? (y/n) \n')
 if push.lower() in 'y':
     print("ok, your results will be emailed to you after this session.")
@@ -343,7 +346,8 @@ for x in range(8):
     t.start()
     print("started %i"%x )
 
-
+####note that we will add in time after the press, increasing by day up to 4s
+delay = [0, 0, 1, 2, 3]
 ### master looper ###
 for i in range(loops):
     round_start = time.time()
@@ -377,6 +381,7 @@ for i in range(loops):
             lever_ID = lever_press_queue.get()
             print('the %s lever was pressed! woweeeee'%lever_ID)
             timestamp_queue.put('a lever was pressed! woweeeee, %f'%(time.time()-start_time))
+            time.sleep(delay[day-1])
             do_stuff_queue.put(('pellet tone',))
             do_stuff_queue.put(('dispense pellet',))
 
