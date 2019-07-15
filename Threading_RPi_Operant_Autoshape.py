@@ -357,7 +357,7 @@ for x in range(8):
     t.start()
     print("started %i"%x )
 
-####note that we will add in time after the press, increasing by day up to 4s
+####note that we will add in time after the press, increasing by day up to 3s
 delay = [0, 0, 1, 2, 3]
 ### master looper ###
 for i in range(loops):
@@ -369,7 +369,6 @@ for i in range(loops):
 
     #wait till tone is done
     do_stuff_queue.join()
-
 
     do_stuff_queue.put(('extend lever',
                         ('food',lever_angles['food'][0],lever_angles['food'][1])))
@@ -443,7 +442,7 @@ with open(path, 'a') as file:
     writer = csv.writer(file, delimiter = ',')
     while not timestamp_queue.empty():
         line = timestamp_queue.get().split(',')
-        
+
         writer.writerow(line)
 
 print("all Done")
