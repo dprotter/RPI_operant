@@ -12,7 +12,7 @@ import email_push
 import datetime
 from operant_cage_settings import pins, servo_dict, continuous_servo_speeds, lever_angles
 
-round_time = 70
+round_time = 120
 pellet_tone_time = 2 #how long the pellet tone plays
 timeII = 45 #time after levers out before pellet
 timeIV = 0 #time after pellet delivered before levers retracted
@@ -41,6 +41,9 @@ while no_vole:
     check = input('vole# is %s ? (y/n) \n'%vole)
     if check.lower() in ['y', 'yes']:
         no_vole = False
+
+day = input('Which door-shaping training day is this? \n')
+day = int(day)
 
 push = input('should I push the results folder to email after this session? (y/n) \n')
 if push.lower() in 'y':
@@ -409,6 +412,11 @@ for x in range(9):
     print("started %i"%x )
 
 do_stuff_queue.put(('door override',))
+
+
+####note that we will add in time after the press, increasing by day up to 4s
+delay = [0, 0, 1, 2, 3]
+
 ### master looper ###
 for i in range(loops):
     round_start = time.time()
@@ -442,7 +450,7 @@ for i in range(loops):
             lever_ID = lever_press_queue.get()
             print('the %s lever was pressed! woweeeee'%lever_ID)
             timestamp_queue.put('a lever was pressed! woweeeee, %f'%(time.time()-start_time))
-
+            time.sleep(delay[day-1])
             do_stuff_queue.put(('open door',))
 
 
