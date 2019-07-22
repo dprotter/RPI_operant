@@ -40,6 +40,9 @@ while no_vole:
     if check.lower() in ['y', 'yes']:
         no_vole = False
 
+day = input('Which magazine training day is this? \n')
+day = int(day)
+
 push = input('should I push the results folder to email after this session? (y/n) \n')
 if push.lower() in 'y':
     print("ok, your results will be emailed to you after this session.")
@@ -60,8 +63,8 @@ print('Path is: ')
 print(path)
 with open(path, 'w') as file:
     writer = csv.writer(file, delimiter = ',')
-    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'experiment: Magazine'])
-    writer.writerow(['Event', 'Time'])
+    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'experiment: Magazine', 'Day: %i'%day])
+    writer.writerow(['Round, Event', 'Time'])
 
 servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
 servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
@@ -110,6 +113,9 @@ start_time = time.time()
 global pellet_state
 pellet_state = False
 
+global round
+round = 0
+
 def run_job(job, q, args = None):
     print('job: ' + str(job) + '    args: ' +str(args))
 
@@ -134,6 +140,7 @@ def monitor_lever(ds_queue, args):
     global monitor
     global start_time
     global interrupt
+    global round
 
     monitor = True
     lever_q, lever_ID = args
@@ -151,7 +158,7 @@ def monitor_lever(ds_queue, args):
                 #send the lever_ID to the lever_q to trigger a  do_stuff.put in
                 #the main thread/loop
                 lever_q.put(lever_ID)
-                timestamp_queue.put('%s lever pressed with interrupt, %f'%(lever_ID, time.time()-start_time))
+                timestamp_queue.put('%i, %s lever pressed productive, %f'%(round, lever_ID, time.time()-start_time))
                 while GPIO.input(pins["lever_%s"%lever_ID]):
                     'hanging till lever not pressed'
                 lever = 0
@@ -159,7 +166,7 @@ def monitor_lever(ds_queue, args):
                 #we can still record from the lever until monitoring is turned
                 #off. note that this wont place anything in the lever_press queue,
                 #as that is just to tell the main thread the vole did something
-                timestamp_queue.put('%s lever pressed, %f'%(time.time()-start_time))
+                timestamp_queue.put('%i, %s lever pressed, %f'%(round, lever_ID, time.time()-start_time))
                 while GPIO.input(pins["lever_%s"%lever_ID]):
                     'hanging till lever not pressed'
                 lever = 0
@@ -170,17 +177,21 @@ def monitor_lever(ds_queue, args):
 def extend_lever(q, args):
     global start_time
     global servo_dict
+    global round
+
     lever_ID, retract, extend = args
     print('extending lever %s'%lever_ID)
     print('LEDs on')
     servo_dict[lever_ID].angle = extend
     GPIO.output(pins['led_%s'%lever_ID], 1)
-    timestamp_queue.put('Levers out, %f'%(time.time()-start_time))
+    timestamp_queue.put('%i, Levers out, %f'%(round, time.time()-start_time))
     q.task_done()
 
 def retract_lever(q, args):
     global start_time
     global servo_dict
+    global round
+
     lever_ID, retract, extend = args
     while GPIO.input(pins["lever_%s"%lever_ID]):
         'hanging till lever not pressed'
@@ -189,18 +200,20 @@ def retract_lever(q, args):
     GPIO.output(pins['led_%s'%lever_ID], 0)
     servo_dict[lever_ID].angle = retract
     print('retracting levers')
-    timestamp_queue.put('Levers retracted, %f'%(time.time()-start_time))
+    timestamp_queue.put('%i, Levers retracted, %f'%(round, time.time()-start_time))
     q.task_done()
 
 def pellet_tone(q):
     global start_time
+    global round
+
     print('starting pellet tone')
     GPIO.output(pins['pellet_tone'], 1)
-    timestamp_queue.put('pellet tone start, %f'%(time.time()-start_time))
+    timestamp_queue.put('%i, pellet tone start, %f'%(round, time.time()-start_time))
     time.sleep(2)
     GPIO.output(pins['pellet_tone'], 0)
     print('pellet tone complete')
-    timestamp_queue.put('pellet tone complete, %f'%(time.time()-start_time))
+    timestamp_queue.put('%i, pellet tone complete, %f'%(round, time.time()-start_time))
     q.task_done()
 
 
@@ -209,12 +222,13 @@ def dispence_pellet(q):
     q.task_done()
     timeout = time.time()
     global pellet_state
+    global round
 
     read = 0
 
     #only dispense if there is no pellet, otherwise skip
     if not pellet_state:
-        print('starting pellet dispensing %f'%(time.time()-start_time))
+        print('%i, starting pellet dispensing %f'%(round, time.time()-start_time))
 
         #we're just gonna turn the servo on and keep monitoring. probably
         #want this to be a little slow
@@ -232,7 +246,7 @@ def dispence_pellet(q):
 
             if read > 2:
                 servo_dict['dispense_pellet'].throttle = stop
-                timestamp_queue.put('Pellet dispensed, %f'%(time.time()-start_time))
+                timestamp_queue.put('%i, Pellet dispensed, %f'%(round, time.time()-start_time))
                 print('Pellet dispensed, %f'%(time.time()-start_time))
 
                 #now there is a pellet!
@@ -247,7 +261,7 @@ def dispence_pellet(q):
                 #that we check pretty quick if there's a pellet
                 time.sleep(0.025)
         servo_dict['dispense_pellet'].throttle = stop
-        timestamp_queue.put('Pellet dispense failure, %f'%(time.time()-start_time))
+        timestamp_queue.put('%i, Pellet dispense failure, %f'%(round, time.time()-start_time))
         return ''
     else:
         print("skipping pellet dispense due to pellet not retrieved")
@@ -257,6 +271,7 @@ def dispence_pellet(q):
 def read_pellet(q):
     global start_time
     global pellet_state
+    global round
 
     disp_start = time.time()
     q.task_done()
@@ -277,7 +292,7 @@ def read_pellet(q):
 
         if read_retr > 5:
             print('Pellet taken! %f'%(time.time()-start_time))
-            timestamp_queue.put('Pellet retrieved, %f'%(time.time()-start_time))
+            timestamp_queue.put('%i, Pellet retrieved, %f'%(round, time.time()-start_time))
 
             #no pellet in trough
             pellet_state = False
@@ -298,7 +313,7 @@ def experiment_start_tone(q):
     global start_time
     print('starting experiment tone')
     GPIO.output(pins['start_tone'], 1)
-    timestamp_queue.put('experiment start tone start, %f'%(time.time()-start_time))
+    timestamp_queue.put('%i, experiment start tone start, %f'%(round, time.time()-start_time))
 
     for i in range(10):
         time.sleep(0.05)
@@ -306,7 +321,7 @@ def experiment_start_tone(q):
         time.sleep(0.1)
         GPIO.output(pins['start_tone'], 0)
     print('experiment tone complete')
-    timestamp_queue.put('experiment start tone start complete, %f'%(time.time()-start_time))
+    timestamp_queue.put('%i, experiment start tone start complete, %f'%(round, time.time()-start_time))
     q.task_done()
 
 
@@ -334,8 +349,9 @@ for x in range(8):
 ### master looper ###
 for i in range(loops):
     round_start = time.time()
+    round = i
     print("#-#-#-#-#-# new round #%i!!!-#-#-#-#-#"%i)
-    timestamp_queue.put('Starting new round, %f'%(time.time()-start_time))
+    timestamp_queue.put(' Starting new round, %f'%(round, time.time()-start_time))
     do_stuff_queue.put(('start tone',))
 
     #wait till tone is done
@@ -362,7 +378,7 @@ for i in range(loops):
             interrupt = True
             lever_ID = lever_press_queue.get()
             print('the %s lever was pressed! woweeeee'%lever_ID)
-            timestamp_queue.put('a lever was pressed! woweeeee, %f'%(time.time()-start_time))
+            timestamp_queue.put('%i, a lever was pressed! woweeeee, %f'%(round, time.time()-start_time))
             do_stuff_queue.put(('pellet tone',))
             do_stuff_queue.put(('dispence pellet',))
             do_stuff_queue.join()
@@ -371,7 +387,7 @@ for i in range(loops):
     #waited the interval for timeII, nothing happened
     if not interrupt:
         print('the vole is dumb and didnt press a lever')
-        timestamp_queue.put('no lever press, %f'%(time.time()-start_time))
+        timestamp_queue.put('%i, no lever press, %f'%(round, time.time()-start_time))
         do_stuff_queue.put(('pellet tone',))
         do_stuff_queue.put(('dispence pellet',))
         time.sleep(0.05)
@@ -407,7 +423,6 @@ with open(path, 'a') as file:
     writer = csv.writer(file, delimiter = ',')
     while not timestamp_queue.empty():
         line = timestamp_queue.get().split(',')
-        print('writing ###### %s'%line)
         writer.writerow(line)
 
 if pellet_state:

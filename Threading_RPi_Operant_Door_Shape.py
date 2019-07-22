@@ -65,7 +65,7 @@ print('Path is: ')
 print(path)
 with open(path, 'w') as file:
     writer = csv.writer(file, delimiter = ',')
-    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Door Shaping'])
+    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Door Shaping', 'Day: %i'%day])
     writer.writerow(['Event', 'Time'])
 
 
@@ -429,7 +429,7 @@ for x in range(9):
 do_stuff_queue.put(('door override',))
 
 
-####note that we will add in time after the press, increasing by day up to 4s
+####note that we will add in time after the press, increasing by day up to 3s
 delay = [0, 0, 1, 2, 3]
 
 ### master looper ###

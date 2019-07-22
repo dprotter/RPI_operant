@@ -456,6 +456,8 @@ for i in range(loops):
             print('the %s lever was pressed! woweeeee'%lever_ID)
             timestamp_queue.put('%i, a lever was pressed! woweeeee, %f'%(round, time.time()-start_time))
             time.sleep(delay[day-1])
+
+            #what lever was pressed? if social, open door. else it was the food lever
             if lever_ID == 'social':
                 do_stuff_queue.put(('open door',))
 
@@ -499,7 +501,6 @@ for i in range(loops):
         while time.time() - round_start < round_time:
             if not timestamp_queue.empty():
                 line = timestamp_queue.get().split(',')
-                print('writing ###### %s'%line)
                 csv_writer.writerow(line)
             time.sleep(0.01)
 

@@ -13,7 +13,6 @@ import datetime
 from operant_cage_settings import pins, servo_dict, continuous_servo_speeds, lever_angles
 
 round_time = 120
-pellet_tone_time = 2 #how long the pellet tone plays
 timeII = 30 #time after levers out before pellet
 timeIV = 0 #time after pellet delivered before levers retracted
 loops = 15
@@ -64,7 +63,7 @@ print('Path is: ')
 print(path)
 with open(path, 'w') as file:
     writer = csv.writer(file, delimiter = ',')
-    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Autoshape'])
+    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Autoshape', 'Day: %i'%day])
     writer.writerow(['Round, Event', 'Time'])
 
 
@@ -85,6 +84,7 @@ servo_dict['social'].angle = lever_angles['social'][0]
 #setup our pins. Lever pins are input, all else are output
 GPIO.setmode(GPIO.BCM)
 
+global pwm_tone
 
 for k in pins.keys():
     print(k)
@@ -98,6 +98,8 @@ for k in pins.keys():
         GPIO.setup(pins[k], GPIO.OUT)
         GPIO.output(pins[k], 0)
         print(k + ": OUT")
+        if 'tone' in k and 'pellet' in k:
+            pwm_tone = GPIO.pwm(pins[k], 600)
     else:
         GPIO.setup(pins[k], GPIO.OUT)
         print(k + ": OUT")
@@ -126,6 +128,7 @@ pellet_state = False
 
 global round
 round = 0
+
 
 def run_job(job, q, args = None):
     print('job: ' + str(job) + '    args: ' +str(args))
@@ -215,15 +218,36 @@ def retract_lever(q, args):
 def pellet_tone(q):
     global start_time
     global round
+    global pwm_tone
+
     print('starting pellet tone')
-    GPIO.output(pins['pellet_tone'], 1)
+    pwm.ChangeFrequency(3000)
+    pwm_tone.start(50)
     timestamp_queue.put('%i, pellet tone start, %f'%(tround, ime.time()-start_time))
     time.sleep(2)
-    GPIO.output(pins['pellet_tone'], 0)
+    pwm.stop()
     print('pellet tone complete')
     timestamp_queue.put('%i, pellet tone complete, %f'%(round, time.time()-start_time))
     q.task_done()
 
+def experiment_start_tone(q):
+    global start_time
+    global round
+    global pwm_tone
+
+    pwm_tone.ChangeFrequency(1200)
+    print('starting experiment tone')
+    GPIO.output(pins['start_tone'], 1)
+    timestamp_queue.put('%i, experiment start tone start, %f'%(round, time.time()-start_time))
+
+    for i in range(10):
+        time.sleep(0.05)
+        pwm_tone.start(50)
+        time.sleep(0.1)
+        pwm_tone.stop()
+    print('experiment tone complete')
+    timestamp_queue.put('%i, experiment start tone start complete, %f'%(round, time.time()-start_time))
+    q.task_done()
 
 def dispense_pellet(q):
     global start_time
@@ -319,22 +343,7 @@ def read_pellet(q):
 
 
 
-def experiment_start_tone(q):
-    global start_time
-    global round
 
-    print('starting experiment tone')
-    GPIO.output(pins['start_tone'], 1)
-    timestamp_queue.put('%i, experiment start tone start, %f'%(round, time.time()-start_time))
-
-    for i in range(10):
-        time.sleep(0.05)
-        GPIO.output(pins['start_tone'], 1)
-        time.sleep(0.1)
-        GPIO.output(pins['start_tone'], 0)
-    print('experiment tone complete')
-    timestamp_queue.put('%i, experiment start tone start complete, %f'%(round, time.time()-start_time))
-    q.task_done()
 
 
 def thread_distributor():
