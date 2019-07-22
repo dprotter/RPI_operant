@@ -6,7 +6,7 @@ k = 'pellet_tone'
 
 GPIO.setup(pins[k], GPIO.OUT)
 GPIO.output(pins[k], 0)
-pwm_tone = GPIO.pwm(pins[k], 600)
+pwm_tone = GPIO.PWM(pins[k], 600)
 
 print('pellet tone')
 pwm_tone.ChangeFrequency(3000)
