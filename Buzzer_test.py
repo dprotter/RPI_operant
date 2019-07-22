@@ -4,7 +4,7 @@ import time
 import os
 import RPi.GPIO as GPIO
 os.system('sudo pigpiod')
-GPIO.set_mode(GPIO.BCM)
+GPIO.setmode(GPIO.BCM)
 pi = pigpio.pi()
 
 
