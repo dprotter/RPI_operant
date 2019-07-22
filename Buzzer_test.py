@@ -23,7 +23,7 @@ pi.set_PWM_frequency(pins['pellet_tone'], 4000)
 
 
 time.sleep(2)
-pi.hardware_PWM(pins['pellet_tone'], 4000, 0)
+pi.set_PWM_dutycycle(pins['pellet_tone'], 0)
 
 
 print('all done')
