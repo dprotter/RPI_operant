@@ -1,29 +1,31 @@
-import RPIO as GPIO
+import pigpio
 from operant_cage_settings import pins, servo_dict, continuous_servo_speeds, lever_angles
 import time
+import os
 
-k = 'pellet_tone'
+os.system('sudo pigpiod')
 
-GPIO.setup(pins[k], GPIO.OUT)
-GPIO.output(pins[k], 0)
-pwm_tone = GPIO.PWM(pins[k], 600)
+GPIO = pigpio.pi()
 
-print('pellet tone')
-pwm_tone.ChangeFrequency(3000)
-pwm_tone.start(50)
+
+
+GPIO.set_mode(12, GPIO.OUT)
+
+
+
+print('software pwm')
+pi.set_PWM_dutycycle(12, 255/2)
+pi.set_PWM_frequency(12, 3000)
+
 time.sleep(2)
-pwm_tone.stop()
+pi.hardware_PWM(12, 3000, 0)
 time.sleep(1)
 
 print('experiment start tone')
 
-pwm_tone.ChangeFrequency(1200)
+pi.hardware_PWM(12, 3000, 1e6*0.5)
 
-for i in range(10):
-    time.sleep(0.05)
-    pwm_tone.start(50)
-    time.sleep(0.1)
-    pwm_tone.stop()
-
+time.sleep(1)
+pi.hardware_PWM(12, 3000, 0)
 print('all done')
 GPIO.cleanup()
