@@ -5,11 +5,9 @@ import os
 
 os.system('sudo pigpiod')
 
-GPIO = pigpio.pi()
+pi = pigpio.pi()
 
 
-
-GPIO.set_mode(12, GPIO.OUT)
 
 
 
