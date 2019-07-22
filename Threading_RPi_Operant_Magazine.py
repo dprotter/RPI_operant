@@ -6,21 +6,26 @@ import random
 import os
 import csv
 import RPIO as GPIO
-import pigpio
 from adafruit_servokit import ServoKit
 global kit
 import email_push
 import datetime
 from operant_cage_settings import pins, servo_dict, continuous_servo_speeds, lever_angles
+import pigpio
+#activates the pigpio daemon that runs PWM, unless its already running
+if os.system('sudo lsof -i TCP:8888'):
+    os.system('sudo pigpio')
 
-#activates the pigpio daemon that runs PWM
-os.system('sudo pigpio')
+
 
 round_time = 120
 pellet_tone_time = 2 #how long the pellet tone plays
 timeII = 2 #time after levers out before pellet
 timeIV = 2 #time after pellet delivered before levers retracted
 loops = 15
+
+
+
 
 
 """the following sets up the output file and gets some user input. """
@@ -233,7 +238,7 @@ def experiment_start_tone(q):
     global start_time
     print('starting experiment tone')
     pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
-    pi.set_PWM_frequency(pins['pellet_tone'], 4000)
+    pi.set_PWM_frequency(pins['pellet_tone'], 3000)
     timestamp_queue.put('%i, experiment start tone start, %f'%(round, time.time()-start_time))
     time.sleep(2)
     pi.set_PWM_dutycycle(pins['pellet_tone'], 0)

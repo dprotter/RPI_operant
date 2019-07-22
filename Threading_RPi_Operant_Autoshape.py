@@ -241,7 +241,7 @@ def experiment_start_tone(q):
     global start_time
     print('starting experiment tone')
     pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
-    pi.set_PWM_frequency(pins['pellet_tone'], 4000)
+    pi.set_PWM_frequency(pins['pellet_tone'], 3000)
     timestamp_queue.put('%i, experiment start tone start, %f'%(round, time.time()-start_time))
     time.sleep(2)
     pi.set_PWM_dutycycle(pins['pellet_tone'], 0)
