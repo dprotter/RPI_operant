@@ -1,4 +1,4 @@
-import RPi.GPIO as GPIO
+import RPIO as GPIO
 from operant_cage_settings import pins, servo_dict, continuous_servo_speeds, lever_angles
 import time
 

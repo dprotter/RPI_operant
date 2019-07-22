@@ -5,7 +5,7 @@ import time
 import random
 import os
 import csv
-import RPi.GPIO as GPIO
+import RPIO as GPIO
 from adafruit_servokit import ServoKit
 global kit
 import email_push
@@ -221,7 +221,7 @@ def pellet_tone(q):
     global pwm_tone
 
     print('starting pellet tone')
-    pwm.ChangeFrequency(3000)
+    pwm_tone.ChangeFrequency(3000)
     pwm_tone.start(50)
     timestamp_queue.put('%i, pellet tone start, %f'%(tround, ime.time()-start_time))
     time.sleep(2)
@@ -237,7 +237,7 @@ def experiment_start_tone(q):
 
     pwm_tone.ChangeFrequency(1200)
     print('starting experiment tone')
-    GPIO.output(pins['start_tone'], 1)
+
     timestamp_queue.put('%i, experiment start tone start, %f'%(round, time.time()-start_time))
 
     for i in range(10):

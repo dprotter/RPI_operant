@@ -5,7 +5,7 @@ import time
 import random
 import os
 import csv
-import RPi.GPIO as GPIO
+import RPIO as GPIO
 from adafruit_servokit import ServoKit
 global kit
 import email_push
@@ -65,7 +65,7 @@ print('Path is: ')
 print(path)
 with open(path, 'w') as file:
     writer = csv.writer(file, delimiter = ',')
-    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Door Shaping'])
+    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Door Shaping', 'Day: %i'%day])
     writer.writerow(['Event', 'Time'])
 
 
