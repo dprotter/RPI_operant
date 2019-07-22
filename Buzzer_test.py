@@ -12,14 +12,17 @@ pi = pigpio.pi()
 
 print('2k')
 pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
-pi.set_PWM_frequency(pins['pellet_tone'], 2000)
+pi.set_PWM_frequency(pins['pellet_tone'], 1000)
 
+time.sleep(2)
 
+pi.set_PWM_dutycycle(pins['pellet_tone'], 0)
 
+time.sleep(1)
 print('4k')
 
 pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
-pi.set_PWM_frequency(pins['pellet_tone'], 4000)
+pi.set_PWM_frequency(pins['pellet_tone'], 3000)
 
 
 time.sleep(2)
