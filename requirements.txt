@@ -2,3 +2,4 @@ numpy
 RPi.GPIO
 adafruit-circuitpython-servokit
 netifaces
+pigpio

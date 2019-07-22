@@ -6,11 +6,15 @@ import random
 import os
 import csv
 import RPIO as GPIO
+import pigpio
 from adafruit_servokit import ServoKit
 global kit
 import email_push
 import datetime
 from operant_cage_settings import pins, servo_dict, continuous_servo_speeds, lever_angles
+
+#activates the pigpio daemon that runs PWM
+os.system('sudo pigpio')
 
 round_time = 120
 pellet_tone_time = 2 #how long the pellet tone plays
@@ -74,6 +78,8 @@ servo_dict['social'].angle = lever_angles['social'][0]
 #setup our pins. Lever pins are input, all else are output
 GPIO.setmode(GPIO.BCM)
 
+#this is purely for PWM buzzers, where the pigpio library works much better
+pi = pigpio.pi()
 
 for k in pins.keys():
     print(k)
@@ -83,10 +89,12 @@ for k in pins.keys():
     elif 'read' in k:
         print(k + ": IN")
         GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    elif 'led' in k or 'dispence' in k or 'tone' in k:
+    elif 'led' in k or 'dispence' in k :
         GPIO.setup(pins[k], GPIO.OUT)
         GPIO.output(pins[k], 0)
         print(k + ": OUT")
+    elif 'pellet_tone' in k:
+
     else:
         GPIO.setup(pins[k], GPIO.OUT)
         print(k + ": OUT")
@@ -98,21 +106,23 @@ timestamp_queue = queue.Queue()
 lever_press_queue = queue.Queue()
 
 
-
-
-#depricated for now, will try with a dedicated queue
+#in case we need to interrupt after a lever press.
 global interrupt
 interrupt = False
 
+#whether or not to monitor levers.
 global monitor
 monitor = False
 
+#refer back to this start time for timestamps of events
 global start_time
 start_time = time.time()
 
+#is there a pellet currently in the trough?
 global pellet_state
 pellet_state = False
 
+#keep track of what round we are in. use for timestamps.
 global round
 round = 0
 
@@ -208,14 +218,28 @@ def pellet_tone(q):
     global round
 
     print('starting pellet tone')
-    GPIO.output(pins['pellet_tone'], 1)
+    pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
+    pi.set_PWM_frequency(pins['pellet_tone'], 2000)
+
     timestamp_queue.put('%i, pellet tone start, %f'%(round, time.time()-start_time))
     time.sleep(2)
-    GPIO.output(pins['pellet_tone'], 0)
+    pi.set_PWM_dutycycle(pins['pellet_tone'], 0)
+
     print('pellet tone complete')
     timestamp_queue.put('%i, pellet tone complete, %f'%(round, time.time()-start_time))
     q.task_done()
 
+def experiment_start_tone(q):
+    global start_time
+    print('starting experiment tone')
+    pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
+    pi.set_PWM_frequency(pins['pellet_tone'], 4000)
+    timestamp_queue.put('%i, experiment start tone start, %f'%(round, time.time()-start_time))
+    time.sleep(2)
+    pi.set_PWM_dutycycle(pins['pellet_tone'], 0)
+    print('experiment tone complete')
+    timestamp_queue.put('%i, experiment start tone start complete, %f'%(round, time.time()-start_time))
+    q.task_done()
 
 def dispence_pellet(q):
     global start_time
@@ -309,20 +333,7 @@ def read_pellet(q):
     return ''
 
 
-def experiment_start_tone(q):
-    global start_time
-    print('starting experiment tone')
-    GPIO.output(pins['start_tone'], 1)
-    timestamp_queue.put('%i, experiment start tone start, %f'%(round, time.time()-start_time))
 
-    for i in range(10):
-        time.sleep(0.05)
-        GPIO.output(pins['start_tone'], 1)
-        time.sleep(0.1)
-        GPIO.output(pins['start_tone'], 0)
-    print('experiment tone complete')
-    timestamp_queue.put('%i, experiment start tone start complete, %f'%(round, time.time()-start_time))
-    q.task_done()
 
 
 def thread_distributor():
