@@ -287,7 +287,7 @@ def dispence_pellet(q):
                 #wait to give other threads time to do stuff, but fast enough
                 #that we check pretty quick if there's a pellet
                 time.sleep(0.025)
-        servo_dict['dispense_pellet'].throttle = stop
+        servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
         timestamp_queue.put('%i, Pellet dispense failure, %f'%(round, time.time()-start_time))
         return ''
     else:
