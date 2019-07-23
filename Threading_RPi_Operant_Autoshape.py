@@ -104,8 +104,6 @@ for k in pins.keys():
         GPIO.setup(pins[k], GPIO.OUT)
         GPIO.output(pins[k], 0)
         print(k + ": OUT")
-        if 'tone' in k and 'pellet' in k:
-            pwm_tone = GPIO.pwm(pins[k], 600)
     else:
         GPIO.setup(pins[k], GPIO.OUT)
         print(k + ": OUT")
