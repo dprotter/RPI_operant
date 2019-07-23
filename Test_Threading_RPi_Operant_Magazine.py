@@ -16,6 +16,11 @@ import pigpio
 if os.system('sudo lsof -i TCP:8888'):
     os.system('sudo pigpio')
 
+round_time = 15
+pellet_tone_time = 2 #how long the pellet tone plays
+timeII = 2 #time after levers out before pellet
+timeIV = 2 #time after pellet delivered before levers retracted
+loops = 4
 
 """the following sets up the output file and gets some user input. """
 
