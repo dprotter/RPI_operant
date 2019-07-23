@@ -98,8 +98,6 @@ for k in pins.keys():
         GPIO.setup(pins[k], GPIO.OUT)
         GPIO.output(pins[k], 0)
         print(k + ": OUT")
-    elif 'pellet_tone' in k:
-
     else:
         GPIO.setup(pins[k], GPIO.OUT)
         print(k + ": OUT")
