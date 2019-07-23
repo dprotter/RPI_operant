@@ -49,7 +49,7 @@ while no_vole:
     if check.lower() in ['y', 'yes']:
         no_vole = False
 
-day = input('Which magazine training day is this? \n')
+day = input('Which magazine training day is this? (starts at day 1)\n')
 day = int(day)
 
 push = input('should I push the results folder to email after this session? (y/n) \n')
