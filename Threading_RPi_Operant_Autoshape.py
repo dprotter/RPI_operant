@@ -5,16 +5,16 @@ import time
 import random
 import os
 import csv
-import RPIO as GPIO
+import RPi.GPIO as GPIO
 from adafruit_servokit import ServoKit
 global kit
 import email_push
 import datetime
 from operant_cage_settings import pins, servo_dict, continuous_servo_speeds, lever_angles
 import pigpio
-#activates the pigpio daemon that runs PWM
-os.system('sudo pigpio')
-
+#activates the pigpio daemon that runs PWM, unless its already running
+if os.system('sudo lsof -i TCP:8888'):
+    os.system('sudo pigpio')
 
 
 

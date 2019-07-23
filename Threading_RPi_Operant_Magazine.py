@@ -5,7 +5,7 @@ import time
 import random
 import os
 import csv
-import RPIO as GPIO
+import RPi.GPIO as GPIO
 from adafruit_servokit import ServoKit
 global kit
 import email_push
