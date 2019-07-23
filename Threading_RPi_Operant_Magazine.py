@@ -365,7 +365,7 @@ for i in range(loops):
     round_start = time.time()
     round = i
     print("#-#-#-#-#-# new round #%i!!!-#-#-#-#-#"%i)
-    timestamp_queue.put(' Starting new round, %f'%(round, time.time()-start_time))
+    timestamp_queue.put('%i, Starting new round, %f'%(round, time.time()-start_time))
     do_stuff_queue.put(('start tone',))
 
     #wait till tone is done
@@ -440,7 +440,7 @@ with open(path, 'a') as file:
         writer.writerow(line)
 
 if pellet_state:
-    timestamp_queue.put('final pellet not retrieved, %f'%(time.time()-start_time))
+    timestamp_queue.put('%i, final pellet not retrieved, %f'%(round, time.time()-start_time))
 print("all Done")
 #reset levers to retracted
 servo_dict['food'].angle = lever_angles['food'][0]
