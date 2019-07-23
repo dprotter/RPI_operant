@@ -18,11 +18,11 @@ if os.system('sudo lsof -i TCP:8888'):
 
 
 
-round_time = 15
+round_time = 120
 pellet_tone_time = 2 #how long the pellet tone plays
 timeII = 2 #time after levers out before pellet
 timeIV = 2 #time after pellet delivered before levers retracted
-loops = 4
+loops = 15
 
 
 
@@ -37,22 +37,23 @@ save_dir = '/home/pi/Operant_Output/'
 
 no_user = True
 while no_user:
-    user = 'dave'
-    check = 'y'
+    user = input('who is doing this experiment? \n')
+    check = input('so send the data to %s ? (y/n) \n'%user)
     if check.lower() in ['y', 'yes']:
         no_user = False
 
 no_vole = True
 while no_vole:
-    vole = '000'
-    check = 'y'
+    vole = input('Vole number? \n')
+    check = input('vole# is %s ? (y/n) \n'%vole)
     if check.lower() in ['y', 'yes']:
         no_vole = False
 
-day = 1
+day = input('Which magazine training day is this? \n')
 day = int(day)
 
-push = 'y'
+push = input('should I push the results folder to email after this session? (y/n) \n')
+
 if push.lower() in 'y':
     print("ok, your results will be emailed to you after this session.")
 else:
