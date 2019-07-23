@@ -286,7 +286,7 @@ def dispence_pellet(q):
         return ''
     else:
         print("skipping pellet dispense due to pellet not retrieved")
-        timestamp_queue.put('skip pellet dispense, %f'%(time.time()-start_time))
+        timestamp_queue.put('%i, skip pellet dispense, %f'%(round, time.time()-start_time))
         return ''
 
 def read_pellet(q):
