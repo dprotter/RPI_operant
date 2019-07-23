@@ -440,7 +440,7 @@ with open(path, 'a') as file:
         writer.writerow(line)
 
 if pellet_state:
-timestamp_queue.put('final pellet not retrieved, %f'%(time.time()-start_time))
+    timestamp_queue.put('final pellet not retrieved, %f'%(time.time()-start_time))
 print("all Done")
 #reset levers to retracted
 servo_dict['food'].angle = lever_angles['food'][0]
