@@ -272,7 +272,7 @@ def dispence_pellet(q):
                 read +=1
 
             if read > 2:
-                servo_dict['dispense_pellet'].throttle = stop
+                servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
                 timestamp_queue.put('%i, Pellet dispensed, %f'%(round, time.time()-start_time))
                 print('Pellet dispensed, %f'%(time.time()-start_time))
 
