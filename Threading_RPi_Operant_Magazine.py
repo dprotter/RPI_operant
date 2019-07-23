@@ -18,11 +18,11 @@ if os.system('sudo lsof -i TCP:8888'):
 
 
 
-round_time = 120
+round_time = 15
 pellet_tone_time = 2 #how long the pellet tone plays
 timeII = 2 #time after levers out before pellet
 timeIV = 2 #time after pellet delivered before levers retracted
-loops = 15
+loops = 4
 
 
 
@@ -37,22 +37,22 @@ save_dir = '/home/pi/Operant_Output/'
 
 no_user = True
 while no_user:
-    user = input('who is doing this experiment? \n')
-    check = input('so send the data to %s ? (y/n) \n'%user)
+    user = 'dave'
+    check = 'y'
     if check.lower() in ['y', 'yes']:
         no_user = False
 
 no_vole = True
 while no_vole:
-    vole = input('Vole number? \n')
-    check = input('vole# is %s ? (y/n) \n'%vole)
+    vole = '000'
+    check = 'y'
     if check.lower() in ['y', 'yes']:
         no_vole = False
 
-day = input('Which magazine training day is this? \n')
+day = 1
 day = int(day)
 
-push = input('should I push the results folder to email after this session? (y/n) \n')
+push = 'y'
 if push.lower() in 'y':
     print("ok, your results will be emailed to you after this session.")
 else:
@@ -308,7 +308,7 @@ def read_pellet(q):
 
     #dispensed pellet there, IE full trough
     read_disp = 0
-    timeout = 20000
+    timeout = 2000
 
     while time.time() - disp_start < timeout:
         #note this is opposite of the dispense function
@@ -332,7 +332,7 @@ def read_pellet(q):
         time.sleep(0.05)
 
 
-
+    timestamp_queue.put('%i, pellet retreival timeout, %f'%(round, time.time()-start_time))
     return ''
 
 
