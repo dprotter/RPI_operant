@@ -48,7 +48,7 @@ def email_push(user):
     # setup the parameters of the message
     msg['From']=MY_ADDRESS
     msg['To']=users[user]
-    msg['Subject']= 'vole operant data!'
+    msg['Subject']= 'vole operant data! from %s'%socket.gethostname()
 
 
     for filename in os.listdir(os.getcwd()):
