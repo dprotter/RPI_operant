@@ -31,7 +31,7 @@ def get_contacts(filename):
 
 def main():
     #names, emails = get_contacts('mycontacts.txt') # read contacts
-    names = ['Dave']
+    names = ['Dave', 'Maya']
     emails = ['david.protter@Gmail.com', 'mapa2020@colorado.edu']
 
     success = False
