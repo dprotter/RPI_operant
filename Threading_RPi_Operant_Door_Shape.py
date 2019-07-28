@@ -14,7 +14,7 @@ from operant_cage_settings import pins, servo_dict, continuous_servo_speeds, lev
 import pigpio
 #activates the pigpio daemon that runs PWM, unless its already running
 if os.system('sudo lsof -i TCP:8888'):
-    os.system('sudo pigpio')
+    os.system('sudo pigpiod')
 
 
 round_time = 120
