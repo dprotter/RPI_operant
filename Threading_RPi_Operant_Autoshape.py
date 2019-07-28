@@ -301,7 +301,7 @@ def dispense_pellet(q):
 def read_pellet(q):
     global start_time
     global pellet_state
-    global round%i,
+    global round,
 
     disp_start = time.time()
     q.task_done()
