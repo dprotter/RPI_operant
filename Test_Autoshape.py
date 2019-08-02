@@ -40,7 +40,7 @@ vole = '000'
 day = input('Which autoshaping training day is this? (starts at day 1)\n')
 day = int(day)
 
-push = 'y''
+push = 'y'
 
 
 """fname will be of format m_d_y__h_m_vole_#_fresh.csv. fresh will be removed
