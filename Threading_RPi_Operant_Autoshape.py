@@ -21,7 +21,7 @@ if os.system('sudo lsof -i TCP:8888'):
 round_time = 120
 timeII = 30 #time after levers out before pellet
 timeIV = 0 #time after pellet delivered before levers retracted
-loops = 15
+loops = 2
 
 
 
