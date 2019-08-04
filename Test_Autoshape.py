@@ -428,7 +428,7 @@ for i in range(loops):
         while time.time() - round_start < round_time:
             if not timestamp_queue.empty():
                 line = timestamp_queue.get().split(',')
-
+                print('writing ###### %s'%line)
                 csv_writer.writerow(line)
             time.sleep(0.01)
     #reset our global values interrupt and monitor. This will turn off the lever

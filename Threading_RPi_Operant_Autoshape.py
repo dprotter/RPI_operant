@@ -70,7 +70,7 @@ print(path)
 with open(path, 'w') as file:
     writer = csv.writer(file, delimiter = ',')
     writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Autoshape', 'Day: %i'%day])
-    writer.writerow(['Round, Event', 'Time'])
+    writer.writerow(['Round', 'Event', 'Time'])
 
 
 
@@ -89,6 +89,9 @@ servo_dict['social'].angle = lever_angles['social'][0]
 
 #setup our pins. Lever pins are input, all else are output
 GPIO.setmode(GPIO.BCM)
+
+#this is purely for PWM buzzers, where the pigpio library works much better
+pi = pigpio.pi()
 
 global pwm_tone
 
@@ -263,7 +266,7 @@ def dispense_pellet(q):
         #we're just gonna turn the servo on and keep monitoring. probably
         #want this to be a little slow
 
-        servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['fwd']
+        servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['forward']
 
         #set a timeout on dispensing. with this, that will be a bit less than
         #6 attempts to disp, but does give the vole 2 sec in which they could nose
@@ -301,7 +304,7 @@ def dispense_pellet(q):
 def read_pellet(q):
     global start_time
     global pellet_state
-    global round,
+    global round
 
     disp_start = time.time()
     q.task_done()
@@ -399,14 +402,16 @@ for i in range(loops):
             lever_ID = lever_press_queue.get()
             print('the %s lever was pressed! woweeeee'%lever_ID)
             timestamp_queue.put('%i, a lever was pressed! woweeeee, %f'%(round, time.time()-start_time))
-            time.sleep(delay[day-1])
-            do_stuff_queue.put(('pellet tone',))
-            do_stuff_queue.put(('dispense pellet',))
-
             #wait 0.5 seconds for the vole to move before retracting lever
             time.sleep(0.5)
             do_stuff_queue.put(('retract lever',
                                 ('food', lever_angles['food'][0],lever_angles['food'][1])))
+
+            time.sleep(delay[day-1])
+            do_stuff_queue.put(('pellet tone',))
+            do_stuff_queue.put(('dispense pellet',))
+
+
             do_stuff_queue.join()
         time.sleep(0.05)
 
@@ -435,7 +440,7 @@ for i in range(loops):
         while time.time() - round_start < round_time:
             if not timestamp_queue.empty():
                 line = timestamp_queue.get().split(',')
-
+                print('writing ###### %s'%line)
                 csv_writer.writerow(line)
             time.sleep(0.01)
     #reset our global values interrupt and monitor. This will turn off the lever
