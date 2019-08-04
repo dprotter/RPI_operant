@@ -78,6 +78,9 @@ servo_dict['social'].angle = lever_angles['social'][0]
 #setup our pins. Lever pins are input, all else are output
 GPIO.setmode(GPIO.BCM)
 
+#this is purely for PWM buzzers, where the pigpio library works much better
+pi = pigpio.pi()
+
 global pwm_tone
 
 for k in pins.keys():
