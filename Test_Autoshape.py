@@ -254,7 +254,7 @@ def dispense_pellet(q):
         #we're just gonna turn the servo on and keep monitoring. probably
         #want this to be a little slow
 
-        servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['fwd']
+        servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['forward']
 
         #set a timeout on dispensing. with this, that will be a bit less than
         #6 attempts to disp, but does give the vole 2 sec in which they could nose
