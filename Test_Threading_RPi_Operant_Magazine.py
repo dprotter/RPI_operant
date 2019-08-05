@@ -425,7 +425,9 @@ for i in range(loops):
     #loop of the training.
     interrupt = False
     monitor = False
-
+    
+if pellet_state:
+    timestamp_queue.put('%i, final pellet not retrieved, %f'%(round, time.time()-start_time))
 '''append current timestamp queue contents to csv file'''
 with open(path, 'a') as file:
     writer = csv.writer(file, delimiter = ',')
@@ -433,8 +435,7 @@ with open(path, 'a') as file:
         line = timestamp_queue.get().split(',')
         writer.writerow(line)
 
-if pellet_state:
-    timestamp_queue.put('%i, final pellet not retrieved, %f'%(round, time.time()-start_time))
+
 print("all Done")
 #reset levers to retracted
 servo_dict['food'].angle = lever_angles['food'][0]
