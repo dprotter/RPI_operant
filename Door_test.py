@@ -1,10 +1,11 @@
 from adafruit_servokit import ServoKit
 import time
+from operant_cage_settings import servo_dict
 kit = ServoKit(channels = 16)
-ser = kit.continuous_servo[3]
+
 open_throttle = 0.8
 stop = 0.07
-
+ser = servo_dict['door']
 close_throttle = -0.1
 
 open_time = 1.25
