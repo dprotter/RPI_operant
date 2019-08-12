@@ -112,6 +112,8 @@ for k in pins.keys():
         GPIO.setup(pins[k], GPIO.OUT)
         print(k + ": OUT")
 
+#this is purely for PWM buzzers, where the pigpio library works much better
+pi = pigpio.pi()
 
 #our queues for doign stuff and saving stuff
 do_stuff_queue = queue.Queue()
