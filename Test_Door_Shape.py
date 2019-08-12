@@ -539,6 +539,7 @@ for i in range(loops):
         time.sleep(1)
         sys.stdout.flush()
     print('vole should be moved now')
+    time.sleep(time_after_move)
 
 '''append current timestamp queue contents to csv file'''
 with open(path, 'a') as file:
