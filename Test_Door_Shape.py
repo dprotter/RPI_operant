@@ -18,14 +18,14 @@ if os.system('sudo lsof -i TCP:8888'):
     os.system('sudo pigpiod')
 
 
-round_time = 120
+round_time = 40
 door_close_tone_time = 2 #how long the door tone plays
 timeII = 30 #time after levers out before door opens
 timeIV = 0 #time after pellet delivered before levers retracted
-loops = 15
+loops = 5
 
-move_animal_time = 20 #how long to give maya to move the animal (with some wiggle room)
-time_after_move = 15 #how long we want to wait before the next test period. Sometimes
+move_animal_time = 10 #how long to give maya to move the animal (with some wiggle room)
+time_after_move = 3 #how long we want to wait before the next test period. Sometimes
                     #the move animal time may bleed into this a bit
 
 
@@ -58,6 +58,7 @@ day = input('Which door-shaping training day is this? \n')
 day = int(day)
 
 push = 'y'
+if push == 'y':
     print("ok, your results will be emailed to you after this session.")
 else:
     print("Ok, I won't email you.")
@@ -114,6 +115,8 @@ for k in pins.keys():
         GPIO.setup(pins[k], GPIO.OUT)
         print(k + ": OUT")
 
+#this is purely for PWM buzzers, where the pigpio library works much better
+pi = pigpio.pi()
 
 #our queues for doign stuff and saving stuff
 do_stuff_queue = queue.Queue()
