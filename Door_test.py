@@ -9,7 +9,7 @@ close_throttle = -0.1
 
 open_time = 1.25
 close_time = 2.7
-for i in range(20):
+for i in range(10):
     ser.throttle = open_throttle
     time.sleep(open_time)
     ser.throttle = stop
