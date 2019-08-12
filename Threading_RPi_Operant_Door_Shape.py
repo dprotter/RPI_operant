@@ -12,17 +12,21 @@ import email_push
 import datetime
 from operant_cage_settings import pins, servo_dict, continuous_servo_speeds, lever_angles
 import pigpio
+import sys
 #activates the pigpio daemon that runs PWM, unless its already running
 if os.system('sudo lsof -i TCP:8888'):
     os.system('sudo pigpiod')
 
 
 round_time = 120
-pellet_tone_time = 2 #how long the pellet tone plays
-timeII = 45 #time after levers out before pellet
+door_close_tone_time = 2 #how long the door tone plays
+timeII = 30 #time after levers out before door opens
 timeIV = 0 #time after pellet delivered before levers retracted
-loops = 10
+loops = 15
 
+move_animal_time = 20 #how long to give maya to move the animal (with some wiggle room)
+time_after_move = 15 #how long we want to wait before the next test period. Sometimes
+                    #the move animal time may bleed into this a bit
 
 
 
@@ -307,13 +311,19 @@ def experiment_start_tone(q):
 
 def door_close_tone(q):
     global start_time
-    global round
+    print('starting door close tone')
 
+    pi.set_PWM_frequency(pins['pellet_tone'], 3500)
+    for i in range(5):
+        pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
+        time.sleep(0.5)
+        pi.set_PWM_dutycycle(pins['pellet_tone'], 0)
+        time.sleep(0.25)
     timestamp_queue.put('%i, door close tone start, %f'%(round, time.time()-start_time))
-    GPIO.output(pins['door_close_tone'], 1)
-    time.sleep(3)
-    GPIO.output(pins['door_close_tone'], 0)
-    timestamp_queue.put('%i, door close tone complete, %f'%(round, time.time()-start_time))
+    time.sleep(2)
+    pi.set_PWM_dutycycle(pins['pellet_tone'], 0)
+    print('door close tone complete')
+    timestamp_queue.put('%i, experiment start tone start complete, %f'%(round, time.time()-start_time))
     q.task_done()
 
 def dispense_pellet(q):
@@ -494,14 +504,14 @@ for i in range(loops):
     time.sleep(0.05)
 
 
-
-    time.sleep(timeIV)
     print('entering ITI for #-#-# round #%i -#-#-# '%i )
 
     #wait for ITI to pass
     '''a good time to write some stuff to file'''
     with open(path, 'a') as csv_file:
         csv_writer = csv.writer(csv_file)
+
+        #this keeps going through the while loop until ITI finished
         while time.time() - round_start < round_time:
             if not timestamp_queue.empty():
                 line = timestamp_queue.get().split(',')
@@ -517,9 +527,16 @@ for i in range(loops):
 
     #close the door, wait 20s to manually move the vole
     do_stuff_queue.put(('door close tone',))
-    time.sleep(4)
+    time.sleep(1)
     do_stuff_queue.put(('close door',))
-    time.sleep(20)
+    print('time to move that vole over!')
+
+    timestamp_queue.put('%i, start of move animal time, %f'%(round, time.time()-start_time))
+    for i in range(move_animal_time):
+        sys.stdout.write('\r'+str(move_animal_time - i)+' seconds left  ')
+        time.sleep(1)
+        sys.stdout.flush()
+    print('vole should be moved now')
 
 '''append current timestamp queue contents to csv file'''
 with open(path, 'a') as file:
