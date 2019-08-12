@@ -366,7 +366,7 @@ def dispense_pellet(q):
                 do_stuff_queue.put(('read pellet',))
                 return ''
 
-            else:%i,
+            else:
                 #wait to give other threads time to do stuff, but fast enough
                 #that we check pretty quick if there's a pellet
                 time.sleep(0.025)
@@ -537,6 +537,11 @@ for i in range(loops):
         time.sleep(1)
         sys.stdout.flush()
     print('vole should be moved now')
+
+    time.sleep(time_after_move)
+
+
+
 
 '''append current timestamp queue contents to csv file'''
 with open(path, 'a') as file:
