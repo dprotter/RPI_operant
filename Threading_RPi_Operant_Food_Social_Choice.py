@@ -21,9 +21,9 @@ if os.system('sudo lsof -i TCP:8888'):
 
 round_time = 120
 pellet_tone_time = 2 #how long the pellet tone plays
-timeII = 45 #time after levers out before pellet
-timeIV = 0 #time after pellet delivered before levers retracted
-loops = 10
+timeII = 45
+
+loops = 14 #may a well be even
 
 
 
@@ -72,7 +72,7 @@ print('Path is: ')
 print(path)
 with open(path, 'w') as file:
     writer = csv.writer(file, delimiter = ',')
-    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Door Shaping', 'Day: %i'%day])
+    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Food Social Choice', 'Day: %i'%day])
     writer.writerow(['Event', 'Time'])
 
 
@@ -444,6 +444,8 @@ for i in range(loops):
 
     do_stuff_queue.put(('extend lever',
                         ('social',lever_angles['social'][0],lever_angles['social'][1])))
+    do_stuff_queue.put(('extend lever',
+                        ('food',lever_angles['food'][0],lever_angles['food'][1])))
 
     #wait till levers are out before we do anything else. Depending on how
     #fast the voles react to the lever, we may start monitoring before it is
@@ -452,6 +454,7 @@ for i in range(loops):
 
     #begin tracking the lever in a thread
     do_stuff_queue.put(('monitor lever', (lever_press_queue, 'social',)))
+    do_stuff_queue.put(('monitor lever', (lever_press_queue, 'food',)))
 
     timeII_start = time.time()
 
@@ -500,7 +503,7 @@ for i in range(loops):
 
 
 
-    time.sleep(timeIV)
+
     print('entering ITI for #-#-# round #%i -#-#-# '%i )
 
     #wait for ITI to pass
