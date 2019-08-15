@@ -21,12 +21,9 @@ if os.system('sudo lsof -i TCP:8888'):
 
 round_time = 120
 pellet_tone_time = 2 #how long the pellet tone plays
-timeII = 118
-move_animal_time = 20 #how long to give maya to move the animal (with some wiggle room)
-time_after_move = 15 #how long we want to wait before the next test period. Sometimes
-                    #the move animal time may bleed into this a bit
-
-loops = 14 #may as well be even
+timeII = 120
+time_after_move =
+loops = 5 #may a well be even
 
 
 
@@ -461,7 +458,7 @@ for i in range(loops):
 
     timeII_start = time.time()
 
-    #for the timeII interval, monitor lever and overide pellet timing if pressed
+    #for the timeII interval, monitor levers. Can open either door OR get pellet
     while time.time() - timeII_start < timeII:
         #eventually, here we will call threads to monitor
         #vole position and the levers. here its just random

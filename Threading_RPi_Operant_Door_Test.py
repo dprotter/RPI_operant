@@ -12,22 +12,21 @@ import email_push
 import datetime
 from operant_cage_settings import pins, servo_dict, continuous_servo_speeds, lever_angles
 import pigpio
+import sys
 #activates the pigpio daemon that runs PWM, unless its already running
 if os.system('sudo lsof -i TCP:8888'):
     os.system('sudo pigpiod')
 
 
+round_time = 90
+door_close_tone_time = 2 #how long the door tone plays
+timeII = 30 #time after levers out before lever retracted
 
+loops = 15
 
-round_time = 120
-pellet_tone_time = 2 #how long the pellet tone plays
-timeII = 118
 move_animal_time = 20 #how long to give maya to move the animal (with some wiggle room)
 time_after_move = 15 #how long we want to wait before the next test period. Sometimes
                     #the move animal time may bleed into this a bit
-
-loops = 14 #may as well be even
-
 
 
 
@@ -75,7 +74,7 @@ print('Path is: ')
 print(path)
 with open(path, 'w') as file:
     writer = csv.writer(file, delimiter = ',')
-    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Food Social Choice', 'Day: %i'%day])
+    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Door Shaping', 'Day: %i'%day])
     writer.writerow(['Event', 'Time'])
 
 
@@ -95,8 +94,7 @@ servo_dict['social'].angle = lever_angles['social'][0]
 
 #setup our pins. Lever pins are input, all else are output
 GPIO.setmode(GPIO.BCM)
-#this is purely for PWM buzzers, where the pigpio library works much better
-pi = pigpio.pi()
+
 
 for k in pins.keys():
     print(k)
@@ -114,6 +112,8 @@ for k in pins.keys():
         GPIO.setup(pins[k], GPIO.OUT)
         print(k + ": OUT")
 
+#this is purely for PWM buzzers, where the pigpio library works much better
+pi = pigpio.pi()
 
 #our queues for doign stuff and saving stuff
 do_stuff_queue = queue.Queue()
@@ -170,6 +170,7 @@ def monitor_lever(ds_queue, args):
     global monitor
     global start_time
     global interrupt
+    global round
 
     monitor = True
     lever_q, lever_ID = args
@@ -187,7 +188,7 @@ def monitor_lever(ds_queue, args):
                 #send the lever_ID to the lever_q to trigger a  do_stuff.put in
                 #the main thread/loop
                 lever_q.put(lever_ID)
-                timestamp_queue.put('%i, %s lever pressed with interrupt, %f'%(round, lever_ID, time.time()-start_time))
+                timestamp_queue.put('%i, %s lever pressed productive, %f'%(round, lever_ID, time.time()-start_time))
                 while GPIO.input(pins["lever_%s"%lever_ID]):
                     'hanging till lever not pressed'
                     time.sleep(0.05)
@@ -208,8 +209,9 @@ def monitor_lever(ds_queue, args):
 def extend_lever(q, args):
     global start_time
     global servo_dict
-    lever_ID, retract, extend = args
+    global round
 
+    lever_ID, retract, extend = args
 
     servo_dict[lever_ID].angle = extend
     GPIO.output(pins['led_%s'%lever_ID], 1)
@@ -240,6 +242,7 @@ def override_door(q):
 def open_door(q):
     global start_time
     global servo_dict
+    global round
     timestamp_queue.put('%i, Door open begin, %f'%(round, time.time()-start_time))
     servo_dict['door'].throttle = continuous_servo_speeds['door']['open']
     time.sleep(continuous_servo_speeds['door']['open time'])
@@ -251,6 +254,8 @@ def close_door(q):
     global start_time
     global servo_dict
     global door_override
+    global round
+
     timestamp_queue.put('%i, Door close begin, %f'%(round, time.time()-start_time))
     if not door_override:
         start = time.time()
@@ -266,6 +271,7 @@ def close_door(q):
 def retract_lever(q, args):
     global start_time
     global servo_dict
+    global round
     lever_ID, retract, extend = args
 
     while GPIO.input(pins["lever_%s"%lever_ID]):
@@ -307,25 +313,33 @@ def experiment_start_tone(q):
 
 def door_close_tone(q):
     global start_time
+    print('starting door close tone')
 
+    pi.set_PWM_frequency(pins['pellet_tone'], 3500)
+    for i in range(5):
+        pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
+        time.sleep(0.5)
+        pi.set_PWM_dutycycle(pins['pellet_tone'], 0)
+        time.sleep(0.1)
     timestamp_queue.put('%i, door close tone start, %f'%(round, time.time()-start_time))
-    GPIO.output(pins['door_close_tone'], 1)
-    time.sleep(3)
-    GPIO.output(pins['door_close_tone'], 0)
+
+    print('door close tone complete')
     timestamp_queue.put('%i, door close tone complete, %f'%(round, time.time()-start_time))
     q.task_done()
 
 def dispense_pellet(q):
     global start_time
-    q.task_done()
-    timeout = time.time()
+    global round
     global pellet_state
 
+    q.task_done()
+
+    timeout = time.time()
     read = 0
 
     #only dispense if there is no pellet, otherwise skip
     if not pellet_state:
-        print('starting pellet dispensing %f'%(time.time()-start_time))
+        print('%i, starting pellet dispensing %f'%(time.time()-start_time))
 
         #we're just gonna turn the servo on and keep monitoring. probably
         #want this to be a little slow
@@ -368,6 +382,7 @@ def dispense_pellet(q):
 def read_pellet(q):
     global start_time
     global pellet_state
+    global round
 
     disp_start = time.time()
     q.task_done()
@@ -405,7 +420,6 @@ def read_pellet(q):
     return ''
 
 
-
 def thread_distributor():
     '''this is main thread's job. To look for shit to do and send it to a thread'''
     while True:
@@ -429,8 +443,8 @@ for x in range(9):
 do_stuff_queue.put(('door override',))
 
 
-####note that we will add in time after the press
-delay = [3]
+####note that we will add in time after the press, increasing by day up to 3s
+delay = [0, 0, 1, 2, 3]
 
 ### master looper ###
 for i in range(loops):
@@ -447,8 +461,6 @@ for i in range(loops):
 
     do_stuff_queue.put(('extend lever',
                         ('social',lever_angles['social'][0],lever_angles['social'][1])))
-    do_stuff_queue.put(('extend lever',
-                        ('food',lever_angles['food'][0],lever_angles['food'][1])))
 
     #wait till levers are out before we do anything else. Depending on how
     #fast the voles react to the lever, we may start monitoring before it is
@@ -457,7 +469,6 @@ for i in range(loops):
 
     #begin tracking the lever in a thread
     do_stuff_queue.put(('monitor lever', (lever_press_queue, 'social',)))
-    do_stuff_queue.put(('monitor lever', (lever_press_queue, 'food',)))
 
     timeII_start = time.time()
 
@@ -471,22 +482,13 @@ for i in range(loops):
             print('the %s lever was pressed! woweeeee'%lever_ID)
             timestamp_queue.put('%i, a lever was pressed! woweeeee, %f'%(round, time.time()-start_time))
             time.sleep(delay[day-1])
+            do_stuff_queue.put(('open door',))
 
-            #what lever was pressed? if social, open door. else it was the food lever
-            if lever_ID == 'social':
-                do_stuff_queue.put(('open door',))
-
-            else:
-                do_stuff_queue.put(('pellet tone',))
-                do_stuff_queue.put(('dispense pellet',))
 
             #wait 0.5 seconds for the vole to move before retracting lever
             time.sleep(0.5)
             do_stuff_queue.put(('retract lever',
                                 ('social', lever_angles['social'][0],lever_angles['social'][1])))
-            do_stuff_queue.put(('retract lever',
-                                ('food', lever_angles['food'][0],lever_angles['food'][1])))
-
             do_stuff_queue.join()
         time.sleep(0.05)
 
@@ -494,17 +496,12 @@ for i in range(loops):
     if not interrupt:
         print('the vole is dumb and didnt press a lever')
         timestamp_queue.put('%i, no lever press, %f'%(round, time.time()-start_time))
-
         do_stuff_queue.put(('retract lever',
                             ('social', lever_angles['social'][0],lever_angles['social'][1])))
-        do_stuff_queue.put(('retract lever',
-                            ('food', lever_angles['food'][0],lever_angles['food'][1])))
 
         do_stuff_queue.join()
 
     time.sleep(0.05)
-
-
 
 
     print('entering ITI for #-#-# round #%i -#-#-# '%i )
@@ -513,30 +510,47 @@ for i in range(loops):
     '''a good time to write some stuff to file'''
     with open(path, 'a') as csv_file:
         csv_writer = csv.writer(csv_file)
+
+        #this keeps going through the while loop until ITI finished
         while time.time() - round_start < round_time:
             if not timestamp_queue.empty():
                 line = timestamp_queue.get().split(',')
+                print('writing ###### %s'%line)
                 csv_writer.writerow(line)
             time.sleep(0.01)
 
+    if interrupt and lever_ID == 'social':
+        #close the door, wait 20s to manually move the vole
+        do_stuff_queue.put(('door close tone',))
+        do_stuff_queue.join()
+        time.sleep(1)
+        do_stuff_queue.put(('close door',))
+        print('time to move that vole over!')
     #reset our global values interrupt and monitor. This will turn off the lever
     #if it is still being monitored. This resets the inerrupt value for the next
     #loop of the training.
     interrupt = False
     monitor = False
 
-    #close the door, wait 20s to manually move the vole
-    do_stuff_queue.put(('door close tone',))
-    time.sleep(4)
-    do_stuff_queue.put(('close door',))
-    time.sleep(20)
+
+        timestamp_queue.put('%i, start of move animal time, %f'%(round, time.time()-start_time))
+        for i in range(move_animal_time):
+            sys.stdout.write('\r'+str(move_animal_time - i)+' seconds left  ')
+            time.sleep(1)
+            sys.stdout.flush()
+        print('vole should be moved now')
+
+        time.sleep(time_after_move)
+
+
+
 
 '''append current timestamp queue contents to csv file'''
 with open(path, 'a') as file:
     writer = csv.writer(file, delimiter = ',')
     while not timestamp_queue.empty():
         line = timestamp_queue.get().split(',')
-
+        print('writing ###### %s'%line)
         writer.writerow(line)
 
 print("all Done")

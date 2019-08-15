@@ -520,27 +520,28 @@ for i in range(loops):
                 csv_writer.writerow(line)
             time.sleep(0.01)
 
+    if lever_ID == 'social':
+        #close the door, wait 20s to manually move the vole
+        do_stuff_queue.put(('door close tone',))
+        do_stuff_queue.join()
+        time.sleep(1)
+        do_stuff_queue.put(('close door',))
+        print('time to move that vole over!')
     #reset our global values interrupt and monitor. This will turn off the lever
     #if it is still being monitored. This resets the inerrupt value for the next
     #loop of the training.
     interrupt = False
     monitor = False
 
-    #close the door, wait 20s to manually move the vole
-    do_stuff_queue.put(('door close tone',))
-    do_stuff_queue.join()
-    time.sleep(1)
-    do_stuff_queue.put(('close door',))
-    print('time to move that vole over!')
 
-    timestamp_queue.put('%i, start of move animal time, %f'%(round, time.time()-start_time))
-    for i in range(move_animal_time):
-        sys.stdout.write('\r'+str(move_animal_time - i)+' seconds left  ')
-        time.sleep(1)
-        sys.stdout.flush()
-    print('vole should be moved now')
+        timestamp_queue.put('%i, start of move animal time, %f'%(round, time.time()-start_time))
+        for i in range(move_animal_time):
+            sys.stdout.write('\r'+str(move_animal_time - i)+' seconds left  ')
+            time.sleep(1)
+            sys.stdout.flush()
+        print('vole should be moved now')
 
-    time.sleep(time_after_move)
+        time.sleep(time_after_move)
 
 
 
