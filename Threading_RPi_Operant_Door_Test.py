@@ -526,12 +526,6 @@ for i in range(loops):
         time.sleep(1)
         do_stuff_queue.put(('close door',))
         print('time to move that vole over!')
-    #reset our global values interrupt and monitor. This will turn off the lever
-    #if it is still being monitored. This resets the inerrupt value for the next
-    #loop of the training.
-    interrupt = False
-    monitor = False
-
 
         timestamp_queue.put('%i, start of move animal time, %f'%(round, time.time()-start_time))
         for i in range(move_animal_time):
@@ -541,6 +535,14 @@ for i in range(loops):
         print('vole should be moved now')
 
         time.sleep(time_after_move)
+    #reset our global values interrupt and monitor. This will turn off the lever
+    #if it is still being monitored. This resets the inerrupt value for the next
+    #loop of the training.
+    interrupt = False
+    monitor = False
+
+
+
 
 
 
