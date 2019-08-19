@@ -22,7 +22,7 @@ round_time = 90
 door_close_tone_time = 2 #how long the door tone plays
 timeII = 30 #time after levers out before lever retracted
 
-loops = 15
+loops = 30
 
 move_animal_time = 20 #how long to give maya to move the animal (with some wiggle room)
 time_after_move = 15 #how long we want to wait before the next test period. Sometimes
