@@ -26,8 +26,8 @@ timeII = 5 #time after levers out before lever retracted
 
 loops = 4
 
-move_animal_time = 20 #how long to give maya to move the animal (with some wiggle room)
-time_after_move = 15 #how long we want to wait before the next test period. Sometimes
+move_animal_time = 3 #how long to give maya to move the animal (with some wiggle room)
+time_after_move = 5 #how long we want to wait before the next test period. Sometimes
                     #the move animal time may bleed into this a bit
 
 
