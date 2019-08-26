@@ -511,7 +511,7 @@ for i in range(loops):
 
     print('entering ITI for #-#-# round #%i -#-#-# '%i )
 
-    if not interupt:
+    if not interrupt:
         #wait for ITI to pass
         '''a good time to write some stuff to file'''
         with open(path, 'a') as csv_file:
