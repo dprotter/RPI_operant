@@ -431,7 +431,7 @@ do_stuff_queue.put(('door override',))
 
 
 ####note that we will add in time after the press
-delay = [3]
+delay = [0,0,0,0,0]
 
 ### master looper ###
 for i in range(loops):

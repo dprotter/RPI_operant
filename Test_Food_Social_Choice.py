@@ -12,6 +12,7 @@ import email_push
 import datetime
 from operant_cage_settings import pins, servo_dict, continuous_servo_speeds, lever_angles
 import pigpio
+import sys
 #activates the pigpio daemon that runs PWM, unless its already running
 if os.system('sudo lsof -i TCP:8888'):
     os.system('sudo pigpiod')
@@ -19,12 +20,15 @@ if os.system('sudo lsof -i TCP:8888'):
 
 
 
-round_time = 120
-pellet_tone_time = 2 #how long the pellet tone plays
-timeII = 120
-time_after_move =
-loops = 5 #may a well be even
+rround_time = 10
+door_close_tone_time = 2 #how long the door tone plays
+timeII = 5 #time after levers out before lever retracted
 
+loops = 4
+
+move_animal_time = 20 #how long to give maya to move the animal (with some wiggle room)
+time_after_move = 15 #how long we want to wait before the next test period. Sometimes
+                    #the move animal time may bleed into this a bit
 
 
 
@@ -37,29 +41,30 @@ save_dir = '/home/pi/Operant_Output/'
 
 no_user = True
 while no_user:
-    user = input('who is doing this experiment? \n')
-    check = input('so send the data to %s ? (y/n) \n'%user)
+    user = 'dave'
+    check = 'y'
     if check.lower() in ['y', 'yes']:
         no_user = False
 
 no_vole = True
 while no_vole:
-    vole = input('Vole number? \n')
-    check = input('vole# is %s ? (y/n) \n'%vole)
+    vole = '000'
+    check = 'y'
     if check.lower() in ['y', 'yes']:
         no_vole = False
 
 day = input('Which door-shaping training day is this? \n')
 day = int(day)
 
-push = input('should I push the results folder to email after this session? (y/n) \n')
-if push.lower() in 'y':
+push = 'y'
+if push == 'y':
     print("ok, your results will be emailed to you after this session.")
 else:
     print("Ok, I won't email you.")
 
 """fname will be of format m_d_y__h_m_vole_#_fresh.csv. fresh will be removed
 once the file has been send via email."""
+
 
 date = datetime.datetime.now()
 fdate = '%s_%s_%s__%s_%s_'%(date.month, date.day, date.year, date.hour, date.minute)
@@ -72,7 +77,7 @@ print('Path is: ')
 print(path)
 with open(path, 'w') as file:
     writer = csv.writer(file, delimiter = ',')
-    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Food Social Choice', 'Day: %i'%day])
+    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: food/social Test', 'Day: %i'%day])
     writer.writerow(['Event', 'Time'])
 
 
@@ -427,7 +432,7 @@ do_stuff_queue.put(('door override',))
 
 
 ####note that we will add in time after the press
-delay = [3]
+delay = [0,0,0,0,0]
 
 ### master looper ###
 for i in range(loops):
@@ -458,8 +463,8 @@ for i in range(loops):
 
     timeII_start = time.time()
 
-    #for the timeII interval, monitor levers. Can open either door OR get pellet
-    while time.time() - timeII_start < timeII:
+    #during the timeII interval, monitor lever and overide pellet timing if pressed
+    while time.time() - timeII_start < timeII :
         #eventually, here we will call threads to monitor
         #vole position and the levers. here its just random
         if not interrupt and not lever_press_queue.empty():
@@ -499,6 +504,7 @@ for i in range(loops):
 
         do_stuff_queue.join()
 
+
     time.sleep(0.05)
 
 
@@ -506,27 +512,51 @@ for i in range(loops):
 
     print('entering ITI for #-#-# round #%i -#-#-# '%i )
 
-    #wait for ITI to pass
-    '''a good time to write some stuff to file'''
-    with open(path, 'a') as csv_file:
-        csv_writer = csv.writer(csv_file)
-        while time.time() - round_start < round_time:
-            if not timestamp_queue.empty():
-                line = timestamp_queue.get().split(',')
-                csv_writer.writerow(line)
-            time.sleep(0.01)
+    if not interupt"
+        #wait for ITI to pass
+        '''a good time to write some stuff to file'''
+        with open(path, 'a') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            while time.time() - round_start < round_time:
+                if not timestamp_queue.empty():
+                    line = timestamp_queue.get().split(',')
+                    csv_writer.writerow(line)
+                time.sleep(0.01)
 
+    # if the animal was moved, spend less time (move_animal_time + time_after_move)
+    # in the loop waiting for iti, so that food rounds and social rounds are
+    # equal length
+
+    else:
+        with open(path, 'a') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            while time.time() - round_start < round_time - (move_animal_time + time_after_move):
+                if not timestamp_queue.empty():
+                    line = timestamp_queue.get().split(',')
+                    csv_writer.writerow(line)
+                time.sleep(0.01)
+        #close the door, wait 20s to manually move the vole
+        do_stuff_queue.put(('door close tone',))
+        do_stuff_queue.join()
+        time.sleep(1)
+        do_stuff_queue.put(('close door',))
+        print('time to move that vole over!')
+
+        timestamp_queue.put('%i, start of move animal time, %f'%(round, time.time()-start_time))
+        for i in range(move_animal_time):
+            sys.stdout.write('\r'+str(move_animal_time - i)+' seconds left  ')
+            time.sleep(1)
+            sys.stdout.flush()
+        print('vole should be moved now')
+
+        time.sleep(time_after_move)
     #reset our global values interrupt and monitor. This will turn off the lever
     #if it is still being monitored. This resets the inerrupt value for the next
     #loop of the training.
     interrupt = False
     monitor = False
 
-    #close the door, wait 20s to manually move the vole
-    do_stuff_queue.put(('door close tone',))
-    time.sleep(4)
-    do_stuff_queue.put(('close door',))
-    time.sleep(20)
+
 
 '''append current timestamp queue contents to csv file'''
 with open(path, 'a') as file:
