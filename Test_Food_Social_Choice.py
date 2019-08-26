@@ -20,7 +20,7 @@ if os.system('sudo lsof -i TCP:8888'):
 
 
 
-rround_time = 10
+round_time = 10
 door_close_tone_time = 2 #how long the door tone plays
 timeII = 5 #time after levers out before lever retracted
 
