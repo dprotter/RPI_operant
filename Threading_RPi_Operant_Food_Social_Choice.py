@@ -214,7 +214,7 @@ def extend_lever(q, args):
 
     servo_dict[lever_ID].angle = extend
     GPIO.output(pins['led_%s'%lever_ID], 1)
-    timestamp_queue.put('%i, Levers out, %f'%(round, time.time()-start_time))
+
     q.task_done()
 
 def override_door(q):
@@ -275,7 +275,7 @@ def retract_lever(q, args):
 
     GPIO.output(pins['led_%s'%lever_ID], 0)
     servo_dict[lever_ID].angle = retract
-    timestamp_queue.put('%i, Levers retracted, %f'%(round, time.time()-start_time))
+
     q.task_done()
 
 def pellet_tone(q):
@@ -308,11 +308,17 @@ def experiment_start_tone(q):
 
 def door_close_tone(q):
     global start_time
+    print('starting door close tone')
 
+    pi.set_PWM_frequency(pins['pellet_tone'], 3500)
+    for i in range(5):
+        pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
+        time.sleep(0.5)
+        pi.set_PWM_dutycycle(pins['pellet_tone'], 0)
+        time.sleep(0.1)
     timestamp_queue.put('%i, door close tone start, %f'%(round, time.time()-start_time))
-    GPIO.output(pins['door_close_tone'], 1)
-    time.sleep(3)
-    GPIO.output(pins['door_close_tone'], 0)
+
+    print('door close tone complete')
     timestamp_queue.put('%i, door close tone complete, %f'%(round, time.time()-start_time))
     q.task_done()
 
@@ -450,7 +456,7 @@ for i in range(loops):
                         ('social',lever_angles['social'][0],lever_angles['social'][1])))
     do_stuff_queue.put(('extend lever',
                         ('food',lever_angles['food'][0],lever_angles['food'][1])))
-
+    timestamp_queue.put('%i, Levers out, %f'%(round, time.time()-start_time))
     #wait till levers are out before we do anything else. Depending on how
     #fast the voles react to the lever, we may start monitoring before it is
     #actually out.
@@ -485,8 +491,10 @@ for i in range(loops):
             time.sleep(0.5)
             do_stuff_queue.put(('retract lever',
                                 ('social', lever_angles['social'][0],lever_angles['social'][1])))
+            timestamp_queue.put('%i, social lever retracted, %f'%(round, time.time()-start_time))
             do_stuff_queue.put(('retract lever',
                                 ('food', lever_angles['food'][0],lever_angles['food'][1])))
+            timestamp_queue.put('%i, food lever retracted, %f'%(round, time.time()-start_time))
 
             do_stuff_queue.join()
         time.sleep(0.05)
@@ -498,9 +506,10 @@ for i in range(loops):
 
         do_stuff_queue.put(('retract lever',
                             ('social', lever_angles['social'][0],lever_angles['social'][1])))
+        timestamp_queue.put('%i, social lever retracted, %f'%(round, time.time()-start_time))
         do_stuff_queue.put(('retract lever',
                             ('food', lever_angles['food'][0],lever_angles['food'][1])))
-
+        timestamp_queue.put('%i, food lever retracted, %f'%(round, time.time()-start_time))
         do_stuff_queue.join()
 
 
