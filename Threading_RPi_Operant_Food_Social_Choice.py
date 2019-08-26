@@ -519,6 +519,7 @@ for i in range(loops):
             while time.time() - round_start < round_time:
                 if not timestamp_queue.empty():
                     line = timestamp_queue.get().split(',')
+                    print('writing ###### %s'%line)
                     csv_writer.writerow(line)
                 time.sleep(0.01)
 
@@ -532,29 +533,33 @@ for i in range(loops):
             while time.time() - round_start < round_time - (move_animal_time + time_after_move):
                 if not timestamp_queue.empty():
                     line = timestamp_queue.get().split(',')
+                    print('writing ###### %s'%line)
                     csv_writer.writerow(line)
                 time.sleep(0.01)
         #close the door, wait 20s to manually move the vole
-        do_stuff_queue.put(('door close tone',))
-        do_stuff_queue.join()
-        time.sleep(1)
-        do_stuff_queue.put(('close door',))
-        print('time to move that vole over!')
-
-        timestamp_queue.put('%i, start of move animal time, %f'%(round, time.time()-start_time))
-        for i in range(move_animal_time):
-            sys.stdout.write('\r'+str(move_animal_time - i)+' seconds left  ')
+        if lever_ID == 'social':
+            do_stuff_queue.put(('door close tone',))
+            do_stuff_queue.join()
             time.sleep(1)
-            sys.stdout.flush()
-        print('vole should be moved now')
+            do_stuff_queue.put(('close door',))
+            print('time to move that vole over!')
 
-        time.sleep(time_after_move)
+            timestamp_queue.put('%i, start of move animal time, %f'%(round, time.time()-start_time))
+            for i in range(move_animal_time - 1):
+                sys.stdout.write('\r'+str(move_animal_time - i)+' seconds left  ')
+                time.sleep(1)
+                sys.stdout.flush()
+            print('vole should be moved now')
+
+            time.sleep(time_after_move)
+        else:
+            time.sleep(move_animal_time + time_after_move)
     #reset our global values interrupt and monitor. This will turn off the lever
     #if it is still being monitored. This resets the inerrupt value for the next
     #loop of the training.
     interrupt = False
     monitor = False
-
+    lever_ID = ''
 
 
 '''append current timestamp queue contents to csv file'''
@@ -562,6 +567,7 @@ with open(path, 'a') as file:
     writer = csv.writer(file, delimiter = ',')
     while not timestamp_queue.empty():
         line = timestamp_queue.get().split(',')
+        print('writing ###### %s'%line)
 
         writer.writerow(line)
 

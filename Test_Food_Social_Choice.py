@@ -520,6 +520,7 @@ for i in range(loops):
             while time.time() - round_start < round_time:
                 if not timestamp_queue.empty():
                     line = timestamp_queue.get().split(',')
+                    print('writing ###### %s'%line)
                     csv_writer.writerow(line)
                 time.sleep(0.01)
 
@@ -533,6 +534,7 @@ for i in range(loops):
             while time.time() - round_start < round_time - (move_animal_time + time_after_move):
                 if not timestamp_queue.empty():
                     line = timestamp_queue.get().split(',')
+                    print('writing ###### %s'%line)
                     csv_writer.writerow(line)
                 time.sleep(0.01)
         #close the door, wait 20s to manually move the vole
@@ -544,7 +546,7 @@ for i in range(loops):
             print('time to move that vole over!')
 
             timestamp_queue.put('%i, start of move animal time, %f'%(round, time.time()-start_time))
-            for i in range(move_animal_time):
+            for i in range(move_animal_time-1):
                 sys.stdout.write('\r'+str(move_animal_time - i)+' seconds left  ')
                 time.sleep(1)
                 sys.stdout.flush()
@@ -567,7 +569,7 @@ with open(path, 'a') as file:
     writer = csv.writer(file, delimiter = ',')
     while not timestamp_queue.empty():
         line = timestamp_queue.get().split(',')
-
+        print('writing ###### %s'%line)
         writer.writerow(line)
 
 print("all Done")
