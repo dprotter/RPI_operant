@@ -493,14 +493,6 @@ do_stuff_queue.put(('start tone',))
 do_stuff_queue.join()
 
 
-do_stuff_queue.put(('extend lever',
-                    ('social',lever_angles['social'][0],lever_angles['social'][1])))
-
-#wait till levers are out before we do anything else. Depending on how
-#fast the voles react to the lever, we may start monitoring before it is
-#actually out.
-do_stuff_queue.join()
-
 #begin tracking the lever in a thread
 do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
 
@@ -521,7 +513,8 @@ while time.time() - timeout_start < breakpoint_timeout:
         presses +=1
         timeout_start = time.time()
         if presses == breakpt:
-            timestamp_queue.put('%i, a breakpoint was reached! woweeeee, %f'%(round, time.time()-start_time))
+            timestamp_queue.put('%i, a breakpoint was reached!%i, %f'%(round,breakpt, time.time()-start_time))
+            #progressive ratio of pr = 1
             breakpt +=1
             presses = 0
             do_stuff_queue.put(('open door',))
@@ -564,6 +557,7 @@ while time.time() - timeout_start < breakpoint_timeout:
             #since we reached the breakpoint,
             #restart the breakpoint timer for the next increase in lever presses
             timeout_start = time.time()
+            round += 1
         else:
             #wait half a second, then extend lever again
             time.sleep(0.5)
@@ -579,7 +573,7 @@ with open(path, 'a') as file:
         print('writing ###### %s'%line)
         writer.writerow(line)
 
-print("all Done, final breakpoint %i"%breakpt - 1)
+print("all Done, final breakpoint %i, final presses %i"%(breakpt - 1, presses))
 #reset levers to retracted
 servo_dict['food'].angle = lever_angles['food'][0]
 servo_dict['social'].angle = lever_angles['social'][0]
