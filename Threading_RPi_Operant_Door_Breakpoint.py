@@ -213,7 +213,7 @@ def breakpoint_monitor_lever(ds_queue, args):
     global interrupt
     global round
 
-
+    monitor = True
     lever_q, lever_ID= args
     "monitor a lever. If lever pressed, put lever_ID in queue. "
     lever=0
@@ -570,7 +570,6 @@ while time.time() - timeout_start < breakpoint_timeout:
         elif not monitor:
             #wait half a second, then extend lever again
             time.sleep(0.5)
-            monitor = True
             do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
 
     sys.stdout.flush()
