@@ -26,7 +26,7 @@ move_animal_time = 20 #how long to give maya to move the animal (with some wiggl
 time_after_move = 15 #how long we want to wait before the next test period. Sometimes
                     #the move animal time may bleed into this a bit
 
-reward_time = 10
+reward_time = 90
 
 """the following sets up the output file and gets some user input. """
 
