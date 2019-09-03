@@ -485,7 +485,7 @@ do_stuff_queue.put(('door override',))
 
 breakpt = 1
 presses = 0
-print("#-#-#-#-#-# new round #%i!!!-#-#-#-#-#"%i)
+print("#-#-#-#-#-# new round #%i!!!-#-#-#-#-#"%round)
 timestamp_queue.put('%i, Starting new round, %f'%(round, time.time()-start_time))
 do_stuff_queue.put(('start tone',))
 
