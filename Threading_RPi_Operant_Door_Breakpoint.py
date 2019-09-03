@@ -18,15 +18,15 @@ if os.system('sudo lsof -i TCP:8888'):
     os.system('sudo pigpiod')
 
 
-round_time = 90
-door_close_tone_time = 2 #how long the door tone plays
-breakpoint_timeout = 60*5 #5 min timeout
 
-move_animal_time = 20 #how long to give maya to move the animal (with some wiggle room)
-time_after_move = 15 #how long we want to wait before the next test period. Sometimes
+door_close_tone_time = 2 #how long the door tone plays
+breakpoint_timeout = 20 #5 min timeout
+
+move_animal_time = 5 #how long to give maya to move the animal (with some wiggle room)
+time_after_move = 5 #how long we want to wait before the next test period. Sometimes
                     #the move animal time may bleed into this a bit
 
-reward_time = 90
+reward_time = 10
 
 """the following sets up the output file and gets some user input. """
 
@@ -49,7 +49,7 @@ while no_vole:
     if check.lower() in ['y', 'yes']:
         no_vole = False
 
-day = input('Which door-shaping training day is this? \n')
+day = input('Which door-breakpoint day is this? \n')
 day = int(day)
 
 push = input('should I push the results folder to email after this session? (y/n) \n')
@@ -213,7 +213,7 @@ def breakpoint_monitor_lever(ds_queue, args):
     global interrupt
     global round
 
-    monitor = True
+
     lever_q, lever_ID= args
     "monitor a lever. If lever pressed, put lever_ID in queue. "
     lever=0
@@ -232,14 +232,17 @@ def breakpoint_monitor_lever(ds_queue, args):
             #the main thread/loop
 
             timestamp_queue.put('%i, %s lever pressed, %f'%(round, lever_ID, time.time()-start_time))
-            lever = 0
+
 
             do_stuff_queue.put(('retract lever',
                                 ('social', lever_angles['social'][0],lever_angles['social'][1])))
             lever_q.put(lever_ID)
-            mointor = False
+            lever = 0
+            monitor = False
+            break
 
         time.sleep(25/1000.0)
+    print('monitor thread done')
 
 
 def extend_lever(q, args):
@@ -494,6 +497,7 @@ do_stuff_queue.join()
 
 
 #begin tracking the lever in a thread
+monitor = True
 do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
 
 #the animal has breakpoint_timeout (s) to press the lever to the required
@@ -515,11 +519,11 @@ while time.time() - timeout_start < breakpoint_timeout:
         if presses == breakpt:
             timestamp_queue.put('%i, a breakpoint was reached!%i, %f'%(round,breakpt, time.time()-start_time))
             #progressive ratio of pr = 1
-            breakpt +=1
+            breakpt += 1
             presses = 0
             do_stuff_queue.put(('open door',))
             do_stuff_queue.join()
-            print('breakpoint %i press reached'%breakpt)
+            print('breakpoint %i press reached'%(breakpt-1))
             #this keeps going through the while loop until reward finished
             reward_start = time.time()
 
@@ -558,14 +562,22 @@ while time.time() - timeout_start < breakpoint_timeout:
             #restart the breakpoint timer for the next increase in lever presses
             timeout_start = time.time()
             round += 1
-        else:
+
+            #restart monitoring
+            monitor = True
+            do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
+
+        elif not monitor:
             #wait half a second, then extend lever again
             time.sleep(0.5)
+            monitor = True
             do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
 
     sys.stdout.flush()
-    sys.stdout.write('\r'+str(round(time.time()-timeout_start))+' seconds left before timeout, ' +
-                    str(breakpt - presses) + ' presses left')
+    sys.stdout.write('\r'+str(breakpoint_timeout - int(time.time()-timeout_start)) +
+                        ' seconds left before timeout, ' + str(breakpt - presses) +
+                        ' presses left')
+
     time.sleep(0.05)
 
 
@@ -587,4 +599,4 @@ servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pelle
 
 
 if 'y' in push.lower():
-    email_push.email_push(user = user)\
+    email_push.email_push(user = user)
