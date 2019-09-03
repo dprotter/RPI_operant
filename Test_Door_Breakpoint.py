@@ -228,6 +228,7 @@ def breakpoint_monitor_lever(ds_queue, args):
             lever = 0
             monitor = False
             break
+
         time.sleep(25/1000.0)
     print('monitor thread done')
 
@@ -484,12 +485,13 @@ do_stuff_queue.join()
 
 
 #begin tracking the lever in a thread
+monitor = True
 do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
 
 #the animal has breakpoint_timeout (s) to press the lever to the required
 #number to activate the door. this number goes up each time.
 timeout_start = time.time()
-monitor = True
+
 #stay in this loop until the breakpoint timeout is reached
 while time.time() - timeout_start < breakpoint_timeout:
     #eventually, here we will call threads to monitor
@@ -548,6 +550,11 @@ while time.time() - timeout_start < breakpoint_timeout:
             #restart the breakpoint timer for the next increase in lever presses
             timeout_start = time.time()
             round += 1
+
+            #restart monitoring
+            monitor = True
+            do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
+
         elif not monitor:
             #wait half a second, then extend lever again
             time.sleep(0.5)
