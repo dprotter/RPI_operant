@@ -18,12 +18,12 @@ if os.system('sudo lsof -i TCP:8888'):
     os.system('sudo pigpiod')
 
 
-round_time = 90
-door_close_tone_time = 2 #how long the door tone plays
-breakpoint_timeout = 60*5 #5 min timeout
 
-move_animal_time = 20 #how long to give maya to move the animal (with some wiggle room)
-time_after_move = 15 #how long we want to wait before the next test period. Sometimes
+door_close_tone_time = 2 #how long the door tone plays
+breakpoint_timeout = 20 #20s timeout
+
+move_animal_time = 4 #how long to give maya to move the animal (with some wiggle room)
+time_after_move = 4 #how long we want to wait before the next test period. Sometimes
                     #the move animal time may bleed into this a bit
 
 
@@ -36,27 +36,15 @@ save_dir = '/home/pi/Operant_Output/'
 #push to email after done?
 
 no_user = True
-while no_user:
-    user = input('who is doing this experiment? \n')
-    check = input('so send the data to %s ? (y/n) \n'%user)
-    if check.lower() in ['y', 'yes']:
-        no_user = False
+user = 'maya'
 
-no_vole = True
-while no_vole:
-    vole = input('Vole number? \n')
-    check = input('vole# is %s ? (y/n) \n'%vole)
-    if check.lower() in ['y', 'yes']:
-        no_vole = False
+vole = '000'
 
-day = input('Which door-shaping training day is this? \n')
+day = input('Which autoshaping training day is this? (starts at day 1)\n')
 day = int(day)
 
-push = input('should I push the results folder to email after this session? (y/n) \n')
-if push.lower() in 'y':
-    print("ok, your results will be emailed to you after this session.")
-else:
-    print("Ok, I won't email you.")
+push = 'y'
+
 
 """fname will be of format m_d_y__h_m_vole_#_fresh.csv. fresh will be removed
 once the file has been send via email."""
@@ -562,9 +550,6 @@ while time.time() - timeout_start < breakpoint_timeout:
             #wait half a second, then extend lever again
             time.sleep(0.5)
             do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
-
-    sys.stdout.flush()
-    sys.stdout.write('\r'+str(time.time()-timeout_start)+' seconds left before timeout ')
     time.sleep(0.05)
 
 
@@ -586,4 +571,4 @@ servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pelle
 
 
 if 'y' in push.lower():
-    email_push.email_push(user = user)\
+    email_push.email_push(user = user)
