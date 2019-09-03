@@ -552,7 +552,7 @@ while time.time() - timeout_start < breakpoint_timeout:
             do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
 
     sys.stdout.flush()
-    sys.stdout.write('\r'+str(time.time()-timeout_start) + 
+    sys.stdout.write('\r'+str(int(breakpoint_timeout - time.time()-timeout_start)) + 
                         ' seconds left before timeout, ' + str(breakpt - presses) +
                         ' presses left')
 
