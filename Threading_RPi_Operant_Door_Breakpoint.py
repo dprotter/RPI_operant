@@ -576,7 +576,7 @@ while time.time() - timeout_start < breakpoint_timeout:
     sys.stdout.flush()
     sys.stdout.write('\r'+str(breakpoint_timeout - int(time.time()-timeout_start)) +
                         ' seconds left before timeout, ' + str(breakpt - presses) +
-                        ' presses left')
+                        ' presses left, \n total time (m): '+str((time.time()-start_time)/60) )
 
     time.sleep(0.05)
 
