@@ -25,7 +25,7 @@ breakpoint_timeout = 20 #20s timeout
 move_animal_time = 4 #how long to give maya to move the animal (with some wiggle room)
 time_after_move = 4 #how long we want to wait before the next test period. Sometimes
                     #the move animal time may bleed into this a bit
-
+reward_time = 5
 
 
 """the following sets up the output file and gets some user input. """
@@ -552,7 +552,7 @@ while time.time() - timeout_start < breakpoint_timeout:
             do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
 
     sys.stdout.flush()
-    sys.stdout.write('\r'+str(int(breakpoint_timeout - time.time()-timeout_start)) + 
+    sys.stdout.write('\r'+str(int(breakpoint_timeout - round(float(time.time()-timeout_start)))) +
                         ' seconds left before timeout, ' + str(breakpt - presses) +
                         ' presses left')
 
