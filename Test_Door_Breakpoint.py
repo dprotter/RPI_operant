@@ -550,6 +550,10 @@ while time.time() - timeout_start < breakpoint_timeout:
             #wait half a second, then extend lever again
             time.sleep(0.5)
             do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
+
+    sys.stdout.flush()
+    sys.stdout.write('\r'+str(time.time()-timeout_start)+' seconds left before timeout, ' +
+                    str(breakpt - presses) + ' presses left')
     time.sleep(0.05)
 
 
