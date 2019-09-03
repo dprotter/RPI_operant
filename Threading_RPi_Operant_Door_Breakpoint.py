@@ -20,10 +20,10 @@ if os.system('sudo lsof -i TCP:8888'):
 
 
 door_close_tone_time = 2 #how long the door tone plays
-breakpoint_timeout = 20 #5 min timeout
+breakpoint_timeout = 60*5 #5 min timeout
 
-move_animal_time = 5 #how long to give maya to move the animal (with some wiggle room)
-time_after_move = 5 #how long we want to wait before the next test period. Sometimes
+move_animal_time = 20 #how long to give maya to move the animal (with some wiggle room)
+time_after_move = 15 #how long we want to wait before the next test period. Sometimes
                     #the move animal time may bleed into this a bit
 
 reward_time = 10
