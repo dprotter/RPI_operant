@@ -562,7 +562,7 @@ while time.time() - timeout_start < breakpoint_timeout:
             #restart the breakpoint timer for the next increase in lever presses
             timeout_start = time.time()
             round += 1
-
+            
             #restart monitoring
             monitor = True
             do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
