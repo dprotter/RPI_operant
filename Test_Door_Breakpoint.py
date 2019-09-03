@@ -226,8 +226,9 @@ def breakpoint_monitor_lever(ds_queue, args):
                                 ('social', lever_angles['social'][0],lever_angles['social'][1])))
             lever_q.put(lever_ID)
             mointor = False
-
+            lever = 0
         time.sleep(25/1000.0)
+    print('monitor thread done')
 
 
 def extend_lever(q, args):
