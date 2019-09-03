@@ -233,7 +233,7 @@ def breakpoint_monitor_lever(ds_queue, args):
 
             timestamp_queue.put('%i, %s lever pressed, %f'%(round, lever_ID, time.time()-start_time))
             lever = 0
-            presses += 1
+            
             do_stuff_queue.put(('retract lever',
                                 ('social', lever_angles['social'][0],lever_angles['social'][1])))
             lever_q.put(lever_ID)
@@ -564,7 +564,7 @@ while time.time() - timeout_start < breakpoint_timeout:
             do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
 
     sys.stdout.flush()
-    sys.stdout.write('\r'+str(time.time()-timeout_start)+' seconds left before timeout, ' +
+    sys.stdout.write('\r'+str(round(time.time()-timeout_start))+' seconds left before timeout, ' +
                     str(breakpt - presses) + ' presses left')
     time.sleep(0.05)
 
