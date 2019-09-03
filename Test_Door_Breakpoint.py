@@ -225,8 +225,9 @@ def breakpoint_monitor_lever(ds_queue, args):
             do_stuff_queue.put(('retract lever',
                                 ('social', lever_angles['social'][0],lever_angles['social'][1])))
             lever_q.put(lever_ID)
-            mointor = False
             lever = 0
+            monitor = False
+            break
         time.sleep(25/1000.0)
     print('monitor thread done')
 
@@ -508,7 +509,7 @@ while time.time() - timeout_start < breakpoint_timeout:
             presses = 0
             do_stuff_queue.put(('open door',))
             do_stuff_queue.join()
-            print('breakpoint %i press reached'%breakpt)
+            print('breakpoint %i press reached'%(breakpt-1))
             #this keeps going through the while loop until reward finished
             reward_start = time.time()
 
