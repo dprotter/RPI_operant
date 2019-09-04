@@ -505,7 +505,7 @@ while time.time() - timeout_start < breakpoint_timeout:
         timeout_start = time.time()
         if presses == breakpt:
             timestamp_queue.put('%i, a breakpoint was reached!%i, %f'%(round,breakpt, time.time()-start_time))
-            #progressive ratio of pr = 1
+            #progressive ratio of pr
             breakpt += progressive_ratio
             presses = 0
             do_stuff_queue.put(('open door',))
@@ -579,7 +579,7 @@ with open(path, 'a') as file:
         print('writing ###### %s'%line)
         writer.writerow(line)
 
-print("all Done, final breakpoint %i, final presses %i"%(breakpt - 1, presses))
+print("all Done, final breakpoint %i, final presses %i"%(breakpt - progressive_ratio, presses))
 #reset levers to retracted
 do_stuff_queue.put(('retract lever',
                     ('social', lever_angles['social'][0],lever_angles['social'][1])))

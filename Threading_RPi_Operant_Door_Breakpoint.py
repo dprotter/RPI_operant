@@ -591,7 +591,7 @@ with open(path, 'a') as file:
         print('writing ###### %s'%line)
         writer.writerow(line)
 
-print("all Done, final breakpoint %i, final presses %i"%(breakpt - 1, presses))
+print("all Done, final breakpoint %i, final presses %i"%(breakpt - progressive_ratio, presses))
 #reset levers to retracted
 do_stuff_queue.put(('retract lever',
                     ('social', lever_angles['social'][0],lever_angles['social'][1])))
