@@ -21,8 +21,9 @@ if os.system('sudo lsof -i TCP:8888'):
 
 door_close_tone_time = 2 #how long the door tone plays
 breakpoint_timeout = 60*5 #5 min timeout
-progressive_ratio = 2 #add n presses each time. IE [1, 1+n, 1+2n ...]
-move_animal_time = 20 #how long to give maya to move the animal (with some wiggle room)
+progressive_ratio = 2 #the number of presses added each round  to required breakpoint threshold.
+                        #IE [1, 1+n, 1+2n ...]
+move_animal_time = 20 #how long to give user to move the animal (with some wiggle room)
 time_after_move = 15 #how long we want to wait before the next test period. Sometimes
                     #the move animal time may bleed into this a bit
 
@@ -236,7 +237,7 @@ def breakpoint_monitor_lever(ds_queue, args):
 
             do_stuff_queue.put(('retract lever',
                                 ('social', lever_angles['social'][0],lever_angles['social'][1])))
-            
+
             lever_q.put(lever_ID)
             lever = 0
             monitor = False
@@ -561,8 +562,12 @@ while time.time() - timeout_start < breakpoint_timeout:
             round += 1
 
             #restart monitoring
+            do_stuff_queue.put(('start tone',))
+            do_stuff_queue.join()
+            timeout_start = time.time()
             monitor = True
             do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
+
 
         elif not monitor:
             #wait half a second, then extend lever again
