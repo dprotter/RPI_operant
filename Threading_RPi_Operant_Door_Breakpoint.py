@@ -593,8 +593,10 @@ with open(path, 'a') as file:
 
 print("all Done, final breakpoint %i, final presses %i"%(breakpt - 1, presses))
 #reset levers to retracted
-servo_dict['food'].angle = lever_angles['food'][0]
-servo_dict['social'].angle = lever_angles['social'][0]
+do_stuff_queue.put(('retract lever',
+                    ('social', lever_angles['social'][0],lever_angles['social'][1])))
+do_stuff_queue.put(('retract lever',
+                    ('food', lever_angles['social'][0],lever_angles['social'][1])))
 servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
 servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
 
