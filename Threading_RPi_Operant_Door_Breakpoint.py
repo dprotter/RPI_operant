@@ -21,7 +21,7 @@ if os.system('sudo lsof -i TCP:8888'):
 
 door_close_tone_time = 2 #how long the door tone plays
 breakpoint_timeout = 60*5 #5 min timeout
-
+progressive_ratio = 2 #add n presses each time. IE [1, 1+n, 1+2n ...]
 move_animal_time = 20 #how long to give maya to move the animal (with some wiggle room)
 time_after_move = 15 #how long we want to wait before the next test period. Sometimes
                     #the move animal time may bleed into this a bit
@@ -236,6 +236,7 @@ def breakpoint_monitor_lever(ds_queue, args):
 
             do_stuff_queue.put(('retract lever',
                                 ('social', lever_angles['social'][0],lever_angles['social'][1])))
+            
             lever_q.put(lever_ID)
             lever = 0
             monitor = False
@@ -312,10 +313,6 @@ def retract_lever(q, args):
     global servo_dict
     global round
     lever_ID, retract, extend = args
-
-    while GPIO.input(pins["lever_%s"%lever_ID]):
-        'hanging till lever not pressed'
-        time.sleep(0.05)
 
     GPIO.output(pins['led_%s'%lever_ID], 0)
     servo_dict[lever_ID].angle = retract
@@ -519,7 +516,7 @@ while time.time() - timeout_start < breakpoint_timeout:
         if presses == breakpt:
             timestamp_queue.put('%i, a breakpoint was reached!%i, %f'%(round,breakpt, time.time()-start_time))
             #progressive ratio of pr = 1
-            breakpt += 1
+            breakpt += progressive_ratio
             presses = 0
             do_stuff_queue.put(('open door',))
             do_stuff_queue.join()
@@ -569,6 +566,7 @@ while time.time() - timeout_start < breakpoint_timeout:
 
         elif not monitor:
             #wait half a second, then extend lever again
+            do_stuff_queue.join()
             time.sleep(0.5)
             do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
 

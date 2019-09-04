@@ -21,6 +21,8 @@ if os.system('sudo lsof -i TCP:8888'):
 
 door_close_tone_time = 2 #how long the door tone plays
 breakpoint_timeout = 20 #20s timeout
+progressive_ratio = 2 #the number of presses added each round  to required breakpoint threshold.
+                        #IE [1, 1+n, 1+2n ...]
 
 move_animal_time = 4 #how long to give maya to move the animal (with some wiggle room)
 time_after_move = 4 #how long we want to wait before the next test period. Sometimes
@@ -201,7 +203,7 @@ def breakpoint_monitor_lever(ds_queue, args):
     global interrupt
     global round
 
-
+    monitor = True
     lever_q, lever_ID= args
     "monitor a lever. If lever pressed, put lever_ID in queue. "
     lever=0
@@ -224,13 +226,14 @@ def breakpoint_monitor_lever(ds_queue, args):
 
             do_stuff_queue.put(('retract lever',
                                 ('social', lever_angles['social'][0],lever_angles['social'][1])))
+
             lever_q.put(lever_ID)
             lever = 0
             monitor = False
             break
 
         time.sleep(25/1000.0)
-    print('monitor thread done')
+    print('\nmonitor thread done')
 
 
 def extend_lever(q, args):
@@ -300,10 +303,6 @@ def retract_lever(q, args):
     global servo_dict
     global round
     lever_ID, retract, extend = args
-
-    while GPIO.input(pins["lever_%s"%lever_ID]):
-        'hanging till lever not pressed'
-        time.sleep(0.05)
 
     GPIO.output(pins['led_%s'%lever_ID], 0)
     servo_dict[lever_ID].angle = retract
@@ -507,7 +506,7 @@ while time.time() - timeout_start < breakpoint_timeout:
         if presses == breakpt:
             timestamp_queue.put('%i, a breakpoint was reached!%i, %f'%(round,breakpt, time.time()-start_time))
             #progressive ratio of pr = 1
-            breakpt += 1
+            breakpt += progressive_ratio
             presses = 0
             do_stuff_queue.put(('open door',))
             do_stuff_queue.join()
@@ -557,8 +556,8 @@ while time.time() - timeout_start < breakpoint_timeout:
 
         elif not monitor:
             #wait half a second, then extend lever again
+            do_stuff_queue.join()
             time.sleep(0.5)
-            monitor = True
             do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
 
     sys.stdout.flush()
