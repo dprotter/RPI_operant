@@ -20,7 +20,7 @@ if os.system('sudo lsof -i TCP:8888'):
 
 
 door_close_tone_time = 2 #how long the door tone plays
-breakpoint_timeout = 60*5 #5 min timeout
+breakpoint_timeout = 60*2.5 #timeout
 progressive_ratio = 2 #the number of presses added each round  to required breakpoint threshold.
                         #IE [1, 1+n, 1+2n ...]
 move_animal_time = 20 #how long to give user to move the animal (with some wiggle room)
@@ -579,6 +579,15 @@ while time.time() - timeout_start < breakpoint_timeout:
     sys.stdout.write('\r'+str(breakpoint_timeout - int(time.time()-timeout_start)) +
                         ' seconds left before timeout, ' + str(breakpt - presses) +
                         ' presses left, total time (m): '+str(int((time.time()-start_time)/60)) )
+
+    if not timestamp_queue.empty():
+        '''append current timestamp queue contents to csv file'''
+        with open(path, 'a') as file:
+            writer = csv.writer(file, delimiter = ',')
+            while not timestamp_queue.empty() and lever_press_queue.empty():
+                line = timestamp_queue.get().split(',')
+                print('writing ###### %s'%line)
+                writer.writerow(line)
 
     time.sleep(0.05)
 

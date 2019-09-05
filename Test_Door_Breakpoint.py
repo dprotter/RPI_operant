@@ -505,7 +505,7 @@ while time.time() - timeout_start < breakpoint_timeout:
         timeout_start = time.time()
         if presses == breakpt:
             timestamp_queue.put('%i, a breakpoint was reached!%i, %f'%(round,breakpt, time.time()-start_time))
-            #progressive ratio of pr
+            #progressive ratio of pr = 1
             breakpt += progressive_ratio
             presses = 0
             do_stuff_queue.put(('open door',))
@@ -547,7 +547,7 @@ while time.time() - timeout_start < breakpoint_timeout:
 
             #since we reached the breakpoint,
             #restart the breakpoint timer for the next increase in lever presses
-
+            timeout_start = time.time()
             round += 1
 
             #restart monitoring
@@ -556,6 +556,7 @@ while time.time() - timeout_start < breakpoint_timeout:
             timeout_start = time.time()
             monitor = True
             do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
+
 
         elif not monitor:
             #wait half a second, then extend lever again
@@ -567,6 +568,15 @@ while time.time() - timeout_start < breakpoint_timeout:
     sys.stdout.write('\r'+str(breakpoint_timeout - int(time.time()-timeout_start)) +
                         ' seconds left before timeout, ' + str(breakpt - presses) +
                         ' presses left, total time (m): '+str(int((time.time()-start_time)/60)) )
+
+    if not timestamp_queue.empty():
+        '''append current timestamp queue contents to csv file'''
+        with open(path, 'a') as file:
+            writer = csv.writer(file, delimiter = ',')
+            while not timestamp_queue.empty() and lever_press_queue.empty():
+                line = timestamp_queue.get().split(',')
+                print('writing ###### %s'%line)
+                writer.writerow(line)
 
     time.sleep(0.05)
 
