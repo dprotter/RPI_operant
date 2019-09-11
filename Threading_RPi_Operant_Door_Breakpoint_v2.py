@@ -604,8 +604,8 @@ print("all Done, final breakpoint %i, final presses %i"%(breakpt - progressive_r
 #reset levers to retracted
 GPIO.output(pins['led_%s'%'social'], 0)
 GPIO.output(pins['led_%s'%'food'], 0)
-servo_dict['social'].angle = lever_angles['social'][1]
-servo_dict['food'].angle = lever_angles['food'][1]
+servo_dict['social'].angle = lever_angles['social'][0]
+servo_dict['food'].angle = lever_angles['food'][0]
 servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
 servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
 
