@@ -547,7 +547,7 @@ with open(path, 'a') as file:
         line = timestamp_queue.get().split(',')
         print('writing ###### %s'%line)
         writer.writerow(line)
-
+timestamp_queue.put('%i, Final Presses:%i, %f'%(round, presses,time.time()-start_time))
 print("all Done, final presses %i"%(presses))
 #reset levers to retracted
 GPIO.output(pins['led_%s'%'social'], 0)
