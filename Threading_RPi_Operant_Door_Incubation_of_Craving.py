@@ -522,7 +522,7 @@ while time.time() - timeout_start < test_length:
                 time.sleep(0.05)
         monitor = True
         do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
-        print('presses: %i'presses)
+        print('presses: %i'%presses)
 
 
 
