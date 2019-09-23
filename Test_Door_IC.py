@@ -21,7 +21,7 @@ if os.system('sudo lsof -i TCP:8888'):
 
 
 door_close_tone_time = 2 #how long the door tone plays
-test_length = 60 * 60 #60 min
+test_length = 15 #15s test
 
 lever_retract_time = 2 # time in s the lever stays retracted after a press.
 
