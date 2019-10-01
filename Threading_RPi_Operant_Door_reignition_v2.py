@@ -19,13 +19,17 @@ if os.system('sudo lsof -i TCP:8888'):
 
 
 
-
 door_close_tone_time = 2 #how long the door tone plays
-test_length = 15 #15s test
-
+breakpoint_timeout = 60*3 #timeout
+progressive_ratio = 0 #the number of presses added each round  to required breakpoint threshold.
+                        #IE [1, 1+n, 1+2n ...]
+move_animal_time = 20 #how long to give user to move the animal (with some wiggle room)
+time_after_move = 15 #how long we want to wait before the next test period. Sometimes
+                    #the move animal time may bleed into this a bit
 lever_retract_time = 2 # time in s the lever stays retracted after a press.
+reward_time = 90
 
-
+test_period = 60*60
 
 """the following sets up the output file and gets some user input. """
 
@@ -35,15 +39,27 @@ save_dir = '/home/pi/Operant_Output/'
 #push to email after done?
 
 no_user = True
-user = 'maya'
+while no_user:
+    user = input('who is doing this experiment? \n')
+    check = input('so send the data to %s ? (y/n) \n'%user)
+    if check.lower() in ['y', 'yes']:
+        no_user = False
 
-vole = '000'
+no_vole = True
+while no_vole:
+    vole = input('Vole number? \n')
+    check = input('vole# is %s ? (y/n) \n'%vole)
+    if check.lower() in ['y', 'yes']:
+        no_vole = False
 
-day = input('Which autoshaping training day is this? (starts at day 1)\n')
+day = input('Which door-breakpoint day is this? \n')
 day = int(day)
 
-push = 'y'
-
+push = input('should I push the results folder to email after this session? (y/n) \n')
+if push.lower() in 'y':
+    print("ok, your results will be emailed to you after this session.")
+else:
+    print("Ok, I won't email you.")
 
 """fname will be of format m_d_y__h_m_vole_#_fresh.csv. fresh will be removed
 once the file has been send via email."""
@@ -59,7 +75,7 @@ print('Path is: ')
 print(path)
 with open(path, 'w') as file:
     writer = csv.writer(file, delimiter = ',')
-    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Door Incubation of Craving', 'Day: %i'%day])
+    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Door Breakpoint', 'Day: %i'%day])
     writer.writerow(['Event', 'Time'])
 
 
@@ -489,7 +505,96 @@ do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
 timeout_start = time.time()
 
 #stay in this loop until the breakpoint timeout is reached
-while time.time() - timeout_start < test_length:
+while time.time() - timeout_start < breakpoint_timeout and presses<3:
+    #eventually, here we will call threads to monitor
+    #vole position and the levers. here its just random
+    if  not lever_press_queue.empty():
+
+        #if the lever was pressed increment the num of presses, reset the
+        #timeout timer. Gosh, this could be an infinitely long test if the animal
+        #just presses once every 5 min haha. (or whatever the timeout is set to)
+        lever_ID = lever_press_queue.get()
+        presses +=1
+        timeout_start = time.time()
+
+        timestamp_queue.put('%i, reward time!, %f'%(round, time.time()-start_time))
+        #progressive ratio of pr = 1
+        breakpt += progressive_ratio
+        presses = 0
+        do_stuff_queue.put(('open door',))
+        do_stuff_queue.join()
+
+        #this keeps going through the while loop until reward finished
+        reward_start = time.time()
+
+        '''a good time to write some stuff to file'''
+        with open(path, 'a') as csv_file:
+            csv_writer = csv.writer(csv_file)
+
+            #keep looping until
+            while time.time() - reward_start < reward_time:
+                if not timestamp_queue.empty():
+                    line = timestamp_queue.get().split(',')
+                    print('writing ###### %s'%line)
+                    csv_writer.writerow(line)
+                time.sleep(0.05)
+
+        #time to close the door and move the test animal back
+        do_stuff_queue.put(('door close tone',))
+        do_stuff_queue.join()
+        time.sleep(1)
+        do_stuff_queue.put(('close door',))
+        print('time to move that vole over!')
+
+        timestamp_queue.put('%i, start of move animal time, %f'%(round, time.time()-start_time))
+
+        #a bit overkill, but give a countdown clock timer for the experimenter
+        for i in range(move_animal_time):
+            sys.stdout.write('\r'+str(move_animal_time - i)+' seconds left  ')
+            time.sleep(1)
+            sys.stdout.flush()
+        print('vole should be moved now')
+
+        #let the vole gather itself before being tested again.
+        time.sleep(time_after_move)
+
+        #since we reached the breakpoint,
+        #restart the breakpoint timer for the next increase in lever presses
+        timeout_start = time.time()
+        round += 1
+
+        #restart monitoring
+        do_stuff_queue.put(('start tone',))
+        do_stuff_queue.join()
+        timeout_start = time.time()
+        monitor = True
+        do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
+
+
+
+
+    sys.stdout.flush()
+    sys.stdout.write('\r'+str(breakpoint_timeout - int(time.time()-timeout_start)) +
+                        ' seconds left before timeout, ' + str(breakpt - presses) +
+                        ' presses left, total time (m): '+str(int((time.time()-start_time)/60)) )
+
+    if not timestamp_queue.empty():
+        '''append current timestamp queue contents to csv file'''
+        with open(path, 'a') as file:
+            writer = csv.writer(file, delimiter = ',')
+            while not timestamp_queue.empty() and lever_press_queue.empty():
+                line = timestamp_queue.get().split(',')
+                print('writing ###### %s'%line)
+                writer.writerow(line)
+
+    time.sleep(0.05)
+
+
+do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
+timeout_start = time.time()
+presses = 0
+#stay in this loop until the breakpoint timeout is reached
+while time.time() - timeout_start < test_period:
     #eventually, here we will call threads to monitor
     #vole position and the levers. here its just random
     if  not lever_press_queue.empty():
@@ -529,7 +634,6 @@ while time.time() - timeout_start < test_length:
 
     time.sleep(0.05)
 
-
 '''append current timestamp queue contents to csv file'''
 with open(path, 'a') as file:
     writer = csv.writer(file, delimiter = ',')
@@ -537,7 +641,7 @@ with open(path, 'a') as file:
         line = timestamp_queue.get().split(',')
         print('writing ###### %s'%line)
         writer.writerow(line)
-timestamp_queue.put('%i, Final Presses:%i, %f'%(round, presses,time.time()-start_time))
+
 print("all Done, final presses %i"%(presses))
 #reset levers to retracted
 GPIO.output(pins['led_%s'%'social'], 0)
