@@ -52,7 +52,7 @@ while no_vole:
     if check.lower() in ['y', 'yes']:
         no_vole = False
 
-day = input('Which door-breakpoint day is this? \n')
+day = input('Which door-reignition day is this? \n')
 day = int(day)
 
 push = input('should I push the results folder to email after this session? (y/n) \n')
@@ -75,7 +75,7 @@ print('Path is: ')
 print(path)
 with open(path, 'w') as file:
     writer = csv.writer(file, delimiter = ',')
-    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Door Breakpoint', 'Day: %i'%day])
+    writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'Experiment: Door Reignition', 'Day: %i'%day])
     writer.writerow(['Event', 'Time'])
 
 
