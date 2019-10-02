@@ -507,7 +507,7 @@ do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
 timeout_start = time.time()
 loop = 0
 #stay in this loop until the breakpoint timeout is reached
-while time.time() - timeout_start < breakpoint_timeout and loop <loops:
+while time.time() - timeout_start < breakpoint_timeout and loop<loops:
     #eventually, here we will call threads to monitor
     #vole position and the levers. here its just random
     if  not lever_press_queue.empty():
@@ -523,7 +523,7 @@ while time.time() - timeout_start < breakpoint_timeout and loop <loops:
         #progressive ratio of pr = 1
         breakpt += progressive_ratio
         presses = 0
-        loop +=1
+        loop+=1
         do_stuff_queue.put(('open door',))
         do_stuff_queue.join()
 
@@ -591,11 +591,13 @@ while time.time() - timeout_start < breakpoint_timeout and loop <loops:
                 writer.writerow(line)
 
     time.sleep(0.05)
+print('no more moving the animals, now they get no reward')
 
-
+timestamp_queue.put('%i, transition to no-reward test, %f'%(round, time.time()-start_time))
 do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
 timeout_start = time.time()
 presses = 0
+round += 1
 #stay in this loop until the breakpoint timeout is reached
 while time.time() - timeout_start < test_period:
     #eventually, here we will call threads to monitor
