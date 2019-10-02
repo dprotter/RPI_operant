@@ -571,7 +571,8 @@ while time.time() - timeout_start < breakpoint_timeout and loop<loops:
         do_stuff_queue.join()
         timeout_start = time.time()
         monitor = True
-        do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
+        if loop < loops:
+            do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
 
 
 
