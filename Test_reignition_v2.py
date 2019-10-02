@@ -40,26 +40,28 @@ save_dir = '/home/pi/Operant_Output/'
 
 no_user = True
 while no_user:
-    user = input('who is doing this experiment? \n')
-    check = input('so send the data to %s ? (y/n) \n'%user)
+    user = 'dave'
+    check = 'y'
     if check.lower() in ['y', 'yes']:
         no_user = False
 
 no_vole = True
 while no_vole:
-    vole = input('Vole number? \n')
-    check = input('vole# is %s ? (y/n) \n'%vole)
+    vole = '000'
+    check = 'y'
     if check.lower() in ['y', 'yes']:
         no_vole = False
 
-day = input('Which door-breakpoint day is this? \n')
+day = input('Which door-shaping training day is this? \n')
 day = int(day)
 
-push = input('should I push the results folder to email after this session? (y/n) \n')
-if push.lower() in 'y':
+push = 'y'
+if push == 'y':
     print("ok, your results will be emailed to you after this session.")
 else:
     print("Ok, I won't email you.")
+
+
 
 """fname will be of format m_d_y__h_m_vole_#_fresh.csv. fresh will be removed
 once the file has been send via email."""
