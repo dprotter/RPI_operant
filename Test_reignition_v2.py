@@ -28,7 +28,7 @@ time_after_move = 5 #how long we want to wait before the next test period. Somet
                     #the move animal time may bleed into this a bit
 lever_retract_time = 2 # time in s the lever stays retracted after a press.
 reward_time = 5
-
+loops = 3
 test_period = 15
 
 """the following sets up the output file and gets some user input. """
@@ -505,9 +505,9 @@ do_stuff_queue.put(('breakpoint monitor lever', (lever_press_queue, 'social',)))
 #the animal has breakpoint_timeout (s) to press the lever to the required
 #number to activate the door. this number goes up each time.
 timeout_start = time.time()
-
+loop = 0
 #stay in this loop until the breakpoint timeout is reached
-while time.time() - timeout_start < breakpoint_timeout and presses<3:
+while time.time() - timeout_start < breakpoint_timeout and loop <loops:
     #eventually, here we will call threads to monitor
     #vole position and the levers. here its just random
     if  not lever_press_queue.empty():
@@ -523,6 +523,7 @@ while time.time() - timeout_start < breakpoint_timeout and presses<3:
         #progressive ratio of pr = 1
         breakpt += progressive_ratio
         presses = 0
+        loop +=1
         do_stuff_queue.put(('open door',))
         do_stuff_queue.join()
 
