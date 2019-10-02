@@ -221,6 +221,47 @@ def dispence_pellet(q):
         timestamp_queue.put('%i, skip pellet dispense, %f'%(round, time.time()-start_time))
         return ''
 
+
+def breakpoint_monitor_lever(ds_queue, args):
+    '''this lever monitor function tracks presses and returns when breakpoint reached'''
+
+    global monitor
+    global start_time
+    global interrupt
+    global round
+
+    monitor = True
+    lever_q, lever_ID= args
+    "monitor a lever. If lever pressed, put lever_ID in queue. "
+    lever=0
+    do_stuff_queue.put(('extend lever',
+                        ('social',lever_angles['social'][0],lever_angles['social'][1])))
+
+    ds_queue.task_done()
+    while monitor:
+        if GPIO.input(pins["lever_%s"%lever_ID]):
+            lever +=1
+
+        #just guessing on this value, should probably check somehow empirically
+        if lever > 2:
+
+            #send the lever_ID to the lever_q to trigger a  do_stuff.put in
+            #the main thread/loop
+
+            timestamp_queue.put('%i, %s lever pressed, %f'%(round, lever_ID, time.time()-start_time))
+
+
+            do_stuff_queue.put(('retract lever',
+                                ('social', lever_angles['social'][0],lever_angles['social'][1])))
+
+            lever_q.put(lever_ID)
+            lever = 0
+            monitor = False
+            break
+
+        time.sleep(25/1000.0)
+    print('\nmonitor thread done')
+
 def read_pellet(q):
     global start_time
     global pellet_state
