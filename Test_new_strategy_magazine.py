@@ -11,7 +11,7 @@ timeIV = 2 #time after pellet delivered before levers retracted
 loops = 15
 
 #run this to get the RPi.GPIO pins setup
-functions.setup_pins()
+fn.setup_pins()
 path = skip_setup()
 wrt = threading.Thread(target = fn.flush_to_CSV, args =(path,))
 wrt.daemon = True
@@ -24,7 +24,7 @@ for x in range(7):
 
 
 
-home_base.functions.start_time()
+fn.start_time()
 ### master looper ###
 for i in range(loops):
     round_start = time.time()
@@ -90,7 +90,7 @@ for i in range(loops):
     fn.monitor = False
 
 
-if home_base.functions.pellet_state:
+if fn.pellet_state:
     timestamp_queue.put('%i, final pellet not retrieved, %f'%(round, time.time()-start_time))
 
 do_stuff_queue.put(('clean up',))
