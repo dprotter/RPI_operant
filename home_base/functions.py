@@ -22,9 +22,6 @@ lever_press_queue = queue.Queue()
 global round
 round = 0
 
-global pellet_state
-pellet_state = False
-
 global start_time
 start_time = None
 
