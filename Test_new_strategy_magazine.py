@@ -1,6 +1,7 @@
 import home_base.functions as fn
 from home_base.functions import do_stuff_queue, timestamp_queue, lever_press_queue
 import threading
+import time
 start_time = 0
 save_path = ''
 
