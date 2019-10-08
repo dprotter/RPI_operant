@@ -8,12 +8,12 @@ from home_base.operant_cage_settings import (kit, pins,
 lever_angles, continuous_servo_speeds,servo_dict )
 import datetime
 import csv
-import threading
+
 import numpy as np
 import queue
 import random
 import pigpio
-
+pi = pigpio.pi()
 #our queues for doign stuff and saving stuff
 do_stuff_queue = queue.Queue()
 timestamp_queue = queue.Queue()
@@ -126,8 +126,6 @@ def setup_pins():
     #setup our pins. Lever pins are input, all else are output
     GPIO.setmode(GPIO.BCM)
 
-    #this is purely for PWM buzzers, where the pigpio library works much better
-    pi = pigpio.pi()
 
     for k in pins.keys():
         print(k)
