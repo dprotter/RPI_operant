@@ -1,14 +1,14 @@
 import home_base.functions as fn
 from home_base.functions import do_stuff_queue, timestamp_queue, lever_press_queue
-
+import threading
 start_time = 0
 save_path = ''
 
-round_time = 120
+round_time = 10
 pellet_tone_time = 2 #how long the pellet tone plays
 timeII = 2 #time after levers out before pellet
 timeIV = 2 #time after pellet delivered before levers retracted
-loops = 15
+loops = 3
 
 #run this to get the RPi.GPIO pins setup
 fn.setup_pins()
