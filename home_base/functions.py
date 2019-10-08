@@ -1,9 +1,52 @@
 """all of the necessary functions for running the operant pi boxes"""
 import RPi.GPIO as GPIO
-from adafruit_servokit import ServoKit
+import os
 if os.system('sudo lsof -i TCP:8888'):
     os.system('sudo pigpiod')
 import time
+from home_base.operant_cage_settings import (kit, pins,
+lever_angles, continuous_servo_speeds,servo_dict )
+import datetime
+import csv
+import threading
+import numpy as np
+import queue
+import random
+import pigpio
+
+#our queues for doign stuff and saving stuff
+do_stuff_queue = queue.Queue()
+timestamp_queue = queue.Queue()
+lever_press_queue = queue.Queue()
+
+global round
+round = 0
+
+global pellet_state
+pellet_state = False
+
+global start_time
+start_time = None
+
+#in case we need to interrupt after a lever press.
+global interrupt
+interrupt = False
+
+#whether or not to monitor levers.
+global monitor
+monitor = False
+
+#is there a pellet currently in the trough?
+global pellet_state
+pellet_state = False
+
+path = ''
+
+def start_time():
+    global start_time
+    start_time = time.time()
+
+
 def setup_experiment(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output', day = 0):
 
     #get user info
@@ -24,7 +67,7 @@ def setup_experiment(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output',
         if check.lower() in ['y', 'yes']:
             no_vole = False
 
-    day = input('Which magazine training day is this? (starts at day 1)\n')
+    day = input(f'Which {exp} training day is this? (starts at day 1)\n')
     day = int(day)
 
     push = input('should I push the results folder to email after this session? (y/n) \n')
@@ -52,8 +95,58 @@ def setup_experiment(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output',
         writer.writerow(['Round, Event', 'Time'])
 
     return path
-def skip_setup(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output'):
 
+def skip_setup(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output', day = 0):
+    '''if you want to run a test script without entering any info'''
+    #get user info
+    #get vole number
+    #push to email after done?
+
+    user = 'Test'
+
+    vole = '000'
+
+
+    push = 'y'
+
+
+    """fname will be of format m_d_y__h_m_vole_#_fresh.csv. fresh will be removed
+    once the file has been send via email."""
+
+    date = datetime.datetime.now()
+    fdate = '%s_%s_%s__%s_%s_'%(date.month, date.day, date.year, date.hour, date.minute)
+
+    fname = fdate+'_vole_%s.csv'%vole
+    path = os.path.join(save_dir, fname)
+    with open(path, 'w') as file:
+        writer = csv.writer(file, delimiter = ',')
+        writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'experiment: %s'%exp, 'Day: %i'%day])
+        writer.writerow(['Round, Event', 'Time'])
+
+    return path
+def setup_pins():
+    '''here we get the gpio pins setup, and instantiate pigpio object.'''
+    #setup our pins. Lever pins are input, all else are output
+    GPIO.setmode(GPIO.BCM)
+
+    #this is purely for PWM buzzers, where the pigpio library works much better
+    pi = pigpio.pi()
+
+    for k in pins.keys():
+        print(k)
+        if 'lever' in k:
+            print(k + ": IN")
+            GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        elif 'read' in k:
+            print(k + ": IN")
+            GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        elif 'led' in k or 'dispence' in k :
+            GPIO.setup(pins[k], GPIO.OUT)
+            GPIO.output(pins[k], 0)
+            print(k + ": OUT")
+        else:
+            GPIO.setup(pins[k], GPIO.OUT)
+            print(k + ": OUT")
 
 def run_job(job, q, args = None):
     print('job: ' + str(job) + '    args: ' +str(args))
@@ -262,6 +355,14 @@ def breakpoint_monitor_lever(ds_queue, args):
         time.sleep(25/1000.0)
     print('\nmonitor thread done')
 
+def cleanup(q):
+    '''cleanup all servos etc'''
+    servo_dict['food'].angle = lever_angles['food'][0]
+    servo_dict['social'].angle = lever_angles['social'][0]
+    servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
+    servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
+    q.task_done()
+
 def read_pellet(q):
     global start_time
     global pellet_state
@@ -301,3 +402,27 @@ def read_pellet(q):
 
     timestamp_queue.put('%i, pellet retreival timeout, %f'%(round, time.time()-start_time))
     return ''
+
+def thread_distributor():
+    '''this is main thread's job. To look for shit to do and send it to a thread'''
+    while True:
+        if not do_stuff_queue.empty():
+            do = do_stuff_queue.get()
+            name = do[0]
+            args = None
+            if len(do) >1:
+                args = do[1]
+
+            run_job(name, do_stuff_queue, args)
+            time.sleep(0.05)
+
+def flush_to_CSV(path):
+        '''a good time to write some stuff to file'''
+        with open(path, 'a') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            while time.time() - round_start < round_time:
+                if not timestamp_queue.empty():
+                    line = timestamp_queue.get().split(',')
+                    print('writing ###### %s'%line)
+                    csv_writer.writerow(line)
+                time.sleep(0.01)

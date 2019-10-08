@@ -1,16 +1,36 @@
-for x in range(8):
-    t = threading.Thread(target = thread_distributor)
+import home_base.functions as fn
+from home_base.functions import do_stuff_queue, timestamp_queue, lever_press_queue
+
+start_time = 0
+save_path = ''
+
+round_time = 120
+pellet_tone_time = 2 #how long the pellet tone plays
+timeII = 2 #time after levers out before pellet
+timeIV = 2 #time after pellet delivered before levers retracted
+loops = 15
+
+#run this to get the RPi.GPIO pins setup
+functions.setup_pins()
+path = skip_setup()
+wrt = threading.Thread(target = fn.flush_to_CSV, args =(path,))
+wrt.daemon = True
+wrt.start()
+
+for x in range(7):
+    t = threading.Thread(target = fn.thread_distributor)
     t.daemon = True
     t.start()
-    print("started %i"%x )
 
 
+
+home_base.functions.start_time()
 ### master looper ###
 for i in range(loops):
     round_start = time.time()
-    round = i
+    fn.round = i
     print("#-#-#-#-#-# new round #%i!!!-#-#-#-#-#"%i)
-    timestamp_queue.put('%i, Starting new round, %f'%(round, time.time()-start_time))
+    timestamp_queue.put('%i, Starting new round, %f'%(fn.round, time.time()-fn.start_time))
     do_stuff_queue.put(('start tone',))
 
     #wait till tone is done
@@ -33,20 +53,20 @@ for i in range(loops):
     while time.time() - timeII_start < timeII:
         #eventually, here we will call threads to monitor
         #vole position and the levers. here its just random
-        if not interrupt and not lever_press_queue.empty():
-            interrupt = True
+        if not fn.interrupt and not lever_press_queue.empty():
+            fn.interrupt = True
             lever_ID = lever_press_queue.get()
             print('the %s lever was pressed! woweeeee'%lever_ID)
-            timestamp_queue.put('%i, a lever was pressed! woweeeee, %f'%(round, time.time()-start_time))
+            timestamp_queue.put('%i, a lever was pressed! woweeeee, %f'%(fn.round, time.time()-fn.start_time))
             do_stuff_queue.put(('pellet tone',))
             do_stuff_queue.put(('dispence pellet',))
             do_stuff_queue.join()
         time.sleep(0.05)
 
     #waited the interval for timeII, nothing happened
-    if not interrupt:
+    if not fn.interrupt:
         print('the vole is dumb and didnt press a lever')
-        timestamp_queue.put('%i, no lever press, %f'%(round, time.time()-start_time))
+        timestamp_queue.put('%i, no lever press, %f'%(fn.round, time.time()-start_time))
         do_stuff_queue.put(('pellet tone',))
         do_stuff_queue.put(('dispence pellet',))
         time.sleep(0.05)
@@ -62,36 +82,18 @@ for i in range(loops):
 
     #wait for ITI to pass
 
-    '''a good time to write some stuff to file'''
-    with open(path, 'a') as csv_file:
-        csv_writer = csv.writer(csv_file)
-        while time.time() - round_start < round_time:
-            if not timestamp_queue.empty():
-                line = timestamp_queue.get().split(',')
-                print('writing ###### %s'%line)
-                csv_writer.writerow(line)
-            time.sleep(0.01)
-    #reset our global values interrupt and monitor. This will turn off the lever
+
+    #reset our global values fn.interrupt and monitor. This will turn off the lever
     #if it is still being monitored. This resets the inerrupt value for the next
     #loop of the training.
-    interrupt = False
-    monitor = False
+    fn.interrupt = False
+    fn.monitor = False
 
-'''append current timestamp queue contents to csv file'''
-with open(path, 'a') as file:
-    writer = csv.writer(file, delimiter = ',')
-    while not timestamp_queue.empty():
-        line = timestamp_queue.get().split(',')
-        writer.writerow(line)
 
-if pellet_state:
+if home_base.functions.pellet_state:
     timestamp_queue.put('%i, final pellet not retrieved, %f'%(round, time.time()-start_time))
-print("all Done")
-#reset levers to retracted
-servo_dict['food'].angle = lever_angles['food'][0]
-servo_dict['social'].angle = lever_angles['social'][0]
-servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
-servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
 
-if 'y' in push.lower():
-    email_push.email_push(user = user)
+do_stuff_queue.put(('clean up',))
+while not timestamp_queue.empty():
+    '''hanging till queue empty'''
+    time.sleep(0.05)
