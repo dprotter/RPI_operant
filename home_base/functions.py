@@ -64,7 +64,7 @@ def setup_experiment(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output',
         if check.lower() in ['y', 'yes']:
             no_vole = False
 
-    day = input(f'Which {exp} training day is this? (starts at day 1)\n')
+    day = input('Which %s training day is this? (starts at day 1)\n'%exp)
     day = int(day)
 
     push = input('should I push the results folder to email after this session? (y/n) \n')
