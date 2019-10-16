@@ -423,13 +423,14 @@ def flush_to_CSV():
         '''a good time to write some stuff to file'''
         print('heres the path for the flush func\n%s'%path)
 
-            csv_writer = csv.writer(csv_file, delimiter = ',')
-            while not done:
-                if not timestamp_queue.empty():
-                    with open(path, 'a') as csv_file:
-                        while not timestamp_queue.empty():
-                            line = timestamp_queue.get().split(',')
-                            print('writing ###### %s'%line)
-                            csv_writer.writerow(line)
-                            time.sleep(0.005)
-                time.sleep(0.01)
+
+        while not done:
+            if not timestamp_queue.empty():
+                with open(path, 'a') as csv_file:
+                    csv_writer = csv.writer(csv_file, delimiter = ',')
+                    while not timestamp_queue.empty():
+                        line = timestamp_queue.get().split(',')
+                        print('writing ###### %s'%line)
+                        csv_writer.writerow(line)
+                        time.sleep(0.005)
+            time.sleep(0.01)
