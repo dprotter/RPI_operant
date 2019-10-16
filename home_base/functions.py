@@ -40,7 +40,7 @@ monitor = False
 global pellet_state
 pellet_state = False
 
-path = ''
+this_path = ''
 
 def start_time():
     global start_time
@@ -419,15 +419,17 @@ def thread_distributor():
             run_job(name, do_stuff_queue, args)
             time.sleep(0.05)
 
-def flush_to_CSV(path):
+def flush_to_CSV():
         '''a good time to write some stuff to file'''
         print('heres the path for the flush func\n%s'%path)
-        with open(path, 'a') as csv_file:
+
             csv_writer = csv.writer(csv_file, delimiter = ',')
             while not done:
-                while not timestamp_queue.empty():
-                    line = timestamp_queue.get().split(',')
-                    print('writing ###### %s'%line)
-                    csv_writer.writerow(line)
-                    time.sleep(0.005)
+                if not timestamp_queue.empty():
+                    with open(path, 'a') as csv_file:
+                        while not timestamp_queue.empty():
+                            line = timestamp_queue.get().split(',')
+                            print('writing ###### %s'%line)
+                            csv_writer.writerow(line)
+                            time.sleep(0.005)
                 time.sleep(0.01)

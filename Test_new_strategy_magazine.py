@@ -14,7 +14,8 @@ loops = 3
 #run this to get the RPi.GPIO pins setup
 fn.setup_pins()
 path = fn.skip_setup()
-wrt = threading.Thread(target = fn.flush_to_CSV, args =(path,))
+fn.this_path = path
+wrt = threading.Thread(target = fn.flush_to_CSV)
 wrt.daemon = True
 wrt.start()
 
