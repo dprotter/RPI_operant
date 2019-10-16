@@ -415,7 +415,7 @@ def flush_to_CSV(path):
         '''a good time to write some stuff to file'''
         print('heres the path for the flush func\n%s'%path)
         with open(path, 'a') as csv_file:
-            csv_writer = csv.writer(csv_file, delimeter = ',')
+            csv_writer = csv.writer(csv_file, delimiter = ',')
             while True:
                 if not timestamp_queue.empty():
                     line = timestamp_queue.get().split(',')
