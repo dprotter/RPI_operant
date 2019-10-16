@@ -421,12 +421,12 @@ def thread_distributor():
 
 def flush_to_CSV():
         '''a good time to write some stuff to file'''
-        print('heres the path for the flush func\n%s'%path)
+        print('heres the path for the flush func\n%s'%this_path)
 
 
         while not done:
             if not timestamp_queue.empty():
-                with open(path, 'a') as csv_file:
+                with open(this_path, 'a') as csv_file:
                     csv_writer = csv.writer(csv_file, delimiter = ',')
                     while not timestamp_queue.empty():
                         line = timestamp_queue.get().split(',')
