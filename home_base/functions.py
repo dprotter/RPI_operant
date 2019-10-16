@@ -313,9 +313,10 @@ def dispence_pellet(q):
         timestamp_queue.put('%i, skip pellet dispense, %f'%(round, time.time()-start_time))
         return ''
 
-def clean_up():
+def clean_up(q):
     global done
     done = True
+    q.task_done()
 
 def breakpoint_monitor_lever(ds_queue, args):
     '''this lever monitor function tracks presses and returns when breakpoint reached'''
@@ -423,9 +424,10 @@ def flush_to_CSV(path):
         print('heres the path for the flush func\n%s'%path)
         with open(path, 'a') as csv_file:
             csv_writer = csv.writer(csv_file, delimiter = ',')
-            while not done or not timestamp_queue.empty():
-                if not timestamp_queue.empty():
+            while not done:
+                while not timestamp_queue.empty():
                     line = timestamp_queue.get().split(',')
                     print('writing ###### %s'%line)
                     csv_writer.writerow(line)
+                    time.sleep(0.005)
                 time.sleep(0.01)
