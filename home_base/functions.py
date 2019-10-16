@@ -19,6 +19,9 @@ do_stuff_queue = queue.Queue()
 timestamp_queue = queue.Queue()
 lever_press_queue = queue.Queue()
 
+global done
+done = False
+
 global round
 round = 0
 
@@ -155,7 +158,8 @@ def run_job(job, q, args = None):
             'pellet tone':pellet_tone,
             'monitor lever':monitor_lever,
             'dispense pellet':dispence_pellet,
-            'read pellet':read_pellet
+            'read pellet':read_pellet,
+            'clean up': clean_up
             }
 
     if args:
@@ -309,6 +313,9 @@ def dispence_pellet(q):
         timestamp_queue.put('%i, skip pellet dispense, %f'%(round, time.time()-start_time))
         return ''
 
+def clean_up():
+    global done
+    done = True
 
 def breakpoint_monitor_lever(ds_queue, args):
     '''this lever monitor function tracks presses and returns when breakpoint reached'''
@@ -416,7 +423,7 @@ def flush_to_CSV(path):
         print('heres the path for the flush func\n%s'%path)
         with open(path, 'a') as csv_file:
             csv_writer = csv.writer(csv_file, delimiter = ',')
-            while True:
+            while not done or not timestamp_queue.empty():
                 if not timestamp_queue.empty():
                     line = timestamp_queue.get().split(',')
                     print('writing ###### %s'%line)
