@@ -188,7 +188,9 @@ def monitor_lever(ds_queue, args):
             if not interrupt:
                 #send the lever_ID to the lever_q to trigger a  do_stuff.put in
                 #the main thread/loop
+                pulse_sync_line()
                 lever_q.put(lever_ID)
+
                 timestamp_queue.put('%i, %s lever pressed productive, %f'%(round, lever_ID, time.time()-start_time))
                 while GPIO.input(pins["lever_%s"%lever_ID]):
                     'hanging till lever not pressed'
@@ -313,6 +315,12 @@ def dispence_pellet(q):
         timestamp_queue.put('%i, skip pellet dispense, %f'%(round, time.time()-start_time))
         return ''
 
+def pulse_sync_line():
+    '''not terribly accurate, but good enough'''
+    GPIO.out(pins['gpio_sync'], 1)
+    time.sleep(0.05)
+    GPIO.out(pins['gpio_sync'], 0)
+
 def clean_up(q):
     global done
     done = True
@@ -389,9 +397,9 @@ def read_pellet(q):
             read_disp += 1
 
         if read_retr > 5:
-            print('Pellet taken! %f'%(time.time()-start_time))
+            pulse_sync_line()
             timestamp_queue.put('%i, Pellet retrieved, %f'%(round, time.time()-start_time))
-
+            print('Pellet taken! %f'%(time.time()-start_time))
             #no pellet in trough
             pellet_state = False
             return ''
