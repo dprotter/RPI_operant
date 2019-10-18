@@ -326,7 +326,7 @@ def pulse_sync_line():
     '''not terribly accurate, but good enough. For now, this is called on every
     lever press or pellet retrieval. I can't imagine a situation yet'''
     GPIO.output(pins['gpio_sync'], 1)
-    time.sleep(0.05)
+    time.sleep(0.08)
     GPIO.output(pins['gpio_sync'], 0)
 
 def clean_up(q):
