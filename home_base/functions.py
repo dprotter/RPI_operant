@@ -8,7 +8,7 @@ from home_base.operant_cage_settings import (kit, pins,
 lever_angles, continuous_servo_speeds,servo_dict )
 import datetime
 import csv
-from email_push import email_push
+from /home_base/email_push import email_push
 import numpy as np
 import queue
 import random
