@@ -68,7 +68,7 @@ for i in range(loops):
     #waited the interval for timeII, nothing happened
     if not fn.interrupt:
         print('the vole is dumb and didnt press a lever')
-        timestamp_queue.put('%i, no lever press, %f'%(fn.round, time.time()-start_time))
+        timestamp_queue.put('%i, no lever press, %f'%(fn.round, time.time()-fn.start_time))
         do_stuff_queue.put(('pellet tone',))
         do_stuff_queue.put(('dispence pellet',))
         time.sleep(0.05)
@@ -93,7 +93,7 @@ for i in range(loops):
 
 
 if fn.pellet_state:
-    timestamp_queue.put('%i, final pellet not retrieved, %f'%(round, time.time()-start_time))
+    timestamp_queue.put('%i, final pellet not retrieved, %f'%(round, time.time()-fn.start_time))
 
 do_stuff_queue.put(('clean up',))
 while not timestamp_queue.empty():
