@@ -8,17 +8,20 @@ from home_base.operant_cage_settings import (kit, pins,
 lever_angles, continuous_servo_speeds,servo_dict )
 import datetime
 import csv
-
+from email_push import email_push
 import numpy as np
 import queue
 import random
 import pigpio
 pi = pigpio.pi()
+
+
+
 #our queues for doign stuff and saving stuff
 do_stuff_queue = queue.Queue()
 timestamp_queue = queue.Queue()
 lever_press_queue = queue.Queue()
-
+user = None
 global done
 done = False
 
@@ -56,6 +59,7 @@ def setup_experiment(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output',
     no_user = True
     while no_user:
         user = input('who is doing this experiment? \n')
+
         check = input('so send the data to %s ? (y/n) \n'%user)
         if check.lower() in ['y', 'yes']:
             no_user = False
@@ -87,6 +91,7 @@ def setup_experiment(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output',
 
     fname = fdate+'_vole_%s_fresh.csv'%vole
     path = os.path.join(save_dir, fname)
+    this_path = path
     print('Path is: ')
     print(path)
     with open(path, 'w') as file:
@@ -94,9 +99,9 @@ def setup_experiment(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output',
         writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'experiment: %s'%exp, 'Day: %i'%day])
         writer.writerow(['Round, Event', 'Time'])
 
-    return path
 
-def skip_setup(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output', day = 0):
+
+def skip_setup(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output', day = 0, user = None):
     '''if you want to run a test script without entering any info'''
     #get user info
     #get vole number
@@ -118,12 +123,13 @@ def skip_setup(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output', day =
 
     fname = fdate+'_vole_%s.csv'%vole
     path = os.path.join(save_dir, fname)
+    this_path = path
     with open(path, 'w') as file:
         writer = csv.writer(file, delimiter = ',')
         writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'experiment: %s'%exp, 'Day: %i'%day])
         writer.writerow(['Round, Event', 'Time'])
 
-    return path
+
 def setup_pins():
     '''here we get the gpio pins setup, and instantiate pigpio object.'''
     #setup our pins. Lever pins are input, all else are output
@@ -316,7 +322,8 @@ def dispence_pellet(q):
         return ''
 
 def pulse_sync_line():
-    '''not terribly accurate, but good enough'''
+    '''not terribly accurate, but good enough. For now, this is called on every
+    lever press or pellet retrieval. I can't imagine a situation yet'''
     GPIO.out(pins['gpio_sync'], 1)
     time.sleep(0.05)
     GPIO.out(pins['gpio_sync'], 0)
@@ -324,6 +331,11 @@ def pulse_sync_line():
 def clean_up(q):
     global done
     done = True
+    '''cleanup all servos etc'''
+    servo_dict['food'].angle = lever_angles['food'][0]
+    servo_dict['social'].angle = lever_angles['social'][0]
+    servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
+    servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
     q.task_done()
 
 def breakpoint_monitor_lever(ds_queue, args):
@@ -351,7 +363,7 @@ def breakpoint_monitor_lever(ds_queue, args):
 
             #send the lever_ID to the lever_q to trigger a  do_stuff.put in
             #the main thread/loop
-
+            pulse_sync_line()
             timestamp_queue.put('%i, %s lever pressed, %f'%(round, lever_ID, time.time()-start_time))
 
 
@@ -365,14 +377,6 @@ def breakpoint_monitor_lever(ds_queue, args):
 
         time.sleep(25/1000.0)
     print('\nmonitor thread done')
-
-def cleanup(q):
-    '''cleanup all servos etc'''
-    servo_dict['food'].angle = lever_angles['food'][0]
-    servo_dict['social'].angle = lever_angles['social'][0]
-    servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
-    servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
-    q.task_done()
 
 def read_pellet(q):
     global start_time
@@ -442,3 +446,7 @@ def flush_to_CSV():
                         csv_writer.writerow(line)
                         time.sleep(0.005)
             time.sleep(0.01)
+
+def email_user(usr):
+    '''initiate email script to user'''
+    email_push(user)
