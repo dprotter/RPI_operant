@@ -91,7 +91,7 @@ def setup_experiment(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output',
 
     fname = fdate+'_vole_%s_fresh.csv'%vole
     path = os.path.join(save_dir, fname)
-    this_path = path
+
     print('Path is: ')
     print(path)
     with open(path, 'w') as file:
@@ -123,7 +123,7 @@ def skip_setup(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output', day =
 
     fname = fdate+'_vole_%s.csv'%vole
     path = os.path.join(save_dir, fname)
-    this_path = path
+
     with open(path, 'w') as file:
         writer = csv.writer(file, delimiter = ',')
         writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'experiment: %s'%exp, 'Day: %i'%day])
