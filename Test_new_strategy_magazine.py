@@ -24,10 +24,13 @@ for x in range(7):
     t.daemon = True
     t.start()
 
-fn.pulse_sync_line()
-timestamp_queue.put('%i, Emergency Syncronize Stamp, %f'%(fn.round, time.time()-fn.start_time))
+
 
 fn.start_time()
+
+
+fn.pulse_sync_line()
+timestamp_queue.put('%i, Emergency Syncronize Stamp, %f'%(fn.round, time.time()-fn.start_time))
 ### master looper ###
 for i in range(loops):
     round_start = time.time()
