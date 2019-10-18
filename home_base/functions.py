@@ -325,9 +325,9 @@ def dispence_pellet(q):
 def pulse_sync_line():
     '''not terribly accurate, but good enough. For now, this is called on every
     lever press or pellet retrieval. I can't imagine a situation yet'''
-    GPIO.out(pins['gpio_sync'], 1)
+    GPIO.output(pins['gpio_sync'], 1)
     time.sleep(0.05)
-    GPIO.out(pins['gpio_sync'], 0)
+    GPIO.output(pins['gpio_sync'], 0)
 
 def clean_up(q):
     global done
