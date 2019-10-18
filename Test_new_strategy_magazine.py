@@ -13,7 +13,7 @@ loops = 15
 
 #run this to get the RPi.GPIO pins setup
 fn.setup_pins()
-path = fn.skip_setup()
+path = fn.setup_experiment(exp = 'Miniscope Operant Test', )
 fn.this_path = path
 wrt = threading.Thread(target = fn.flush_to_CSV)
 wrt.daemon = True
@@ -24,7 +24,8 @@ for x in range(7):
     t.daemon = True
     t.start()
 
-
+fn.pulse_sync_line()
+timestamp_queue.put('%i, Emergency Syncronize Stamp, %f'%(fn.round, time.time()-fn.start_time))
 
 fn.start_time()
 ### master looper ###
