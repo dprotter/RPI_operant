@@ -93,7 +93,7 @@ for i in range(loops):
 
 
 if fn.pellet_state:
-    timestamp_queue.put('%i, final pellet not retrieved, %f'%(round, time.time()-fn.start_time))
+    timestamp_queue.put('%i, final pellet not retrieved, %f'%(fn.round, time.time()-fn.start_time))
 
 do_stuff_queue.put(('clean up',))
 while not timestamp_queue.empty():
