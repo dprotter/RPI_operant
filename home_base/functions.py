@@ -98,7 +98,7 @@ def setup_experiment(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output',
         writer = csv.writer(file, delimiter = ',')
         writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'experiment: %s'%exp, 'Day: %i'%day])
         writer.writerow(['Round, Event', 'Time'])
-
+    return path
 
 
 def skip_setup(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output', day = 0, user = None):
@@ -129,6 +129,7 @@ def skip_setup(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output', day =
         writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'experiment: %s'%exp, 'Day: %i'%day])
         writer.writerow(['Round, Event', 'Time'])
 
+    return path
 
 def setup_pins():
     '''here we get the gpio pins setup, and instantiate pigpio object.'''
