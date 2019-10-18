@@ -87,7 +87,12 @@ for i in range(loops):
     print('entering ITI for #-#-# round #%i -#-#-# '%i )
 
     #wait for ITI to pass
-
+    iti_iter = 0
+    while time.time() - round_start < round_time:
+        iti_iter+=1
+        sys.stdout.write(f"seconds have passed: {iti_iter}")
+        time.sleep(1)
+        sys.stdout.flush()
 
     #reset our global values fn.interrupt and monitor. This will turn off the lever
     #if it is still being monitored. This resets the inerrupt value for the next
