@@ -107,6 +107,10 @@ if fn.pellet_state:
 
 do_stuff_queue.put(('clean up',))
 
+
+while not timestamp_queue.empty():
+    '''hanging till queue empty'''
+    time.sleep(0.05)
 #wait for the csv writer
 time.sleep(1)
 print('all done')
