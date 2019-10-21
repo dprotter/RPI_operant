@@ -437,7 +437,7 @@ def flush_to_CSV():
         print('heres the path for the flush func\n%s'%this_path)
 
 
-        while not done:
+        while not done or not timestamp_queue.empty():
             if not timestamp_queue.empty():
                 with open(this_path, 'a') as csv_file:
                     csv_writer = csv.writer(csv_file, delimiter = ',')
