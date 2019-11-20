@@ -1,6 +1,6 @@
 import RPi.GPIO as GPIO
 import time
-from operant_cage_settings import pins
+from home_base.operant_cage_settings import pins
 
 GPIO.setmode(GPIO.BCM)
 

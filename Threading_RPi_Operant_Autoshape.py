@@ -431,7 +431,8 @@ for i in range(loops):
 
     time.sleep(timeIV)
     print('entering ITI for #-#-# round #%i -#-#-# '%i )
-
+    interrupt = False
+    monitor = False
     #wait for ITI to pass
 
     '''a good time to write some stuff to file'''
@@ -446,12 +447,11 @@ for i in range(loops):
     #reset our global values interrupt and monitor. This will turn off the lever
     #if it is still being monitored. This resets the inerrupt value for the next
     #loop of the training.
-    interrupt = False
-    monitor = False
+
 
 if pellet_state:
     timestamp_queue.put('%i, final pellet not retrieved, %f'%(round, time.time()-start_time))
-    
+
 '''append current timestamp queue contents to csv file'''
 with open(path, 'a') as file:
     writer = csv.writer(file, delimiter = ',')
