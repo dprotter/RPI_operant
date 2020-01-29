@@ -121,7 +121,7 @@ def modify_vars(var_list, mod):
     while choice != -1:
         key = mod.key_val_names_order[choice]
 
-        val = int(f'print new value for {key}?\n')
+        val = int(input(f'new value for {key}?\n'))
         mod.key_values_def[key] = val
 
         print('\n\n******************\n\n')
@@ -170,9 +170,10 @@ while user_accepts == False:
 
     valid = False
     while valid == False:
-        rr = input(f'''Should I: run as is (<y>) \n
-                        modify vars (<v>)\n
-                        skip to next vole (<s>)\n''')
+        rr = input(f'''Should I:
+                       run as is (<y>) \n
+                       modify vars (<v>)\n
+                       skip to next vole (<s>)\n''')
         if rr not in ['y','v','s']:
             print('Ooops, that wasnt a valid entry. use only: [y,r,s]')
         else:
