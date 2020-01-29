@@ -145,7 +145,8 @@ while user_accepts == False:
     if experiment_status.iloc[next_exp].modified_vars!=None:
         update_vars(experiment_status.iloc[next_exp].modified_vars, module)
 
-    if experiment_status.iloc[next_exp].completed_rounds != 0:
+    cr = experiment_status.iloc[next_exp].completed_rounds
+    if  cr not in [0,'']:
         choose_unfinished(loc,module)
 
     defs = [[val, module.key_values_def[val]] for val in module.key_val_names_order]
