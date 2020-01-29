@@ -113,7 +113,7 @@ def choose_unfinished(mod):
 def modify_vars(var_list, mod):
     defs = [[i, val, mod.key_values_def[val]] for i, val in enumerate(mod.key_val_names_order)]
     defs += [-1, 'done','']
-    print(tabulate(defs), header = ['var name', 'var def'], tablefmt = 'grid')
+    print(tabulate(defs, header = ['var name', 'var def'], tablefmt = 'grid'))
 
     choice = int(input('which will you modify?\n'))
 
@@ -127,7 +127,7 @@ def modify_vars(var_list, mod):
 
         defs = [[i, val, mod.key_values_def[val]] for i, val in enumerate(mod.key_val_names_order)]
         defs += [-1, 'done','']
-        print(tabulate(defs), header = ['var name', 'var def'], tablefmt = 'grid')
+        print(tabulate(defs, header = ['var name', 'var def'], tablefmt = 'grid'))
 
         choice = int(input('which will you modify?\n'))
 
@@ -164,7 +164,7 @@ while user_accepts == False:
     print(f'''ok, looks like vole {next_vole} is up for day {next_day}
                          using script {next_script}. \n ''')
     print('do these settings look good? \n')
-    print(tabulate(defs), header = ['var name', 'var def'], tablefmt = 'grid')
+    print(tabulate(defs, header = ['var name', 'var def'], tablefmt = 'grid'))
 
 
     valid = False
