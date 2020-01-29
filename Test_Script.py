@@ -1,5 +1,5 @@
-import /home/pi/RPI_operant/home_base.functions as fn
-from /home/pi/RPI_operant/home_base.functions import do_stuff_queue, timestamp_queue, lever_press_queue, lever_angles
+import home_base.functions as fn
+from home_base.functions import do_stuff_queue, timestamp_queue, lever_press_queue, lever_angles
 import threading
 import time
 start_time = 0
@@ -7,7 +7,10 @@ save_path = ''
 
 comms_queue = None
 
+
+
 pellet_tone_time = 2 #how long the pellet tone plays
+
 
 key_values = {'num_rounds': 3, 'round_time':10, 'timeII':2,
             'timeIV':2}
