@@ -26,9 +26,9 @@ csv_path = '/home/pi/iter2_test/csv_test.csv'
 experiment_status = pd.read_csv(csv_path)
 
 unfinished = experiment_status.loc[experiment_status.done != 'y']
-
-loc = 0
-next_exp = unfinished.index.values[loc]
+print(unfinished)
+unfinished_loc = 0
+next_exp = unfinished.index.values[unfinished_loc]
 
 next_vole = experiment_status.iloc[next_exp].vole
 next_script = experiment_status.iloc[next_exp].script
@@ -58,8 +58,8 @@ def skip_vole():
     experiment_status.to_csv(csv_path)
 
     #of the list of unfinished indexes, start at the min and move through.
-    next_exp = unfinished.index.values[loc]
-    loc+=1
+    next_exp = unfinished.index.values[unfinished_loc]
+    unfinished_loc+=1
 
     next_vole = experiment_status.iloc[next_exp].vole
     next_script = experiment_status.iloc[next_exp].script
