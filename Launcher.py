@@ -65,12 +65,13 @@ def skip_vole():
     next_script = experiment_status.iloc[next_exp].script
     next_day = experiment_status.iloc[next_exp].day
 
-def choose_unfinished(mod):
+def choose_unfinished():
     '''check if this script has previously be run'''
     global next_script
     global next_vole
     global next_exp
     global experiment_status
+    global module
 
     print(f'''script {next_script} for vole {next_vole} may have previously been run.
     only {experiment_status.iloc[next_exp].completed_rounds} of
@@ -110,7 +111,7 @@ def choose_unfinished(mod):
         next_day = experiment_status.iloc[next_exp+1].day
         next_exp = next_exp + 1
 
-def modify_vars(var_list):
+def modify_vars():
     '''give the user the opportunity to update the module values before running'''
     global module
 
@@ -158,12 +159,12 @@ while user_accepts == False:
 
     #if the user has defined modified variables, update the module.
     if experiment_status.iloc[next_exp].modified_vars!=None:
-        update_vars(experiment_status.iloc[next_exp].modified_vars, module)
+        update_vars(experiment_status.iloc[next_exp].modified_vars)
 
     #are there rounds alread completed for this file?
     cr = experiment_status.iloc[next_exp].completed_rounds
     if  cr != 0 and pd.notna(cr):
-        choose_unfinished(module)
+        choose_unfinished()
 
     defs = [[val, module.key_values_def[val], module.key_values[val]] for val in module.key_val_names_order]
 
@@ -186,6 +187,6 @@ while user_accepts == False:
     if rr == 'y':
         user_accepts = True
     elif rr == 'v':
-        modify_vars(defs, module)
+        modify_vars()
     else:
         skip_vole()
