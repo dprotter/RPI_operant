@@ -19,7 +19,8 @@ import pandas as pd
 import importlib
 import queue
 import tabulate
-
+import os
+print(os.cwd())
 def insert_row(row_number, df, row_values):
     df_top_copy = df.loc[df.index<=row_number].copy()
     df_bottom_copy = df.loc[df.index>=row_number].copy()
