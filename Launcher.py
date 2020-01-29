@@ -22,6 +22,20 @@ import tabulate
 import os
 os.chdir('/home/pi/RPI_operant/')
 
+csv_path = '/home/pi/iter2_test/csv_test.csv'
+experiment_status = pd.read_csv(csv_path)
+
+unfinished = experiment_status.loc[experiment_status.done != 'y']
+
+loc = 0
+next_exp = unfinished.index.values[loc]
+
+next_vole = experiment_status.iloc[next_exp].vole
+next_script = experiment_status.iloc[next_exp].script
+next_day = experiment_status.iloc[next_exp].day
+updated_rounds = None
+
+
 def insert_row(row_number, df, row_values):
     df_top_copy = df.loc[df.index<=row_number].copy()
     df_bottom_copy = df.loc[df.index>=row_number].copy()
@@ -122,18 +136,7 @@ def update_vars(var_change_list, mod):
     for key in vals.keys():
         mod.key_values_def[key] = vals[key]
 
-csv_path = '/home/pi/iter2_test/csv_test.csv'
-experiment_status = pd.read_csv(csv_path)
 
-unfinished = experiment_status.loc[experiment_status.done != 'y']
-
-loc = 0
-next_exp = unfinished.index.values[loc]
-
-next_vole = experiment_status.iloc[next_exp].vole
-next_script = experiment_status.iloc[next_exp].script
-next_day = experiment_status.iloc[next_exp].day
-updated_rounds = None
 
 
 #present the information of this script to the user, allow them to make changes
