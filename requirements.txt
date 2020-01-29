@@ -3,3 +3,4 @@ RPi.GPIO
 adafruit-circuitpython-servokit
 netifaces
 pigpio
+tabulate

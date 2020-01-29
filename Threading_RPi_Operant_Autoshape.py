@@ -451,7 +451,7 @@ for i in range(loops):
 
 if pellet_state:
     timestamp_queue.put('%i, final pellet not retrieved, %f'%(round, time.time()-start_time))
-    
+
 '''append current timestamp queue contents to csv file'''
 with open(path, 'a') as file:
     writer = csv.writer(file, delimiter = ',')
