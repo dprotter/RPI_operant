@@ -20,6 +20,7 @@ import importlib
 import queue
 import tabulate
 import os
+#remove this chdir later
 os.chdir('/home/pi/iter2_test/')
 def insert_row(row_number, df, row_values):
     df_top_copy = df.loc[df.index<=row_number].copy()
@@ -119,7 +120,7 @@ def update_vars(var_change_list, mod):
 csv_path = 'csv_test.csv'
 experiment_status = pd.read_csv(csv_path)
 
-unfinished = experiment_status.loc[experiment_status.Done != 'y']
+unfinished = experiment_status.loc[experiment_status.done != 'y']
 
 loc = 0
 next_exp = unfinished.index.values[loc]
