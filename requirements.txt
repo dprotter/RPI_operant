@@ -1,4 +1,4 @@
-Cython
+cython
 numpy
 RPi.GPIO
 adafruit-circuitpython-servokit
