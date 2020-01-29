@@ -71,7 +71,7 @@ def choose_unfinished(index, mod):
     elif rr == 's':
         skip_vole()
 
-    elif rr = 'r':
+    elif rr == 'r':
         #we need to make a copy of the current row.
         experiment_status = insert_row(experiment_status, next_exp+1, row_values = {})
 
