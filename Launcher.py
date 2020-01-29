@@ -135,7 +135,7 @@ while user_accepts == False:
 
     #dynamically import the script as a module
     spec = importlib.util.spec_from_file_location(next_script,
-                f'/home/pi/RPI_Operant/{script}.py')
+                f'/home/pi/RPI_Operant/{next_script}.py')
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 
