@@ -90,7 +90,7 @@ def choose_unfinished():
             valid = True
 
     if rr == 'y':
-        mod.key_values['rounds'] = rounds_left
+        module.key_values['rounds'] = rounds_left
     elif rr == 's':
         skip_vole()
 
@@ -115,7 +115,7 @@ def modify_vars():
     '''give the user the opportunity to update the module values before running'''
     global module
 
-    defs = [[i, val, module.key_values_def[val],module.key_values[val]] for i, val in enumerate(mod.key_val_names_order)]
+    defs = [[i, val, module.key_values_def[val],module.key_values[val]] for i, val in enumerate(module.key_val_names_order)]
     defs += [[-1, 'done','','']]
     print(defs)
     print(tabulate(defs, headers = ['select','var name', 'var def', 'var value'], tablefmt = 'grid'))
@@ -130,7 +130,7 @@ def modify_vars():
 
         print('\n\n******************\n\n')
 
-        defs = [[i, val, module.key_values_def[val],module.key_values[val]] for i, val in enumerate(mod.key_val_names_order)]
+        defs = [[i, val, module.key_values_def[val],module.key_values[val]] for i, val in enumerate(module.key_val_names_order)]
         defs += [[-1, 'done','']]
         print(tabulate(defs, headers = ['select','var name', 'var def', 'var value'], tablefmt = 'grid'))
 
