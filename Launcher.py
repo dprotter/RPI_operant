@@ -110,8 +110,11 @@ def choose_unfinished(mod):
         next_day = experiment_status.iloc[next_exp+1].day
         next_exp = next_exp + 1
 
-def modify_vars(var_list, mod):
-    defs = [[i, val, mod.key_values_def[val],mod.key_values[val]] for i, val in enumerate(mod.key_val_names_order)]
+def modify_vars(var_list):
+    '''give the user the opportunity to update the module values before running'''
+    global module
+
+    defs = [[i, val, module.key_values_def[val],module.key_values[val]] for i, val in enumerate(mod.key_val_names_order)]
     defs += [[-1, 'done','','']]
     print(defs)
     print(tabulate(defs, headers = ['select','var name', 'var def', 'var value'], tablefmt = 'grid'))
@@ -119,24 +122,26 @@ def modify_vars(var_list, mod):
     choice = int(input('which will you modify?\n'))
 
     while choice != -1:
-        key = mod.key_val_names_order[choice]
+        key = module.key_val_names_order[choice]
 
         val = int(input(f'new value for {key}?\n'))
-        mod.key_values[key] = val
+        module.key_values[key] = val
 
         print('\n\n******************\n\n')
 
-        defs = [[i, val, mod.key_values_def[val],mod.key_values[val]] for i, val in enumerate(mod.key_val_names_order)]
+        defs = [[i, val, module.key_values_def[val],module.key_values[val]] for i, val in enumerate(mod.key_val_names_order)]
         defs += [[-1, 'done','']]
         print(tabulate(defs, headers = ['select','var name', 'var def', 'var value'], tablefmt = 'grid'))
 
         choice = int(input('which will you modify?\n'))
 
-def update_vars(var_change_list, mod):
+def update_vars(var_change_list):
     '''take a csv string <'key:val,key2:val2,....'> of vals and update the key values in the module'''
+    global module
+
     vals = {v.split(':')[0]:v.split(':')[1] for v in var_change_list.split(',')}
     for key in vals.keys():
-        mod.key_values[key] = vals[key]
+        module.key_values[key] = vals[key]
 
 
 
