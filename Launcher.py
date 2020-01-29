@@ -159,7 +159,7 @@ while user_accepts == False:
     if  cr != 0 and pd.notna(cr):
         choose_unfinished(module)
 
-    defs = [[val, module.key_values_def[val]], key_values[val] for val in module.key_val_names_order]
+    defs = [[val, module.key_values_def[val], module.key_values[val]] for val in module.key_val_names_order]
 
     print(f'''ok, looks like vole {next_vole} is up for day {next_day}
                          using script {next_script}. \n ''')
