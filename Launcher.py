@@ -115,7 +115,7 @@ def update_vars(var_change_list, mod):
     for key in vals.keys():
         mod.key_values_def[key] = vals[key]
 
-csv_path = 'local_csv_file'
+csv_path = 'csv_test.csv'
 experiment_status = pd.read_csv(csv_path)
 
 unfinished = experiment_status.loc[experiment_status.Done != 'y']
