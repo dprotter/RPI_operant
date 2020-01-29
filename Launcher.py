@@ -122,7 +122,7 @@ def modify_vars(var_list, mod):
         key = mod.key_val_names_order[choice]
 
         val = int(input(f'new value for {key}?\n'))
-        mod.key_values_def[key] = val
+        mod.key_values[key] = val
 
         print('\n\n******************\n\n')
 
