@@ -54,16 +54,23 @@ def insert_row(row_number, df, row_values):
     return df_top_copy.append(df_bottom_copy)
 
 def skip_vole():
+    global module
     experiment_status.iloc[next_exp].experiment_status = 'skipped'
     experiment_status.to_csv(csv_path)
 
     #of the list of unfinished indexes, start at the min and move through.
-    next_exp = unfinished.index.values[unfinished_loc]
     unfinished_loc+=1
+    next_exp = unfinished.index.values[unfinished_loc]
 
     next_vole = experiment_status.iloc[next_exp].vole
     next_script = experiment_status.iloc[next_exp].script
     next_day = experiment_status.iloc[next_exp].day
+
+    #dynamically reload the module with the new vole info.
+    spec = importlib.util.spec_from_file_location(next_script,
+                f'/home/pi/RPI_operant/{next_script}.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
 
 def choose_unfinished():
     '''check if this script has previously be run'''
@@ -122,10 +129,13 @@ def modify_vars():
 
     choice = int(input('which will you modify?\n'))
 
+
     while choice != -1:
+        '''!!!implement a check on input here'''
         key = module.key_val_names_order[choice]
 
         val = int(input(f'new value for {key}?\n'))
+        '''!!!implement a check on input here'''
         module.key_values[key] = val
 
         print('\n\n******************\n\n')
@@ -149,13 +159,15 @@ def update_vars(var_change_list):
 
 #present the information of this script to the user, allow them to make changes
 user_accepts = False
+
+#dynamically import the script as a module
+spec = importlib.util.spec_from_file_location(next_script,
+            f'/home/pi/RPI_operant/{next_script}.py')
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+
 while user_accepts == False:
 
-    #dynamically import the script as a module
-    spec = importlib.util.spec_from_file_location(next_script,
-                f'/home/pi/RPI_operant/{next_script}.py')
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
 
     #if the user has defined modified variables, update the module.
     if experiment_status.iloc[next_exp].modified_vars!=None:
