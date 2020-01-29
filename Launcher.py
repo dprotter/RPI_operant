@@ -50,8 +50,13 @@ def skip_vole():
     next_script = experiment_status.iloc[next_exp].script
     next_day = experiment_status.iloc[next_exp].day
 
-def choose_unfinished(index, mod):
+def choose_unfinished(mod):
     '''check if this script has previously be run'''
+    nonlocal next_script
+    nonlocal next_vole
+    nonlocal next_exp
+    nonlocal experiment_status
+
     print(f'''script {next_script} for vole {next_vole} may have previously been run.
     only {experiment_status.iloc[next_exp].completed_rounds} of
     {experiment_status.iloc[next_exp].rounds} were completed. \n\n''')
@@ -147,7 +152,7 @@ while user_accepts == False:
 
     cr = experiment_status.iloc[next_exp].completed_rounds
     if  cr not in [0,'']:
-        choose_unfinished(loc,module)
+        choose_unfinished(module)
 
     defs = [[val, module.key_values_def[val]] for val in module.key_val_names_order]
 
