@@ -113,7 +113,7 @@ def choose_unfinished(mod):
 def modify_vars(var_list, mod):
     defs = [[i, val, mod.key_values_def[val],mod.key_values[val]] for i, val in enumerate(mod.key_val_names_order)]
     defs += [-1, 'done','']
-    print(tabulate(defs, headers = ['var name', 'var def', 'var value'], tablefmt = 'grid'))
+    print(tabulate(defs, headers = ['select','var name', 'var def', 'var value'], tablefmt = 'grid'))
 
     choice = int(input('which will you modify?\n'))
 
