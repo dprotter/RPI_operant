@@ -18,7 +18,7 @@ as done.
 import pandas as pd
 import importlib
 import queue
-import tabulate
+from tabulate import tabulate
 import os
 os.chdir('/home/pi/RPI_operant/')
 
