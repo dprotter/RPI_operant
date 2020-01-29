@@ -154,8 +154,9 @@ while user_accepts == False:
     if experiment_status.iloc[next_exp].modified_vars!=None:
         update_vars(experiment_status.iloc[next_exp].modified_vars, module)
 
+    #are there rounds alread completed for this file?
     cr = experiment_status.iloc[next_exp].completed_rounds
-    if  cr not in [0,'']:
+    if  cr != 0 and pd.notna(cr):
         choose_unfinished(module)
 
     defs = [[val, module.key_values_def[val]] for val in module.key_val_names_order]
