@@ -1,7 +1,7 @@
 import os
 print(os.getcwd())
-import home_base.functions as fn
-from home_base.functions import do_stuff_queue, timestamp_queue, lever_press_queue, lever_angles
+import .home_base.functions as fn
+from .home_base.functions import do_stuff_queue, timestamp_queue, lever_press_queue, lever_angles
 import threading
 import time
 
