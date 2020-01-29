@@ -67,10 +67,10 @@ def skip_vole():
 
 def choose_unfinished(mod):
     '''check if this script has previously be run'''
-    nonlocal next_script
-    nonlocal next_vole
-    nonlocal next_exp
-    nonlocal experiment_status
+    global next_script
+    global next_vole
+    global next_exp
+    global experiment_status
 
     print(f'''script {next_script} for vole {next_vole} may have previously been run.
     only {experiment_status.iloc[next_exp].completed_rounds} of
