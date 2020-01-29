@@ -89,7 +89,7 @@ def choose_unfinished(mod):
             valid = True
 
     if rr == 'y':
-        mod.key_values_def['rounds'] = rounds_left
+        mod.key_values['rounds'] = rounds_left
     elif rr == 's':
         skip_vole()
 
@@ -111,9 +111,9 @@ def choose_unfinished(mod):
         next_exp = next_exp + 1
 
 def modify_vars(var_list, mod):
-    defs = [[i, val, mod.key_values_def[val]] for i, val in enumerate(mod.key_val_names_order)]
+    defs = [[i, val, mod.key_values_def[val],mod.key_values[val]] for i, val in enumerate(mod.key_val_names_order)]
     defs += [-1, 'done','']
-    print(tabulate(defs, headers = ['var name', 'var def'], tablefmt = 'grid'))
+    print(tabulate(defs, headers = ['var name', 'var def', 'var value'], tablefmt = 'grid'))
 
     choice = int(input('which will you modify?\n'))
 
@@ -125,9 +125,9 @@ def modify_vars(var_list, mod):
 
         print('\n\n******************\n\n')
 
-        defs = [[i, val, mod.key_values_def[val]] for i, val in enumerate(mod.key_val_names_order)]
+        defs = [[i, val, mod.key_values_def[val],mod.key_values[val]] for i, val in enumerate(mod.key_val_names_order)]
         defs += [-1, 'done','']
-        print(tabulate(defs, headers = ['var name', 'var def'], tablefmt = 'grid'))
+        print(tabulate(defs, headers = ['select','var name', 'var def', 'var value'], tablefmt = 'grid'))
 
         choice = int(input('which will you modify?\n'))
 
@@ -159,12 +159,12 @@ while user_accepts == False:
     if  cr != 0 and pd.notna(cr):
         choose_unfinished(module)
 
-    defs = [[val, module.key_values_def[val]] for val in module.key_val_names_order]
+    defs = [[val, module.key_values_def[val]], key_values[val] for val in module.key_val_names_order]
 
     print(f'''ok, looks like vole {next_vole} is up for day {next_day}
                          using script {next_script}. \n ''')
     print('do these settings look good? \n')
-    print(tabulate(defs, headers = ['var name', 'var def'], tablefmt = 'grid'))
+    print(tabulate(defs, headers = ['var name', 'var def', 'var value'], tablefmt = 'grid'))
 
 
     valid = False
