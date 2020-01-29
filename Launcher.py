@@ -32,6 +32,7 @@ next_exp = unfinished.index.values[loc]
 
 next_vole = experiment_status.iloc[next_exp].vole
 next_script = experiment_status.iloc[next_exp].script
+print(f'next_script: {next_script}')
 next_day = experiment_status.iloc[next_exp].day
 updated_rounds = None
 
@@ -79,7 +80,7 @@ def choose_unfinished(mod):
                      experiment_status.iloc[next_exp].completed_rounds)
     valid = False
     while valid == False:
-        rr = input(f'''Should I: run {next_scipt} for {rounds_left} more rounds (<y>) \n
+        rr = input(f'''Should I: run {next_script} for {rounds_left} more rounds (<y>) \n
                         restart from round 0 (<r>)\n
                         skip to next vole (<s>)\n''')
         if rr not in ['y','r','s']:
