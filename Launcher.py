@@ -135,7 +135,7 @@ def update_vars(var_change_list, mod):
     '''take a csv string <'key:val,key2:val2,....'> of vals and update the key values in the module'''
     vals = {v.split(':')[0]:v.split(':')[1] for v in var_change_list.split(',')}
     for key in vals.keys():
-        mod.key_values_def[key] = vals[key]
+        mod.key_values[key] = vals[key]
 
 
 
