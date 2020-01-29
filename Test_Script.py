@@ -22,8 +22,7 @@ key_values = {'num_rounds': 3, 'round_time':10, 'timeII':2,
             'timeIV':2}
 
 key_values_def = {'num_rounds':'number of rounds', 'round_time':'total round length',
-            'timeII':'time after levers out before pellet', 'timeIV':'''time after
-            pellet delivered before levers retracted'''}
+            'timeII':'time after levers out before pellet', 'timeIV':'''time after pellet delivered before levers retracted'''}
 
 key_val_names_order = ['num_rounds', 'round_time', 'timeII', 'timeIV']
 #run this to get the RPi.GPIO pins setup
