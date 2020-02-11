@@ -34,7 +34,8 @@ def setup():
 
     #this path will eventually be passed from the launcher
     path = fn.skip_setup()
-    fn.this_path = path
+    temp_override_path = '/home/pi/iter2_test/output'
+    fn.this_path = temp_override_path
 
 def run_script():
 
