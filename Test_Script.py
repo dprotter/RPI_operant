@@ -25,9 +25,14 @@ key_values_def = {'num_rounds':'number of rounds', 'round_time':'total round len
             'timeII':'time after levers out before pellet', 'timeIV':'''time after pellet delivered before levers retracted'''}
 
 key_val_names_order = ['num_rounds', 'round_time', 'timeII', 'timeIV']
-#run this to get the RPi.GPIO pins setup
+
+
+
 def setup():
+    #run this to get the RPi.GPIO pins setup
     fn.setup_pins()
+
+    #this path will eventually be passed from the launcher
     path = fn.skip_setup()
     fn.this_path = path
 
@@ -109,7 +114,7 @@ def run_script():
         fn.interrupt = False
         fn.monitor = False
         if comms_queue != None:
-            comms_queue.put(i)
+            comms_queue.put(f'round:{i}')
 
     if fn.pellet_state:
         timestamp_queue.put('%i, final pellet not retrieved, %f'%(fn.round, time.time()-fn.start_time))
