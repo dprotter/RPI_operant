@@ -28,6 +28,8 @@ experiment_status = pd.read_csv(csv_path)
 unfinished = experiment_status.loc[experiment_status.done != 'y']
 print(unfinished)
 unfinished_loc = 0
+
+#use the index to select the row for the next experiment
 next_exp = unfinished.index.values[unfinished_loc]
 
 next_vole = experiment_status.iloc[next_exp].vole
@@ -154,7 +156,15 @@ def update_vars(var_change_list):
     for key in vals.keys():
         module.key_values[key] = vals[key]
 
+def update_rounds(round_number):
+    global experiment_status
+    global next_exp
+    global csv_path
 
+    experiment_status.loc[experiment_status.index == next_exp,
+        'completed_rounds'] = round_number
+
+    pd.to_csv(experiment_status, csv_path)
 
 
 #present the information of this script to the user, allow them to make changes
@@ -202,3 +212,17 @@ while user_accepts == False:
         modify_vars()
     else:
         skip_vole()
+
+module.comms_queue = queue.Queue()
+module.run_script()
+
+'''next thing to do is monitor the comms queue for round updates.'''
+
+while module.status != 'done':
+    if not comms_queue.empty:
+        val = comms_queue.get()
+        if 'round' in val:
+            round = val.split(':')[1]
+            update_rounds(round+1)
+
+print(f'all finished with this experiment')

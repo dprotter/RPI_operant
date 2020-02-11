@@ -32,6 +32,7 @@ def setup():
     fn.this_path = path
 
 def run_script():
+
     fn.start_time()
     #spin up threads
     for x in range(7):
