@@ -225,14 +225,12 @@ setup_dict = {'vole':next_vole,'day':next_day, 'experiment':next_script,
 module.setup(setup_dict)
 
 #setup a thread to run our target script
-t = threading.Thread(target = module.run_script())
+script_thread = threading.Thread(target = module.run_script(), daemon = True)
+script_thread.start()
 
-#when main thread finishes, kill these threads
-t.daemon = True
-t.start()
 print('***************made it past the thread start**********')
 
-while t.isAlive() or not module.comms_queue.empty():
+while script_thread.isAlive() or not module.comms_queue.empty():
     if not module.comms_queue.empty():
         val = module.comms_queue.get()
         if 'round' in val:
