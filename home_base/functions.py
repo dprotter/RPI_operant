@@ -17,23 +17,18 @@ import pigpio
 pi = pigpio.pi()
 
 
-
 #our queues for doign stuff and saving stuff
 do_stuff_queue = queue.Queue()
 timestamp_queue = queue.Queue()
 lever_press_queue = queue.Queue()
 
 
-
 user = None
 this_path = ''
 
-
 done = False
 
-
 round = 0
-
 
 start_time = None
 
