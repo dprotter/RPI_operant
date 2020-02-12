@@ -95,7 +95,7 @@ def setup_experiment(args_dict):
 
 
 '''def skip_setup(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output', day = 0, user = None):
-    '''if you want to run a test script without entering any info'''
+    if you want to run a test script without entering any info
     #get user info
     #get vole number
     #push to email after done?
