@@ -13,6 +13,7 @@ save_path = ''
 
 comms_queue = None
 
+status = None
 
 
 pellet_tone_time = 2 #how long the pellet tone plays
@@ -43,7 +44,7 @@ def run_script():
 
     #start the internal timer of the module
     fn.start_timing()
-    
+
     for x in range(7):
 
         #spin up threads for the thread distributor
@@ -131,6 +132,7 @@ def run_script():
         time.sleep(0.05)
     #wait for the csv writer
     time.sleep(1)
+    status = 'Done'
 
 if __name__ == '__main__':
     setup()
