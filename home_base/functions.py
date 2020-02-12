@@ -139,7 +139,7 @@ def setup_pins():
         elif 'read' in k:
             print(k + ": IN")
             GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        elif 'led' in k or 'dispence' in k :
+        elif 'led' in k or 'dispense' in k :
             GPIO.setup(pins[k], GPIO.OUT)
             GPIO.output(pins[k], 0)
             print(k + ": OUT")
@@ -313,6 +313,22 @@ def experiment_start_tone(q):
     pi.set_PWM_dutycycle(pins['pellet_tone'], 0)
     print('experiment tone complete')
     timestamp_queue.put('%i, experiment start tone start complete, %f'%(round, time.time()-start_time))
+    q.task_done()
+
+def door_close_tone(q):
+
+    print('starting door close tone')
+
+    pi.set_PWM_frequency(pins['pellet_tone'], 3500)
+    for i in range(5):
+        pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
+        time.sleep(0.5)
+        pi.set_PWM_dutycycle(pins['pellet_tone'], 0)
+        time.sleep(0.1)
+    timestamp_queue.put('%i, door close tone start, %f'%(round, time.time()-start_time))
+
+    print('door close tone complete')
+    timestamp_queue.put('%i, door close tone complete, %f'%(round, time.time()-start_time))
     q.task_done()
 
 def dispense_pellet(q):
