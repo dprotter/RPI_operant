@@ -48,7 +48,7 @@ door_override = False
 
 door_states = {'door_1':True, 'door_2':True}
 
-def start_time():
+def start_timing():
 
     start_time = time.time()
 
