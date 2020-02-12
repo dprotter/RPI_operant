@@ -276,9 +276,6 @@ def monitor_lever(ds_queue, args):
     print('halting monitoring of %s lever'%lever_ID)
 
 def extend_lever(q, args):
-     start_time
-     servo_dict
-     round
 
     lever_ID, retract, extend = args
     print('extending lever %s'%lever_ID)
@@ -289,9 +286,7 @@ def extend_lever(q, args):
     q.task_done()
 
 def retract_lever(q, args):
-     start_time
-     servo_dict
-     round
+
 
     lever_ID, retract, extend = args
     while GPIO.input(pins["lever_%s"%lever_ID]):
@@ -305,8 +300,7 @@ def retract_lever(q, args):
     q.task_done()
 
 def pellet_tone(q):
-     start_time
-     round
+
 
     print('starting pellet tone')
     pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
@@ -321,7 +315,7 @@ def pellet_tone(q):
     q.task_done()
 
 def experiment_start_tone(q):
-     start_time
+
     print('starting experiment tone')
     pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
     pi.set_PWM_frequency(pins['pellet_tone'], 3000)
@@ -333,7 +327,6 @@ def experiment_start_tone(q):
     q.task_done()
 
 def dispence_pellet(q):
-     start_time
     q.task_done()
     timeout = time.time()
      pellet_state
@@ -391,7 +384,7 @@ def pulse_sync_line():
     GPIO.output(pins['gpio_sync'], 0)
 
 def clean_up(q):
-     done
+
     done = True
     '''cleanup all servos etc'''
     servo_dict['food'].angle = lever_angles['food'][0]
@@ -404,11 +397,6 @@ def clean_up(q):
 
 def breakpoint_monitor_lever(ds_queue, args):
     '''this lever monitor function tracks presses and returns when breakpoint reached'''
-
-     monitor
-     start_time
-     interrupt
-     round
 
     monitor = True
     lever_q, lever_ID= args
@@ -443,9 +431,6 @@ def breakpoint_monitor_lever(ds_queue, args):
     print('\nmonitor thread done')
 
 def read_pellet(q):
-     start_time
-     pellet_state
-     round
 
     disp_start = time.time()
     q.task_done()
