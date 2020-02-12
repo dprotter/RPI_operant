@@ -168,7 +168,7 @@ def update_rounds(round_number):
     experiment_status.loc[experiment_status.index == next_exp,
         'completed_rounds'] = round_number
 
-    pd.to_csv(experiment_status, csv_path)
+    experiment_status.to_csv(csv_path)
 
 
 #present the information of this script to the user, allow them to make changes
@@ -230,7 +230,7 @@ t = threading.Thread(target = module.run_script())
 #when main thread finishes, kill these threads
 t.daemon = True
 t.start()
-
+print('***************made it past the thread start**********')
 
 while t.isAlive() or not module.comms_queue.empty():
     if not module.comms_queue.empty():

@@ -13,13 +13,11 @@ save_path = ''
 
 comms_queue = None
 
-status = None
-
 
 pellet_tone_time = 2 #how long the pellet tone plays
 
 
-key_values = {'num_rounds': 3, 'round_time':10, 'timeII':2,
+key_values = {'num_rounds': 2, 'round_time':8, 'timeII':2,
             'timeIV':2}
 
 key_values_def = {'num_rounds':'number of rounds', 'round_time':'total round length',
@@ -132,7 +130,7 @@ def run_script():
         time.sleep(0.05)
     #wait for the csv writer
     time.sleep(1)
-    status = 'done'
+
 
 if __name__ == '__main__':
     setup()
