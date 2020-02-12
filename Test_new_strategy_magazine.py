@@ -11,7 +11,7 @@ pellet_tone_time = 2 #how long the pellet tone plays
 timeII = 2 #time after levers out before pellet
 timeIV = 2 #time after pellet delivered before levers retracted
 loops = 10
-
+status = None
 #run this to get the RPi.GPIO pins setup
 fn.setup_pins()
 path = fn.setup_experiment(exp = 'Miniscope Operant Test', )
@@ -113,4 +113,6 @@ while not timestamp_queue.empty():
     time.sleep(0.05)
 #wait for the csv writer
 time.sleep(1)
+fn.done = True
+status = 'done'
 print('all done')
