@@ -35,14 +35,18 @@ def setup(setup_dictionary):
 
 
 def run_script():
-
-    fn.start_timing()
     #spin up threads
+    #spin up a dedicated writer thread
+    wrt = threading.Thread(target = fn.flush_to_CSV)
+    wrt.daemon = True
+    wrt.start()
+
+    #start the internal timer of the module
+    fn.start_timing()
+    
     for x in range(7):
-        #spin up a dedicated writer thread
-        wrt = threading.Thread(target = fn.flush_to_CSV)
-        wrt.daemon = True
-        wrt.start()
+
+        #spin up threads for the thread distributor
         t = threading.Thread(target = fn.thread_distributor)
 
         #when main thread finishes, kill these threads
