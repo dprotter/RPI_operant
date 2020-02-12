@@ -28,18 +28,15 @@ key_val_names_order = ['num_rounds', 'round_time', 'timeII', 'timeIV']
 
 
 
-def setup():
+def setup(setup_dictionary):
     #run this to get the RPi.GPIO pins setup
     fn.setup_pins()
+    fn.setup_experiment(setup_dictionary)
 
-    #this path will eventually be passed from the launcher
-    path = fn.skip_setup()
-    temp_override_path = '/home/pi/iter2_test/output/test_script_output.csv'
-    fn.this_path = temp_override_path
 
 def run_script():
 
-    fn.start_time()
+    fn.start_timing()
     #spin up threads
     for x in range(7):
         #spin up a dedicated writer thread
@@ -74,7 +71,7 @@ def run_script():
         #begin tracking the lever in a thread
         do_stuff_queue.put(('monitor lever', (lever_press_queue, 'food',)))
         '''
-        
+
         timeII_start = time.time()
 
         do_stuff_queue.put(('dispence pellet',))
