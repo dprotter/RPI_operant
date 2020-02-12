@@ -57,7 +57,7 @@ def run_script():
         fn.round = i
         print("#-#-#-#-#-# new round #%i!!!-#-#-#-#-#"%i)
         timestamp_queue.put('%i, Starting new round, %f'%(fn.round, time.time()-fn.start_time))
-        do_stuff_queue.put(('start tone',))
+        '''do_stuff_queue.put(('start tone',))
 
         #wait till tone is done
         do_stuff_queue.join()
@@ -73,7 +73,9 @@ def run_script():
         #begin tracking the lever in a thread
         do_stuff_queue.put(('monitor lever', (lever_press_queue, 'food',)))
 
-        timeII_start = time.time()
+        timeII_start = time.time()'''
+
+        do_stuff_queue.put(('dispence pellet',))
 
         #for the timeII interval, monitor lever and overide pellet timing if pressed
         while time.time() - timeII_start < timeII:
