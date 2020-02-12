@@ -88,14 +88,13 @@ def setup_experiment(args_dict):
 
 
     print('Path is: ')
-    print(path)
-    with open(path, 'w') as file:
+    print(this_path)
+    with open(this_path, 'w') as file:
         writer = csv.writer(file, delimiter = ',')
         writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date,
         'experiment: %s'%exp, 'Day: %i'%day, 'Pi: %s'%socket.gethostname()])
 
         writer.writerow(['Round, Event', 'Time'])
-    return path
 
 
 def skip_setup(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output', day = 0, user = None):
