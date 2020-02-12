@@ -213,6 +213,8 @@ while user_accepts == False:
         skip_vole()
 
 module.comms_queue = queue.Queue()
+
+module.setup()
 module.run_script()
 
 '''next thing to do is monitor the comms queue for round updates.'''
