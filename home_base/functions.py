@@ -153,7 +153,7 @@ def setup_pins():
 
 def open_door(q, args):
 
-    nonlocal start_time
+    start_time
     nonlocal servo_dict
     nonlocal round
     nonlocal door_override
