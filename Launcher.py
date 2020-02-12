@@ -23,6 +23,7 @@ import os
 os.chdir('/home/pi/RPI_operant/')
 
 csv_path = '/home/pi/iter2_test/csv_test.csv'
+output_dir = '/home/pi/iter2_test/output/'
 experiment_status = pd.read_csv(csv_path)
 
 unfinished = experiment_status.loc[experiment_status.done != 'y']
@@ -214,7 +215,8 @@ while user_accepts == False:
 
 module.comms_queue = queue.Queue()
 user = experiment_status.iloc[next_exp].user
-setup_dict = {'vole':next_vole,'day':next_day, 'experiment':next_script,'user':user}
+setup_dict = {'vole':next_vole,'day':next_day, 'experiment':next_script,
+            'user':user, 'output_directory':output_dir}
 
 
 module.setup(setup_dict)
