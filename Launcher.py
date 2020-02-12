@@ -21,6 +21,7 @@ import queue
 from tabulate import tabulate
 import os
 import time as time
+import threading
 
 os.chdir('/home/pi/RPI_operant/')
 
@@ -222,7 +223,13 @@ setup_dict = {'vole':next_vole,'day':next_day, 'experiment':next_script,
 
 
 module.setup(setup_dict)
-module.run_script()
+
+#setup a thread to run our target script
+t = threading.Thread(target = module.run_script())
+
+#when main thread finishes, kill these threads
+t.daemon = True
+t.start()
 
 
 while module.status != 'done':
@@ -233,6 +240,6 @@ while module.status != 'done':
             update_rounds(round)
         else:
             print(f'comms_queue says: {val}')
-    time.sleep(0.05)
+    time.sleep(0.1)
 
 print(f'all finished with this experiment')
