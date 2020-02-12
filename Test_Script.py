@@ -74,7 +74,7 @@ def run_script():
 
         timeII_start = time.time()
 
-        do_stuff_queue.put(('dispence pellet',))
+        do_stuff_queue.put(('dispense pellet',))
 
         #for the timeII interval, monitor lever and overide pellet timing if pressed
         while time.time() - timeII_start < key_values['timeII']:
@@ -86,7 +86,7 @@ def run_script():
                 print('the %s lever was pressed! woweeeee'%lever_ID)
                 timestamp_queue.put('%i, a lever was pressed! woweeeee, %f'%(fn.round, time.time()-fn.start_time))
                 do_stuff_queue.put(('pellet tone',))
-                do_stuff_queue.put(('dispence pellet',))
+                do_stuff_queue.put(('dispense pellet',))
                 do_stuff_queue.join()
             time.sleep(0.05)
 
