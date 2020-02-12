@@ -34,7 +34,7 @@ def setup():
 
     #this path will eventually be passed from the launcher
     path = fn.skip_setup()
-    temp_override_path = '/home/pi/iter2_test/output'
+    temp_override_path = '/home/pi/iter2_test/output/test_script_output.csv'
     fn.this_path = temp_override_path
 
 def run_script():
@@ -52,6 +52,7 @@ def run_script():
         t.daemon = True
         t.start()
     ### master looper ###
+
     for i in range(1, key_values['num_rounds']+1,1):
         round_start = time.time()
         fn.round = i
@@ -78,7 +79,7 @@ def run_script():
         do_stuff_queue.put(('dispence pellet',))
 
         #for the timeII interval, monitor lever and overide pellet timing if pressed
-        while time.time() - timeII_start < timeII:
+        while time.time() - key_vals['timeII_start'] < key_values['timeII']:
             #eventually, here we will call threads to monitor
             #vole position and the levers. here its just random
             if not fn.interrupt and not lever_press_queue.empty():
@@ -105,7 +106,7 @@ def run_script():
         do_stuff_queue.put(('retract lever',
                             ('food', lever_angles['food'][0],lever_angles['food'][1])))
 
-        time.sleep(timeIV)
+        time.sleep(key_vals['timeIV'])
         print('entering ITI for #-#-# round #%i -#-#-# '%i )
 
         #wait for ITI to pass
