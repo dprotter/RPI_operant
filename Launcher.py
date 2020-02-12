@@ -216,12 +216,11 @@ module.comms_queue = queue.Queue()
 user = experiment_status.iloc[next_exp].user
 setup_dict = {'vole':next_vole,'day':next_day, 'experiment':next_script,'user':user}
 
-'''vvvvvvvvvvvv'''
+
 module.setup()
 module.run_script()
 
-'''next thing to do is monitor the comms queue for variable updates after setup (IE adding a user).'''
-'''^^^^^^^^^^^^^^^^^^^'''
+
 while module.status != 'done':
     if not comms_queue.empty:
         val = comms_queue.get()
