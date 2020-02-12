@@ -224,11 +224,13 @@ module.run_script()
 
 
 while module.status != 'done':
-    if not comms_queue.empty:
-        val = comms_queue.get()
+    if not module.comms_queue.empty:
+        val = module.comms_queue.get()
         if 'round' in val:
             round = val.split(':')[1]
             update_rounds(round)
+        else:
+            print(f'comms_queue says: {val}')
     time.sleep(0.05)
 
 print(f'all finished with this experiment')

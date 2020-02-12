@@ -221,7 +221,8 @@ def run_job(job, q, args = None):
             'close door':close_door,
             'open door':open_door,
             'door close tone': door_close_tone,
-            'door override':override_door
+            'door override':override_door,
+            'clean up':clean_up
             }
 
     if args:
