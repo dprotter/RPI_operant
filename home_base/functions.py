@@ -204,34 +204,30 @@ def override_door(q, args):
         door_override = False
         time.sleep(0.1)
 
+
 def run_job(job, q, args = None):
     print('job: ' + str(job) + '    args: ' +str(args))
 
     '''parse and run jobs'''
 
-    def run_job(job, q, args = None):
-        print('job: ' + str(job) + '    args: ' +str(args))
+    jobs = {'extend lever':extend_lever,
+            'dispense pellet':dispense_pellet,
+            'retract lever':retract_lever,
+            'start tone':experiment_start_tone,
+            'pellet tone':pellet_tone,
+            'monitor lever':monitor_lever,
+            'dispense pellet':dispense_pellet,
+            'read pellet':read_pellet,
+            'close door':close_door,
+            'open door':open_door,
+            'door close tone': door_close_tone,
+            'door override':override_door
+            }
 
-        '''parse and run jobs'''
-
-        jobs = {'extend lever':extend_lever,
-                'dispense pellet':dispense_pellet,
-                'retract lever':retract_lever,
-                'start tone':experiment_start_tone,
-                'pellet tone':pellet_tone,
-                'monitor lever':monitor_lever,
-                'dispense pellet':dispense_pellet,
-                'read pellet':read_pellet,
-                'close door':close_door,
-                'open door':open_door,
-                'door close tone': door_close_tone,
-                'door override':override_door
-                }
-
-    if args:
-        jobs[job](q, args)
-    else:
-        jobs[job](q)
+if args:
+    jobs[job](q, args)
+else:
+    jobs[job](q)
 
 def monitor_lever(ds_queue, args):
     global monitor
