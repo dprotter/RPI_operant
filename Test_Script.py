@@ -95,7 +95,7 @@ def run_script():
             print('the vole is dumb and didnt press a lever')
             timestamp_queue.put('%i, no lever press, %f'%(fn.round, time.time()-fn.start_time))
             do_stuff_queue.put(('pellet tone',))
-            do_stuff_queue.put(('dispence pellet',))
+            do_stuff_queue.put(('dispense pellet',))
             time.sleep(0.05)
             do_stuff_queue.join()
 
