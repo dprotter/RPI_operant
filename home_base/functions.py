@@ -329,8 +329,7 @@ def experiment_start_tone(q):
 def dispence_pellet(q):
     q.task_done()
     timeout = time.time()
-     pellet_state
-     round
+
 
     read = 0
 
