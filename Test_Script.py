@@ -73,13 +73,14 @@ def run_script():
 
         #begin tracking the lever in a thread
         do_stuff_queue.put(('monitor lever', (lever_press_queue, 'food',)))
-
-        timeII_start = time.time()'''
+        '''
+        
+        timeII_start = time.time()
 
         do_stuff_queue.put(('dispence pellet',))
 
         #for the timeII interval, monitor lever and overide pellet timing if pressed
-        while time.time() - key_values['timeII_start'] < key_values['timeII']:
+        while time.time() - timeII_start < key_values['timeII']:
             #eventually, here we will call threads to monitor
             #vole position and the levers. here its just random
             if not fn.interrupt and not lever_press_queue.empty():
