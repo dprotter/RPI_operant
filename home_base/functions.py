@@ -48,13 +48,13 @@ door_override = False
 door_states = {'door_1':True, 'door_2':True}
 
 def start_timing():
-    nonlocal start_time
+    global start_time
     start_time = time.time()
 
 
 def setup_experiment(args_dict):
 
-    nonlocal this_path
+    global this_path
 
     if args_dict['user']=='':
         while no_user:
@@ -166,7 +166,7 @@ def open_door(q, args):
     q.task_done()
 
 def close_door(q, args):
-    nonlocal door_states
+    global door_states
 
     door_ID = args
 
@@ -184,7 +184,7 @@ def close_door(q, args):
     q.task_done()
 
 def override_door(q, args):
-    nonlocal door_override
+    global door_override
     q.task_done()
     door_ID = args
 
@@ -234,7 +234,7 @@ def run_job(job, q, args = None):
         jobs[job](q)
 
 def monitor_lever(ds_queue, args):
-    nonlocal monitor
+    global monitor
 
     monitor = True
     lever_q, lever_ID = args
@@ -321,7 +321,7 @@ def experiment_start_tone(q):
 
 def dispence_pellet(q):
 
-    nonlocal pellet_state
+    global pellet_state
 
     q.task_done()
     timeout = time.time()
@@ -379,7 +379,7 @@ def pulse_sync_line():
     GPIO.output(pins['gpio_sync'], 0)
 
 def clean_up(q):
-    nonlocal done
+    global done
 
     done = True
     '''cleanup all servos etc'''
@@ -393,7 +393,7 @@ def clean_up(q):
 
 def breakpoint_monitor_lever(ds_queue, args):
     '''this lever monitor function tracks presses and returns when breakpoint reached'''
-    nonlocal monitor
+    global monitor
     monitor = True
     lever_q, lever_ID= args
     "monitor a lever. If lever pressed, put lever_ID in queue. "
@@ -427,7 +427,7 @@ def breakpoint_monitor_lever(ds_queue, args):
     print('\nmonitor thread done')
 
 def read_pellet(q):
-    nonlocal pellet_state
+    global pellet_state
 
     disp_start = time.time()
     q.task_done()
