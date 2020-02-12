@@ -224,10 +224,10 @@ def run_job(job, q, args = None):
             'door override':override_door
             }
 
-if args:
-    jobs[job](q, args)
-else:
-    jobs[job](q)
+    if args:
+        jobs[job](q, args)
+    else:
+        jobs[job](q)
 
 def monitor_lever(ds_queue, args):
     global monitor
