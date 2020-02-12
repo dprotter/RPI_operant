@@ -3,9 +3,10 @@ import RPi.GPIO as GPIO
 import os
 if os.system('sudo lsof -i TCP:8888'):
     os.system('sudo pigpiod')
+import socket
 import time
 from home_base.operant_cage_settings import (kit, pins,
-lever_angles, continuous_servo_speeds,servo_dict )
+    lever_angles, continuous_servo_speeds,servo_dict)
 import datetime
 import csv
 from home_base.email_push import email_push
@@ -21,82 +22,83 @@ pi = pigpio.pi()
 do_stuff_queue = queue.Queue()
 timestamp_queue = queue.Queue()
 lever_press_queue = queue.Queue()
+
+
+
 user = None
-global done
+this_path = ''
+
+
 done = False
 
-global round
+
 round = 0
 
-global start_time
+
 start_time = None
 
 #in case we need to interrupt after a lever press.
-global interrupt
 interrupt = False
 
 #whether or not to monitor levers.
-global monitor
 monitor = False
 
 #is there a pellet currently in the trough?
-global pellet_state
 pellet_state = False
 
-this_path = ''
+#are we overriding the door activity?
+door_override = False
+
+#true = closed, false = open
+
+door_states = {'door_1':True, 'door_2':True}
 
 def start_time():
-    global start_time
+
     start_time = time.time()
 
 
-def setup_experiment(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output', day = 0):
+def setup_experiment(args_dict):
 
     #get user info
     #get vole number
     #push to email after done?
 
-    no_user = True
-    while no_user:
-        user = input('who is doing this experiment? \n')
+    if args_dict['user']=='':
+        while no_user:
+            user = input('no user listed. who is doing this experiment? \n')
 
-        check = input('so send the data to %s ? (y/n) \n'%user)
-        if check.lower() in ['y', 'yes']:
-            no_user = False
-
-    no_vole = True
-    while no_vole:
-        vole = input('Vole number? \n')
-        check = input('vole# is %s ? (y/n) \n'%vole)
-        if check.lower() in ['y', 'yes']:
-            no_vole = False
-
-    day = input('Which %s training day is this? (starts at day 1)\n'%exp)
-    day = int(day)
-
-    push = input('should I push the results folder to email after this session? (y/n) \n')
-
-    if push.lower() in 'y':
-        print("ok, your results will be emailed to you after this session.")
+            check = input('ok, double check its %s ? (y/n) \n'%user)
+            if check.lower() in ['y', 'yes']:
+                no_user = False
     else:
-        print("Ok, I won't email you.")
+        user = args_dict['user']
 
-    """fname will be of format m_d_y__h_m_vole_#_fresh.csv. fresh will be removed
-    once the file has been send via email."""
+    #unpack dict, but just to make string assembly cleaner for the first
+    #line of the output file.
+    vole = args_dict['vole']
+    save_dir = args_dict['output_directory']
+    exp = args_dict['expriment']
+    day = args_dict['day']
+
 
     date = datetime.datetime.now()
     fdate = '%s_%s_%s__%s_%s_'%(date.month, date.day, date.year, date.hour, date.minute)
     print('date is: \n')
     print(datetime.date.today())
 
-    fname = fdate+'_vole_%s_fresh.csv'%vole
-    path = os.path.join(save_dir, fname)
+    fname = fdate+f'_vole_{vole}.csv'
+    this_path = os.path.join(save_dir, fname)
+
+
 
     print('Path is: ')
     print(path)
     with open(path, 'w') as file:
         writer = csv.writer(file, delimiter = ',')
-        writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'experiment: %s'%exp, 'Day: %i'%day])
+        writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date,
+        'experiment: %s'%exp, 'Day: %i'%day, 'Pi: %s'%socket.gethostname()])
+
         writer.writerow(['Round, Event', 'Time'])
     return path
 
@@ -126,7 +128,8 @@ def skip_setup(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output', day =
 
     with open(path, 'w') as file:
         writer = csv.writer(file, delimiter = ',')
-        writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date, 'experiment: %s'%exp, 'Day: %i'%day])
+        writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date,
+        'experiment: %s'%exp, 'Day: %i'%day, 'Pi: %s'%socket.gethostname()])
         writer.writerow(['Round, Event', 'Time'])
 
     return path
@@ -139,7 +142,7 @@ def setup_pins():
 
     for k in pins.keys():
         print(k)
-        if 'lever' in k:
+        if 'lever' in k or 'switch' in k:
             print(k + ": IN")
             GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         elif 'read' in k:
@@ -153,21 +156,97 @@ def setup_pins():
             GPIO.setup(pins[k], GPIO.OUT)
             print(k + ": OUT")
 
+def open_door(q, args):
+
+    nonlocal start_time
+    nonlocal servo_dict
+    nonlocal round
+    nonlocal door_override
+    nonlocal door_states
+
+    door_ID = args
+
+    timestamp_queue.put('%i, %s open begin, %f'%(round, door_ID, time.time()-start_time))
+    servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['open']
+    open_time = continuous_servo_speeds[door_ID]['open time']
+    start = time.time()
+    while time.time() < ( start + open_time ) and not door_override:
+        servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
+    if GPIO.input(pins[f'{door_ID}_state_switch']):
+        print(f'{door_ID} failed to open!!!')
+        timestamp_queue.put('%i, %s open failure, %f'%(round, door_ID, time.time()-start_time))
+    else:
+        timestamp_queue.put('%i, %s open finish, %f'%(round, door_ID, time.time()-start_time))
+        door_states[door_ID] = False
+    q.task_done()
+
+def close_door(q, args):
+    nonlocal start_time
+    nonlocal servo_dict
+    nonlocal door_override
+    nonlocal round
+    nonlocal door_states
+
+    door_ID = args
+
+    timestamp_queue.put('%i, %s close begin, %f'%(round, door_ID, time.time()-start_time))
+    if not door_override:
+        start = time.time()
+        servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['close']
+        while not GPIO.input(pins[f'{door_ID}_state_switch']) and not door_override:
+            '''just hanging around'''
+            time.sleep(0.05)
+        if not door_override:
+            servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
+            door_states[door_ID] = True
+
+    q.task_done()
+
+def override_door(q, args):
+    nonlocal start_time
+    nonlocal door_override
+    q.task_done()
+    door_ID = args
+
+    while True:
+        if GPIO.input(pins[f'{door_ID}_override_open_switch']):
+            door_override = True
+            servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['open']
+            while GPIO.input(pins[f'{door_ID}__door_override_open']):
+                time.sleep(0.05)
+            servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
+        if GPIO.input(pins[f'{door_ID}__door_override_close']):
+            door_override = True
+            servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['close_full']
+            while GPIO.input(pins[f'{door_ID}__door_override_close']):
+                time.sleep(0.05)
+            servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
+        door_override = False
+        time.sleep(0.1)
+
 def run_job(job, q, args = None):
     print('job: ' + str(job) + '    args: ' +str(args))
 
     '''parse and run jobs'''
 
-    jobs = {'extend lever':extend_lever,
-            'dispence pellet':dispence_pellet,
-            'retract lever':retract_lever,
-            'start tone':experiment_start_tone,
-            'pellet tone':pellet_tone,
-            'monitor lever':monitor_lever,
-            'dispense pellet':dispence_pellet,
-            'read pellet':read_pellet,
-            'clean up': clean_up
-            }
+    def run_job(job, q, args = None):
+        print('job: ' + str(job) + '    args: ' +str(args))
+
+        '''parse and run jobs'''
+
+        jobs = {'extend lever':extend_lever,
+                'dispense pellet':dispense_pellet,
+                'retract lever':retract_lever,
+                'start tone':experiment_start_tone,
+                'pellet tone':pellet_tone,
+                'monitor lever':monitor_lever,
+                'dispense pellet':dispense_pellet,
+                'read pellet':read_pellet,
+                'close door':close_door,
+                'open door':open_door,
+                'door close tone': door_close_tone,
+                'door override':override_door
+                }
 
     if args:
         jobs[job](q, args)
@@ -175,10 +254,10 @@ def run_job(job, q, args = None):
         jobs[job](q)
 
 def monitor_lever(ds_queue, args):
-    global monitor
-    global start_time
-    global interrupt
-    global round
+    nonlocal monitor
+    nonlocal start_time
+    nonlocal interrupt
+    nonlocal round
 
     monitor = True
     lever_q, lever_ID = args
@@ -215,9 +294,9 @@ def monitor_lever(ds_queue, args):
     print('halting monitoring of %s lever'%lever_ID)
 
 def extend_lever(q, args):
-    global start_time
-    global servo_dict
-    global round
+    nonlocal start_time
+    nonlocal servo_dict
+    nonlocal round
 
     lever_ID, retract, extend = args
     print('extending lever %s'%lever_ID)
@@ -228,9 +307,9 @@ def extend_lever(q, args):
     q.task_done()
 
 def retract_lever(q, args):
-    global start_time
-    global servo_dict
-    global round
+    nonlocal start_time
+    nonlocal servo_dict
+    nonlocal round
 
     lever_ID, retract, extend = args
     while GPIO.input(pins["lever_%s"%lever_ID]):
@@ -244,8 +323,8 @@ def retract_lever(q, args):
     q.task_done()
 
 def pellet_tone(q):
-    global start_time
-    global round
+    nonlocal start_time
+    nonlocal round
 
     print('starting pellet tone')
     pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
@@ -260,7 +339,7 @@ def pellet_tone(q):
     q.task_done()
 
 def experiment_start_tone(q):
-    global start_time
+    nonlocal start_time
     print('starting experiment tone')
     pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
     pi.set_PWM_frequency(pins['pellet_tone'], 3000)
@@ -272,11 +351,11 @@ def experiment_start_tone(q):
     q.task_done()
 
 def dispence_pellet(q):
-    global start_time
+    nonlocal start_time
     q.task_done()
     timeout = time.time()
-    global pellet_state
-    global round
+    nonlocal pellet_state
+    nonlocal round
 
     read = 0
 
@@ -330,29 +409,31 @@ def pulse_sync_line():
     GPIO.output(pins['gpio_sync'], 0)
 
 def clean_up(q):
-    global done
+    nonlocal done
     done = True
     '''cleanup all servos etc'''
     servo_dict['food'].angle = lever_angles['food'][0]
-    servo_dict['social'].angle = lever_angles['social'][0]
-    servo_dict['door'].throttle = continuous_servo_speeds['door']['stop']
+    servo_dict['door_1'].angle = lever_angles['door_1'][0]
+    servo_dict['door_2'].angle = lever_angles['door_2'][0]
+    servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['stop']
+    servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['stop']
     servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
     q.task_done()
 
 def breakpoint_monitor_lever(ds_queue, args):
     '''this lever monitor function tracks presses and returns when breakpoint reached'''
 
-    global monitor
-    global start_time
-    global interrupt
-    global round
+    nonlocal monitor
+    nonlocal start_time
+    nonlocal interrupt
+    nonlocal round
 
     monitor = True
     lever_q, lever_ID= args
     "monitor a lever. If lever pressed, put lever_ID in queue. "
     lever=0
     do_stuff_queue.put(('extend lever',
-                        ('social',lever_angles['social'][0],lever_angles['social'][1])))
+                        (lever_ID,lever_angles[lever_ID][0],lever_angles[lever_ID][1])))
 
     ds_queue.task_done()
     while monitor:
@@ -369,7 +450,7 @@ def breakpoint_monitor_lever(ds_queue, args):
 
 
             do_stuff_queue.put(('retract lever',
-                                ('social', lever_angles['social'][0],lever_angles['social'][1])))
+                                (lever_ID, lever_angles[lever_ID][0],lever_angles[lever_ID][1])))
 
             lever_q.put(lever_ID)
             lever = 0
@@ -380,9 +461,9 @@ def breakpoint_monitor_lever(ds_queue, args):
     print('\nmonitor thread done')
 
 def read_pellet(q):
-    global start_time
-    global pellet_state
-    global round
+    nonlocal start_time
+    nonlocal pellet_state
+    nonlocal round
 
     disp_start = time.time()
     q.task_done()
@@ -431,6 +512,7 @@ def thread_distributor():
 
             run_job(name, do_stuff_queue, args)
             time.sleep(0.05)
+        time.sleep(0.05)
 
 def flush_to_CSV():
         '''a good time to write some stuff to file'''
