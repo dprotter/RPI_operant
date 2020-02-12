@@ -20,6 +20,8 @@ import importlib
 import queue
 from tabulate import tabulate
 import os
+import time as time
+
 os.chdir('/home/pi/RPI_operant/')
 
 csv_path = '/home/pi/iter2_test/csv_test.csv'
