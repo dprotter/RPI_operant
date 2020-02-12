@@ -73,7 +73,7 @@ def setup_experiment(args_dict):
     #line of the output file.
     vole = args_dict['vole']
     save_dir = args_dict['output_directory']
-    exp = args_dict['expriment']
+    exp = args_dict['experiment']
     day = args_dict['day']
 
 
