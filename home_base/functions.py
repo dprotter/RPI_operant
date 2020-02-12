@@ -45,19 +45,16 @@ pellet_state = False
 door_override = False
 
 #true = closed, false = open
-
 door_states = {'door_1':True, 'door_2':True}
 
 def start_timing():
-
+    nonlocal start_time
     start_time = time.time()
 
 
 def setup_experiment(args_dict):
 
-    #get user info
-    #get vole number
-    #push to email after done?
+    nonlocal this_path
 
     if args_dict['user']=='':
         while no_user:
@@ -97,7 +94,7 @@ def setup_experiment(args_dict):
         writer.writerow(['Round, Event', 'Time'])
 
 
-def skip_setup(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output', day = 0, user = None):
+'''def skip_setup(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output', day = 0, user = None):
     '''if you want to run a test script without entering any info'''
     #get user info
     #get vole number
@@ -126,7 +123,7 @@ def skip_setup(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output', day =
         'experiment: %s'%exp, 'Day: %i'%day, 'Pi: %s'%socket.gethostname()])
         writer.writerow(['Round, Event', 'Time'])
 
-    return path
+    return path'''
 
 def setup_pins():
     '''here we get the gpio pins setup, and instantiate pigpio object.'''
@@ -169,7 +166,7 @@ def open_door(q, args):
     q.task_done()
 
 def close_door(q, args):
-
+    nonlocal door_states
 
     door_ID = args
 
@@ -187,8 +184,7 @@ def close_door(q, args):
     q.task_done()
 
 def override_door(q, args):
-    start_time
-    door_override
+    nonlocal door_override
     q.task_done()
     door_ID = args
 
@@ -238,7 +234,7 @@ def run_job(job, q, args = None):
         jobs[job](q)
 
 def monitor_lever(ds_queue, args):
-
+    nonlocal monitor
 
     monitor = True
     lever_q, lever_ID = args
@@ -286,7 +282,6 @@ def extend_lever(q, args):
 
 def retract_lever(q, args):
 
-
     lever_ID, retract, extend = args
     while GPIO.input(pins["lever_%s"%lever_ID]):
         'hanging till lever not pressed'
@@ -299,7 +294,6 @@ def retract_lever(q, args):
     q.task_done()
 
 def pellet_tone(q):
-
 
     print('starting pellet tone')
     pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
@@ -326,6 +320,9 @@ def experiment_start_tone(q):
     q.task_done()
 
 def dispence_pellet(q):
+
+    nonlocal pellet_state
+
     q.task_done()
     timeout = time.time()
 
@@ -382,6 +379,7 @@ def pulse_sync_line():
     GPIO.output(pins['gpio_sync'], 0)
 
 def clean_up(q):
+    nonlocal done
 
     done = True
     '''cleanup all servos etc'''
@@ -395,7 +393,7 @@ def clean_up(q):
 
 def breakpoint_monitor_lever(ds_queue, args):
     '''this lever monitor function tracks presses and returns when breakpoint reached'''
-
+    nonlocal monitor
     monitor = True
     lever_q, lever_ID= args
     "monitor a lever. If lever pressed, put lever_ID in queue. "
@@ -429,6 +427,7 @@ def breakpoint_monitor_lever(ds_queue, args):
     print('\nmonitor thread done')
 
 def read_pellet(q):
+    nonlocal pellet_state
 
     disp_start = time.time()
     q.task_done()
@@ -494,7 +493,3 @@ def flush_to_CSV():
                         csv_writer.writerow(line)
                         time.sleep(0.005)
             time.sleep(0.01)
-
-def email_user(usr):
-    '''initiate email script to user'''
-    email_push(user)
