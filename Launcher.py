@@ -232,8 +232,8 @@ t.daemon = True
 t.start()
 
 
-while module.status != 'done':
-    if not module.comms_queue.empty:
+while t.isAlive() or not module.comms_queue.empty():
+    if not module.comms_queue.empty():
         val = module.comms_queue.get()
         if 'round' in val:
             round = val.split(':')[1]

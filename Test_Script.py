@@ -132,7 +132,7 @@ def run_script():
         time.sleep(0.05)
     #wait for the csv writer
     time.sleep(1)
-    status = 'Done'
+    status = 'done'
 
 if __name__ == '__main__':
     setup()
