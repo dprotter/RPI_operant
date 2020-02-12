@@ -217,7 +217,7 @@ user = experiment_status.iloc[next_exp].user
 setup_dict = {'vole':next_vole,'day':next_day, 'experiment':next_script,'user':user}
 
 
-module.setup()
+module.setup(setup_dict)
 module.run_script()
 
 
