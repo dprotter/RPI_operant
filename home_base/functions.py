@@ -153,12 +153,6 @@ def setup_pins():
 
 def open_door(q, args):
 
-    start_time
-    nonlocal servo_dict
-    nonlocal round
-    nonlocal door_override
-    nonlocal door_states
-
     door_ID = args
 
     timestamp_queue.put('%i, %s open begin, %f'%(round, door_ID, time.time()-start_time))
@@ -176,11 +170,7 @@ def open_door(q, args):
     q.task_done()
 
 def close_door(q, args):
-    nonlocal start_time
-    nonlocal servo_dict
-    nonlocal door_override
-    nonlocal round
-    nonlocal door_states
+
 
     door_ID = args
 
@@ -198,8 +188,8 @@ def close_door(q, args):
     q.task_done()
 
 def override_door(q, args):
-    nonlocal start_time
-    nonlocal door_override
+    start_time
+    door_override
     q.task_done()
     door_ID = args
 
@@ -249,10 +239,7 @@ def run_job(job, q, args = None):
         jobs[job](q)
 
 def monitor_lever(ds_queue, args):
-    nonlocal monitor
-    nonlocal start_time
-    nonlocal interrupt
-    nonlocal round
+
 
     monitor = True
     lever_q, lever_ID = args
@@ -289,9 +276,9 @@ def monitor_lever(ds_queue, args):
     print('halting monitoring of %s lever'%lever_ID)
 
 def extend_lever(q, args):
-    nonlocal start_time
-    nonlocal servo_dict
-    nonlocal round
+     start_time
+     servo_dict
+     round
 
     lever_ID, retract, extend = args
     print('extending lever %s'%lever_ID)
@@ -302,9 +289,9 @@ def extend_lever(q, args):
     q.task_done()
 
 def retract_lever(q, args):
-    nonlocal start_time
-    nonlocal servo_dict
-    nonlocal round
+     start_time
+     servo_dict
+     round
 
     lever_ID, retract, extend = args
     while GPIO.input(pins["lever_%s"%lever_ID]):
@@ -318,8 +305,8 @@ def retract_lever(q, args):
     q.task_done()
 
 def pellet_tone(q):
-    nonlocal start_time
-    nonlocal round
+     start_time
+     round
 
     print('starting pellet tone')
     pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
@@ -334,7 +321,7 @@ def pellet_tone(q):
     q.task_done()
 
 def experiment_start_tone(q):
-    nonlocal start_time
+     start_time
     print('starting experiment tone')
     pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
     pi.set_PWM_frequency(pins['pellet_tone'], 3000)
@@ -346,11 +333,11 @@ def experiment_start_tone(q):
     q.task_done()
 
 def dispence_pellet(q):
-    nonlocal start_time
+     start_time
     q.task_done()
     timeout = time.time()
-    nonlocal pellet_state
-    nonlocal round
+     pellet_state
+     round
 
     read = 0
 
@@ -404,7 +391,7 @@ def pulse_sync_line():
     GPIO.output(pins['gpio_sync'], 0)
 
 def clean_up(q):
-    nonlocal done
+     done
     done = True
     '''cleanup all servos etc'''
     servo_dict['food'].angle = lever_angles['food'][0]
@@ -418,10 +405,10 @@ def clean_up(q):
 def breakpoint_monitor_lever(ds_queue, args):
     '''this lever monitor function tracks presses and returns when breakpoint reached'''
 
-    nonlocal monitor
-    nonlocal start_time
-    nonlocal interrupt
-    nonlocal round
+     monitor
+     start_time
+     interrupt
+     round
 
     monitor = True
     lever_q, lever_ID= args
@@ -456,9 +443,9 @@ def breakpoint_monitor_lever(ds_queue, args):
     print('\nmonitor thread done')
 
 def read_pellet(q):
-    nonlocal start_time
-    nonlocal pellet_state
-    nonlocal round
+     start_time
+     pellet_state
+     round
 
     disp_start = time.time()
     q.task_done()
