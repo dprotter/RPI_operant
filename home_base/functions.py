@@ -315,7 +315,7 @@ def experiment_start_tone(q):
     timestamp_queue.put('%i, experiment start tone start complete, %f'%(round, time.time()-start_time))
     q.task_done()
 
-def dispence_pellet(q):
+def dispense_pellet(q):
 
     global pellet_state
 
