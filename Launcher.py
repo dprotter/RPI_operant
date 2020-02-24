@@ -43,7 +43,7 @@ next_day = experiment_status.iloc[next_exp].day
 updated_rounds = None
 
 
-def insert_row(row_number, df, row_values):
+def insert_row(df, row_number,  row_values):
     df_top_copy = df.loc[df.index<=row_number].copy()
     df_bottom_copy = df.loc[df.index>=row_number].copy()
     df_bottom_copy.index = df_bottom_copy.index + 1
