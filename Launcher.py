@@ -62,7 +62,7 @@ def insert_row(df, row_number,  row_values):
 def skip_vole():
     global module
     experiment_status.iloc[next_exp].experiment_status = 'skipped'
-    experiment_status.to_csv(csv_path, ignore_index = True)
+    experiment_status.to_csv(csv_path, index = False)
 
     #of the list of unfinished indexes, start at the min and move through.
     unfinished_loc+=1
@@ -117,7 +117,7 @@ def choose_unfinished():
         experiment_status.iloc[next_exp+1].file = ''
         experiment_status.iloc[next_exp+1].done = ''
 
-        experiment_status.to_csv(csv_path, ignore_index = True)
+        experiment_status.to_csv(csv_path, index = False)
 
         next_vole = experiment_status.iloc[next_exp+1].vole
         next_script = experiment_status.iloc[next_exp+1].script
@@ -167,7 +167,7 @@ def update_rounds(round_number):
 
     experiment_status.iloc[next_exp, 'completed_rounds'] = round_number
 
-    experiment_status.to_csv(csv_path, ignore_index = True)
+    experiment_status.to_csv(csv_path, index = False)
 
 
 #present the information of this script to the user, allow them to make changes
@@ -223,7 +223,7 @@ if pd.isna(experiment_status.iloc[next_exp].rounds):
 
     print(f'no rounds in experiment status. setting to {num_rounds}')
 
-    experiment_status.to_csv(csv_path, ignore_index = True)
+    experiment_status.to_csv(csv_path, index = False)
 else:
     module.key_values['num_rounds'] = int(experiment_status.iloc[next_exp].rounds)
 
