@@ -184,6 +184,7 @@ while user_accepts == False:
 
     #if the user has defined modified variables, update the module.
     if experiment_status.iloc[next_exp].modified_vars!=None:
+        print(f'{experiment_status.iloc[next_exp].modified_vars}')
         update_vars(experiment_status.iloc[next_exp].modified_vars)
 
     #are there rounds alread completed for this file?
