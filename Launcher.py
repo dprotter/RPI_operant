@@ -183,7 +183,7 @@ spec.loader.exec_module(module)
 while user_accepts == False:
 
     #if the user has defined modified variables, update the module.
-    if  experiment_status.iloc[next_exp].modified_vars.notna():
+    if  pd.notna(experiment_status.iloc[next_exp].modified_vars):
         print(f'{experiment_status.iloc[next_exp].modified_vars}')
         update_vars(experiment_status.iloc[next_exp].modified_vars)
 
