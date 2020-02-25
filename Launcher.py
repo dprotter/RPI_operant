@@ -225,7 +225,7 @@ setup_dict = {'vole':next_vole,'day':next_day, 'experiment':next_script,
 module.setup(setup_dict)
 
 #setup a thread to run our target script
-script_thread = threading.Thread(target = module.run_script(), daemon = True)
+script_thread = threading.Thread(target = module.run_script,daemon = True)
 script_thread.start()
 
 print('***************made it past the thread start**********')
