@@ -218,10 +218,10 @@ while user_accepts == False:
 
 #deal with number of rounds to run
 if pd.isna(experiment_status.iloc[next_exp].rounds):
+    num_rounds = module.key_values['num_rounds']
+    experiment_status.iloc[next_exp].rounds = num_rounds
 
-    experiment_status.iloc[next_exp].rounds = module.key_values['num_rounds']
-
-    print(f'no rounds in experiment status. setting to {module.key_values['num_rounds']}')
+    print(f'no rounds in experiment status. setting to {num_rounds}')
 
     experiment_status.to_csv(csv_path, ignore_index = True)
 else:
