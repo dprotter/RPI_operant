@@ -165,7 +165,7 @@ def update_rounds(round_number):
     global next_exp
     global csv_path
 
-    experiment_status.loc[index ==next_exp, 'completed_rounds'] = round_number
+    experiment_status.loc[experiment_status.index ==next_exp, 'completed_rounds'] = round_number
 
     experiment_status.to_csv(csv_path, index = False)
 
