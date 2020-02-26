@@ -229,6 +229,8 @@ else:
     print(f'rounds isnt nan, its {num_rounds}')
     module.key_values['num_rounds'] = int(experiment_status.iloc[next_exp].rounds)
 
+#get the file name for the output file
+experiment_status.loc[experiment_status.index == next_exp, 'file'] = module.save_path
 #get and define the values we will pass to the module to setup. Most of these
 #will get passed along to the csv writer that will write the output file
 module.comms_queue = queue.Queue()
@@ -253,5 +255,6 @@ while script_thread.isAlive() or not module.comms_queue.empty():
         else:
             print(f'comms_queue says: {val}')
     time.sleep(0.1)
+experiment_status.loc[experiment_status.index == next_exp, 'done'] = 'yes'
 print(experiment_status)
 print(f'all finished with this experiment')
