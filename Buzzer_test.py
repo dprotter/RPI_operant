@@ -9,9 +9,9 @@ if os.system('sudo lsof -i TCP:8888'):
 pi = pigpio.pi()
 
 
-print('2k')
+print('1k')
 pi.set_PWM_dutycycle(14, 255/2)
-pi.set_PWM_frequency(14, 2000)
+pi.set_PWM_frequency(14, 1000)
 
 time.sleep(2)
 
