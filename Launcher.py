@@ -90,7 +90,7 @@ def choose_unfinished():
     only {experiment_status.iloc[next_exp].completed_rounds} of
     {experiment_status.iloc[next_exp].rounds} were completed. \n\n''')
 
-    rounds_left = (experiment_status.iloc[next_exp].rounds
+    rounds_left = (experiment_status.iloc[next_exp].rounds -
                      experiment_status.iloc[next_exp].completed_rounds)
     valid = False
     while valid == False:
