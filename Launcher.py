@@ -1,4 +1,4 @@
-[experiment_status.index == ''''in theory this launcher will live in the folder where all of the data
+''''in theory this launcher will live in the folder where all of the data
 will be stored, along with the csv file of what were doing.'''
 
 
