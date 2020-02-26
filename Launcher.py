@@ -253,5 +253,5 @@ while script_thread.isAlive() or not module.comms_queue.empty():
         else:
             print(f'comms_queue says: {val}')
     time.sleep(0.1)
-
+print(experiment_status)
 print(f'all finished with this experiment')
