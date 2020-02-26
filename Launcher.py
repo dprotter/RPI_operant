@@ -219,12 +219,14 @@ while user_accepts == False:
 #deal with number of rounds to run
 if pd.isna(experiment_status.iloc[next_exp].rounds):
     num_rounds = module.key_values['num_rounds']
-    experiment_status.iloc[next_exp].rounds = num_rounds
+    experiment_status.loc[next_exp].rounds = num_rounds
 
     print(f'no rounds in experiment status. setting to {num_rounds}')
 
     experiment_status.to_csv(csv_path, index = False)
 else:
+    num_rounds = module.key_values['num_rounds']
+    print(f'rounds isnt nan, its {num_rounds}')
     module.key_values['num_rounds'] = int(experiment_status.iloc[next_exp].rounds)
 
 #get and define the values we will pass to the module to setup. Most of these
