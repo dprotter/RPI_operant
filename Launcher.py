@@ -90,8 +90,8 @@ def choose_unfinished():
     only {experiment_status.iloc[next_exp].completed_rounds} of
     {experiment_status.iloc[next_exp].rounds} were completed. \n\n''')
 
-    rounds_left = (experiment_status.iloc[next_exp].rounds.values -
-                     experiment_status.iloc[next_exp].completed_rounds.values)
+    rounds_left = (experiment_status.iloc[next_exp].rounds
+                     experiment_status.iloc[next_exp].completed_rounds)
     valid = False
     while valid == False:
         rr = input(f'''Should I: run {next_script} for {rounds_left} more rounds (<y>) \n
@@ -227,7 +227,7 @@ if pd.isna(experiment_status.iloc[next_exp].rounds):
 else:
     num_rounds = module.key_values['num_rounds']
     print(f'rounds isnt nan, its {num_rounds}')
-    module.key_values['num_rounds'] = int(experiment_status.iloc[next_exp].rounds.values)
+    module.key_values['num_rounds'] = int(experiment_status.iloc[next_exp].rounds)
 
 #get and define the values we will pass to the module to setup. Most of these
 #will get passed along to the csv writer that will write the output file
