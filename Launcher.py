@@ -26,6 +26,7 @@ import threading
 os.chdir('/home/pi/RPI_operant/')
 
 csv_path = '/home/pi/iter2_test/csv_test.csv'
+csv_mod = '/home/pi/iter2_test/csv_test_mod.csv'
 output_dir = '/home/pi/iter2_test/output/'
 experiment_status = pd.read_csv(csv_path)
 
@@ -62,7 +63,7 @@ def insert_row(df, row_number,  row_values):
 def skip_vole():
     global module
     experiment_status.iloc[next_exp].experiment_status = 'skipped'
-    experiment_status.to_csv(csv_path, index = False)
+    experiment_status.to_csv(csv_mod, index = False)
 
     #of the list of unfinished indexes, start at the min and move through.
     unfinished_loc+=1
@@ -117,7 +118,7 @@ def choose_unfinished():
         experiment_status.iloc[next_exp+1].file = ''
         experiment_status.iloc[next_exp+1].done = ''
 
-        experiment_status.to_csv(csv_path, index = False)
+        experiment_status.to_csv(csv_mod, index = False)
 
         next_vole = experiment_status.iloc[next_exp+1].vole
         next_script = experiment_status.iloc[next_exp+1].script
@@ -167,7 +168,7 @@ def update_rounds(round_number):
 
     experiment_status.iloc[next_exp].completed_rounds = round_number
 
-    experiment_status.to_csv(csv_path, index = False)
+    experiment_status.to_csv(csv_mod, index = False)
 
 
 #present the information of this script to the user, allow them to make changes
@@ -223,7 +224,7 @@ if pd.isna(experiment_status.iloc[next_exp].rounds):
 
     print(f'no rounds in experiment status. setting to {num_rounds}')
 
-    experiment_status.to_csv(csv_path, index = False)
+    experiment_status.to_csv(csv_mod, index = False)
 else:
     num_rounds = module.key_values['num_rounds']
     print(f'rounds isnt nan, its {num_rounds}')
