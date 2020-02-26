@@ -1,4 +1,4 @@
-''''in theory this launcher will live in the folder where all of the data
+[experiment_status.index == ''''in theory this launcher will live in the folder where all of the data
 will be stored, along with the csv file of what were doing.'''
 
 
@@ -61,7 +61,7 @@ def insert_row(df, row_number,  row_values):
 
 def skip_vole():
     global module
-    experiment_status.loc[index ==next_exp, 'experiment_status']= 'skipped'
+    experiment_status.loc[experiment_status.index == next_exp, 'experiment_status']= 'skipped'
     experiment_status.to_csv(csv_path, index = False)
 
     #of the list of unfinished indexes, start at the min and move through.
