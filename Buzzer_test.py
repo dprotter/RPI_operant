@@ -1,6 +1,5 @@
 import pigpio
-from operant_cage_settings import pins, servo_dict, continuous_servo_speeds, lever_angles
-import time
+
 import os
 import RPi.GPIO as GPIO
 #activates the pigpio daemon that runs PWM, unless its already running
@@ -11,22 +10,22 @@ pi = pigpio.pi()
 
 
 print('2k')
-pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
-pi.set_PWM_frequency(pins['pellet_tone'], 2000)
+pi.set_PWM_dutycycle(8, 255/2)
+pi.set_PWM_frequency(8, 2000)
 
 time.sleep(2)
 
-pi.set_PWM_dutycycle(pins['pellet_tone'], 0)
+pi.set_PWM_dutycycle(8, 0)
 
 time.sleep(1)
 print('3k')
 
-pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
-pi.set_PWM_frequency(pins['pellet_tone'], 3000)
+pi.set_PWM_dutycycle(8, 255/2)
+pi.set_PWM_frequency(8, 3000)
 
 
 time.sleep(2)
-pi.set_PWM_dutycycle(pins['pellet_tone'], 0)
+pi.set_PWM_dutycycle(8, 0)
 
 
 print('all done')
