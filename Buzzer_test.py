@@ -4,7 +4,7 @@ import os
 import RPi.GPIO as GPIO
 #activates the pigpio daemon that runs PWM, unless its already running
 if os.system('sudo lsof -i TCP:8888'):
-    os.system('sudo pigpio')
+    os.system('sudo pigpiod')
 
 pi = pigpio.pi()
 
