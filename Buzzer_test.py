@@ -10,22 +10,22 @@ pi = pigpio.pi()
 
 
 print('2k')
-pi.set_PWM_dutycycle(8, 255/2)
-pi.set_PWM_frequency(8, 2000)
+pi.set_PWM_dutycycle(14, 255/2)
+pi.set_PWM_frequency(14, 2000)
 
 time.sleep(2)
 
-pi.set_PWM_dutycycle(8, 0)
+pi.set_PWM_dutycycle(14, 0)
 
 time.sleep(1)
 print('3k')
 
-pi.set_PWM_dutycycle(8, 255/2)
-pi.set_PWM_frequency(8, 3000)
+pi.set_PWM_dutycycle(14, 255/2)
+pi.set_PWM_frequency(14, 3000)
 
 
 time.sleep(2)
-pi.set_PWM_dutycycle(8, 0)
+pi.set_PWM_dutycycle(14, 0)
 
 
 print('all done')
