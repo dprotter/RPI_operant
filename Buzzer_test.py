@@ -1,5 +1,5 @@
 import pigpio
-
+import time as time
 import os
 import RPi.GPIO as GPIO
 #activates the pigpio daemon that runs PWM, unless its already running
