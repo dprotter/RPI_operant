@@ -1,9 +1,9 @@
 from adafruit_servokit import ServoKit
 kit = ServoKit(channels=16)
-pins = {'lever_food':4,'lever_door_1':17,'led_food':18, 'read_pellet':24,
+pins = {'lever_food':,'lever_door_1':17,'led_food':18, 'read_pellet':24,
     'pellet_tone':21, 'start_tone':20, 'door_close_tone':22, 'led_social':19,
-    'door_1_override_open_switch':13, 'door_1_override_close_switch':16,
-    'door_1_state_switch':0, 'door_state_2_switch':0, 'door_2_override_open_switch':0,
+    'door_1_override_open_switch':4, 'door_1_override_close_switch':16,
+    'door_1_state_switch':18, 'door_state_2_switch':0, 'door_2_override_open_switch':17,
     'door_2_override_close_switch':0,'gpio_sync':23, }
 
 
@@ -22,5 +22,6 @@ continuous_servo_speeds = {
                                                                             }
 
 
-servo_dict = {'food':kit.servo[1], 'dispense_pellet':kit.continuous_servo[2],
-                'social':kit.servo[0], 'door_1':kit.continuous_servo[3], 'door_2':kit. continuous_servo[4]}
+servo_dict = {'food_lever':kit.servo[14], 'dispense_pellet':kit.continuous_servo[2],
+                'lever_1':kit.servo[2], 'door_1':kit.continuous_servo[0],
+                'lever_2':kit.servo[12],'door_2':kit. continuous_servo[13]}
