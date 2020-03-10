@@ -1,6 +1,6 @@
 import time
 import RPi.GPIO as GPIO
-from operant_cage_settings import pins, servo_dict, continuous_servo_speeds, lever_angles
+from home_base.operant_cage_settings import pins, servo_dict, continuous_servo_speeds, lever_angles
 
 pins_here =  {}
 for k in pins.keys():
