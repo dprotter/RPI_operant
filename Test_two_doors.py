@@ -245,9 +245,10 @@ def run_script():
 
 
 if __name__ == '__main__':
-    is_test = input('is this just a test? y/n')
+    '''is_test = input('is this just a test? y/n\n')'''
+    is_test = 'y'
     if is_test.lower() == 'y':
         setup_dict = {'vole':'000','day':1, 'experiment':'Test_two_doors',
                     'user':'Test User', 'output_directory':'/home/pi/RPI_operant/test_outputs/'}
-    setup()
+    setup(setup_dict)
     run_script()
