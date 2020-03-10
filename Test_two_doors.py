@@ -140,8 +140,10 @@ def run_script():
         do_stuff_queue.put(('extend lever',
                             ('food',lever_angles['food'][0],lever_angles['food'][1])))
 
+        do_stuff_queue.put(('monitor_lever_test'),(fn.lever_press_queue, 'food'))
         print('ok is the food lever out?')
-        input('press any key to retract food lever.')
+        input('press any key to move on. feel free to press the lever')
+        fn.monitor = False
 
         do_stuff_queue.put(('retract lever',
                             ('food', lever_angles['food'][0],lever_angles['food'][1])))
@@ -152,8 +154,10 @@ def run_script():
         do_stuff_queue.put(('extend lever',
                             ('door_1',lever_angles['door_1'][0],lever_angles['door_1'][1])))
 
+        do_stuff_queue.put(('monitor_lever_test'),(fn.lever_press_queue, 'lever_1'))
         print('ok is the door_1 lever out?')
-        input('press any key to move on.')
+        input('press any key to move on. feel free to press the lever')
+        fn.monitor = False
 
         do_stuff_queue.put(('retract lever',
                             ('door_1', lever_angles['door_1'][0],lever_angles['door_1'][1])))
@@ -164,9 +168,10 @@ def run_script():
         do_stuff_queue.put(('extend lever',
                             ('door_2',lever_angles['door_2'][0],lever_angles['door_2'][1])))
 
-
+        do_stuff_queue.put(('monitor_lever_test'),(fn.lever_press_queue, 'lever_2'))
         print('ok is the door_2 lever out?')
-        input('press any key to move on.')
+        input('press any key to move on. feel free to press the lever')
+        fn.monitor = False
 
         do_stuff_queue.put(('retract lever',
                             ('door_2', lever_angles['door_2'][0],lever_angles['door_2'][1])))
@@ -233,7 +238,7 @@ def run_script():
 
     do_stuff_queue.put(('clean up',))
     while not timestamp_queue.empty():
-        '''hanging till queue empty'''
+
         time.sleep(0.05)
     #wait for the csv writer
     time.sleep(1)'''
