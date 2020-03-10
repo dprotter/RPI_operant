@@ -249,6 +249,6 @@ if __name__ == '__main__':
     is_test = 'y'
     if is_test.lower() == 'y':
         setup_dict = {'vole':'000','day':1, 'experiment':'Test_two_doors',
-                    'user':'Test User', 'output_directory':'/home/pi/RPI_operant/test_outputs/'}
+                    'user':'Test User', 'output_directory':'/home/pi/RPI_Operant/test_outputs/'}
     setup(setup_dict)
     run_script()
