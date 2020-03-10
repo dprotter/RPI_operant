@@ -32,6 +32,6 @@ continuous_servo_speeds = {
                                                                             }
 
 
-servo_dict = {'food_lever':kit.servo[14], 'dispense_pellet':kit.continuous_servo[2],
+servo_dict = {'food_lever':kit.servo[14], 'dispense_pellet':kit.continuous_servo[1],
                 'lever_1':kit.servo[2], 'door_1':kit.continuous_servo[0],
                 'lever_2':kit.servo[12],'door_2':kit. continuous_servo[13]}
