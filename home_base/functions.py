@@ -336,6 +336,7 @@ def monitor_lever_test(ds_queue, args):
                 print(f'{lever_ID} pressed! neato.'
                 while GPIO.input(pins["lever_%s"%lever_ID]):
                     'hanging till lever not pressed'
+                    time.sleep(0.05)
                 lever = 0
             else:
                 #we can still record from the lever until monitoring is turned
@@ -373,6 +374,7 @@ def monitor_lever(ds_queue, args):
                 timestamp_queue.put('%i, %s lever pressed productive, %f'%(round, lever_ID, time.time()-start_time))
                 while GPIO.input(pins["lever_%s"%lever_ID]):
                     'hanging till lever not pressed'
+                    time.sleep(0.05)
                 lever = 0
             else:
                 #we can still record from the lever until monitoring is turned
