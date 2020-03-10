@@ -75,7 +75,7 @@ def run_script():
     fn.reset_doors()
     open_doors = [id for id in ['door_1', 'door_2'] if not fn.door_states[id]]
     if len(open_doors) > 0 :
-        print(f'oh dip! theres a problem closing the doors: {open_doors})
+        print(f'oh dip! theres a problem closing the doors: {open_doors}')
         raise
 
     #start the internal timer of the module
@@ -107,7 +107,7 @@ def run_script():
         do_stuff_queue.put(('open door',('door_1')))
         do_stuff_queue.join()
 
-        print('ok is the door open? ill wait')
+        print('ok is door 1 open? ill wait')
         input('just haning till you press enter. then ill close it.')
 
         do_stuff_queue.put(('buzz',door_close_buzz))
@@ -117,23 +117,62 @@ def run_script():
         print('ok is the door closed? ill wait')
         input('just haning till you press enter.')
 
-        print('ok lets try and open door 1')
+        print('ok lets try and open door 2')
 
         do_stuff_queue.put(('buzz',door_open_buzz))
         do_stuff_queue.join()
         time.sleep(0.5)
 
-        do_stuff_queue.put(('open door',('door_1')))
+        do_stuff_queue.put(('open door',('door_2')))
         do_stuff_queue.join()
 
-        print('ok is the door open? ill wait')
+        print('ok is the door 2 open? ill wait')
         input('just haning till you press enter. then ill close it.')
 
         do_stuff_queue.put(('buzz',door_close_buzz))
         do_stuff_queue.put(('close door',('door_1')))
 
+        print('ok is the door 2 closed? ill wait')
+        input('just haning till you press enter. Then we will try the levers')
 
 
+
+        do_stuff_queue.put(('extend lever',
+                            ('food',lever_angles['food'][0],lever_angles['food'][1])))
+
+        print('ok is the food lever out?')
+        input('press any key to retract food lever.')
+
+        do_stuff_queue.put(('retract lever',
+                            ('food', lever_angles['food'][0],lever_angles['food'][1])))
+
+        print('ok is the food lever retracted?')
+        input('press any key to move on.')
+
+        do_stuff_queue.put(('extend lever',
+                            ('door_1',lever_angles['door_1'][0],lever_angles['door_1'][1])))
+
+        print('ok is the door_1 lever out?')
+        input('press any key to move on.')
+
+        do_stuff_queue.put(('retract lever',
+                            ('door_1', lever_angles['door_1'][0],lever_angles['door_1'][1])))
+
+        print('ok is the door_1 lever retracted?')
+        input('press any key to move on.')
+
+        do_stuff_queue.put(('extend lever',
+                            ('door_2',lever_angles['door_2'][0],lever_angles['door_2'][1])))
+
+
+        print('ok is the door_2 lever out?')
+        input('press any key to move on.')
+
+        do_stuff_queue.put(('retract lever',
+                            ('door_2', lever_angles['door_2'][0],lever_angles['door_2'][1])))
+
+        print('ok is the door_2 lever retracted?')
+        input('press any key to move on.')
 
 
 
