@@ -7,7 +7,7 @@ for k in pins.keys():
     print(k)
     if 'lever' in k or 'switch' in k:
         print(k + ": IN")
-        GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         pins_here[k] = pins[k]
 
 for key in pins_here.keys():
