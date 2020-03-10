@@ -42,10 +42,14 @@ monitor = False
 pellet_state = False
 
 #are we overriding the door activity?
-door_override = False
+door_1_override = False
+door_2_override = False
 
 #true = closed, false = open
-door_states = {'door_1':True, 'door_2':True}
+door_states = {'door_1':False, 'door_2':False}
+
+#timeout for closing the doors
+door_close_timeout = 10
 
 def start_timing():
     global start_time
@@ -147,9 +151,46 @@ def setup_pins():
             GPIO.setup(pins[k], GPIO.OUT)
             print(k + ": OUT")
 
+def reset_doors():
+
+    #check if the doors are closed
+    if GPIO.input(pins['door_1_state_switch']):
+        door_states['door_1'] = True
+
+    if GPIO.input(pins['door_2_state_switch']):
+        door_states['door_2'] = True
+
+    #get the open doors (door_state == False)
+    open_doors = [id for id in ['door_1', 'door_2'] if not door_states[id]]
+
+    for door_ID in open_doors:
+        start = time.time()
+
+        #if its the first time the door has been overriden, we will open again slightly.
+        first_override = True
+        while not door_states[door_ID] and time.time()-start < door_close_timeout:
+                if not door_override:
+                    servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['close']
+
+                #we will close the door until pins for door close are raised, or until timeout
+                if GPIO.input(pins[f'{door_ID}_state_switch']):
+                    door_states[door_ID] = True
+                    servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
+                elif door_override and first_override:
+                    servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['open']
+                    time.sleep(0.1)
+                    servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
+
+        if not door_states[door_ID]:
+            print(f'ah crap, door {door_ID} didnt close!')
+
 def open_door(q, args):
 
     door_ID = args
+    if door_ID == 'door_1':
+        door_override = door_1_override
+    else:
+        door_override = door_2_override
 
     timestamp_queue.put('%i, %s open begin, %f'%(round, door_ID, time.time()-start_time))
     servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['open']
@@ -165,43 +206,85 @@ def open_door(q, args):
         door_states[door_ID] = False
     q.task_done()
 
+
+
 def close_door(q, args):
     global door_states
 
-    door_ID = args
+    door_ID= args
+
+    if door_ID == 'door_1':
+        door_override = door_1_override
+    else:
+        door_override = door_2_override
 
     timestamp_queue.put('%i, %s close begin, %f'%(round, door_ID, time.time()-start_time))
-    if not door_override:
-        start = time.time()
-        servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['close']
-        while not GPIO.input(pins[f'{door_ID}_state_switch']) and not door_override:
-            '''just hanging around'''
-            time.sleep(0.05)
-        if not door_override:
-            servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
-            door_states[door_ID] = True
+
+    start = time.time()
+
+    #if its the first time the door has been overriden, we will open again slightly.
+    first_override = True
+    while not door_states[door_ID] and time.time()-start < door_close_timeout:
+            if not door_override:
+                servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['close']
+
+            #we will close the door until pins for door close are raised, or until timeout
+            if GPIO.input(pins[f'{door_ID}_state_switch']):
+                door_states[door_ID] = True
+                servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
+            elif door_override and first_override:
+                servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['open']
+                time.sleep(0.1)
+                servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
+
+    if not door_states[door_ID]:
+        print(f'ah crap, door {door_ID} didnt close!')
 
     q.task_done()
 
-def override_door(q, args):
+
+#### run in a dedicated thread so we can open the doors whenever necessary
+def override_door_1():
     global door_override
-    q.task_done()
-    door_ID = args
 
     while True:
-        if GPIO.input(pins[f'{door_ID}_override_open_switch']):
-            door_override = True
-            servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['open']
-            while GPIO.input(pins[f'{door_ID}__door_override_open']):
+        if GPIO.input(pins['door_1_override_open_switch']):
+            door_1_override = True
+            servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['open']
+            while GPIO.input(pins['door_1_door_override_open']):
                 time.sleep(0.05)
-            servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
-        if GPIO.input(pins[f'{door_ID}__door_override_close']):
-            door_override = True
-            servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['close_full']
-            while GPIO.input(pins[f'{door_ID}__door_override_close']):
+            servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['stop']
+        if GPIO.input(pins['door_1_door_override_close']):
+            door_1_override = True
+            servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['close_full']
+            while GPIO.input(pins[f'door_1_override_close']):
                 time.sleep(0.05)
-            servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
-        door_override = False
+            servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['stop']
+        door_1_override = False
+
+
+        time.sleep(0.1)
+
+#### run in a dedicated thread so we can open the doors whenever necessary
+def override_door_2():
+    global door_override
+
+    while True:
+        if GPIO.input(pins['door_2_override_open_switch']):
+            door_2_override = True
+            servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['open']
+            while GPIO.input(pins['door_1_door_override_open']):
+                time.sleep(0.05)
+            servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['stop']
+        if GPIO.input(pins['door_1_door_override_close']):
+            door_2_override = True
+            servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['close_full']
+            while GPIO.input(pins['door_2_override_close']):
+                time.sleep(0.05)
+            servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['stop']
+        door_2_override = False
+
+
         time.sleep(0.1)
 
 
@@ -248,7 +331,7 @@ def monitor_lever(ds_queue, args):
             if not interrupt:
                 #send the lever_ID to the lever_q to trigger a  do_stuff.put in
                 #the main thread/loop
-                pulse_sync_line()
+
                 lever_q.put(lever_ID)
 
                 timestamp_queue.put('%i, %s lever pressed productive, %f'%(round, lever_ID, time.time()-start_time))
@@ -293,12 +376,12 @@ def retract_lever(q, args):
 def pellet_tone(q):
 
     print('starting pellet tone')
-    pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
-    pi.set_PWM_frequency(pins['pellet_tone'], 2000)
+    pi.set_PWM_dutycycle(pins['speaker_tone'], 255/2)
+    pi.set_PWM_frequency(pins['speaker_tone'], 2000)
 
     timestamp_queue.put('%i, pellet tone start, %f'%(round, time.time()-start_time))
     time.sleep(2)
-    pi.set_PWM_dutycycle(pins['pellet_tone'], 0)
+    pi.set_PWM_dutycycle(pins['speaker_tone'], 0)
 
     print('pellet tone complete')
     timestamp_queue.put('%i, pellet tone complete, %f'%(round, time.time()-start_time))
@@ -307,11 +390,11 @@ def pellet_tone(q):
 def experiment_start_tone(q):
 
     print('starting experiment tone')
-    pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
-    pi.set_PWM_frequency(pins['pellet_tone'], 3000)
+    pi.set_PWM_dutycycle(pins['speaker_tone'], 255/2)
+    pi.set_PWM_frequency(pins['speaker_tone'], 3000)
     timestamp_queue.put('%i, experiment start tone start, %f'%(round, time.time()-start_time))
     time.sleep(2)
-    pi.set_PWM_dutycycle(pins['pellet_tone'], 0)
+    pi.set_PWM_dutycycle(pins['speaker_tone'], 0)
     print('experiment tone complete')
     timestamp_queue.put('%i, experiment start tone start complete, %f'%(round, time.time()-start_time))
     q.task_done()
@@ -320,11 +403,11 @@ def door_close_tone(q):
 
     print('starting door close tone')
 
-    pi.set_PWM_frequency(pins['pellet_tone'], 3500)
+    pi.set_PWM_frequency(pins['speaker_tone'], 3500)
     for i in range(5):
-        pi.set_PWM_dutycycle(pins['pellet_tone'], 255/2)
+        pi.set_PWM_dutycycle(pins['speaker_tone'], 255/2)
         time.sleep(0.5)
-        pi.set_PWM_dutycycle(pins['pellet_tone'], 0)
+        pi.set_PWM_dutycycle(pins['speaker_tone'], 0)
         time.sleep(0.1)
     timestamp_queue.put('%i, door close tone start, %f'%(round, time.time()-start_time))
 
