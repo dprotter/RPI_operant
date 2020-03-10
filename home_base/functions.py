@@ -139,7 +139,7 @@ def setup_pins():
         print(k)
         if 'lever' in k or 'switch' in k:
             print(k + ": IN")
-            GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+            GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_UP)
         elif 'read' in k:
             print(k + ": IN")
             GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -225,14 +225,14 @@ def close_door(q, args):
     #if its the first time the door has been overriden, we will open again slightly.
     first_override = True
     while not door_states[door_ID] and time.time()-start < door_close_timeout:
-            if not door_override:
+            if not door_override[door_ID]:
                 servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['close']
 
             #we will close the door until pins for door close are raised, or until timeout
             if GPIO.input(pins[f'{door_ID}_state_switch']):
                 door_states[door_ID] = True
                 servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
-            elif door_override and first_override:
+            elif door_override[door_ID] and first_override:
                 servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['open']
                 time.sleep(0.1)
                 servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
