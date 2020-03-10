@@ -296,14 +296,12 @@ def run_job(job, q, args = None):
     jobs = {'extend lever':extend_lever,
             'dispense pellet':dispense_pellet,
             'retract lever':retract_lever,
-            'start tone':experiment_start_tone,
-            'pellet tone':pellet_tone,
+            'buzz':buzz,
             'monitor lever':monitor_lever,
             'dispense pellet':dispense_pellet,
             'read pellet':read_pellet,
             'close door':close_door,
             'open door':open_door,
-            'door close tone': door_close_tone,
             'door override':override_door,
             'clean up':clean_up
             }
@@ -373,31 +371,28 @@ def retract_lever(q, args):
     timestamp_queue.put('%i, Levers retracted, %f'%(round, time.time()-start_time))
     q.task_done()
 
-def pellet_tone(q):
+def buzz(q, args):
+    '''take time (s), hz, and name as inputs'''
 
-    print('starting pellet tone')
+    time, hz, name = args
+
+    print(f'starting {name} tone {hz} hz')
+
+    #set a 50% duty cycle, pass desired hz
     pi.set_PWM_dutycycle(pins['speaker_tone'], 255/2)
-    pi.set_PWM_frequency(pins['speaker_tone'], 2000)
+    pi.set_PWM_frequency(pins['speaker_tone'], hz)
 
-    timestamp_queue.put('%i, pellet tone start, %f'%(round, time.time()-start_time))
-    time.sleep(2)
+    timestamp_queue.put(f'{round}, {name} tone start {hz}:hz {time}:seconds, {time.time()-start_time}')
+
+    time.sleep(time)
+
+    #sound off
     pi.set_PWM_dutycycle(pins['speaker_tone'], 0)
 
-    print('pellet tone complete')
-    timestamp_queue.put('%i, pellet tone complete, %f'%(round, time.time()-start_time))
+    print(f'{name} tone complete')
+    timestamp_queue.put(f'{round}, {name} tone complete {hz}:hz {time}:seconds, {time.time()-start_time}')
     q.task_done()
 
-def experiment_start_tone(q):
-
-    print('starting experiment tone')
-    pi.set_PWM_dutycycle(pins['speaker_tone'], 255/2)
-    pi.set_PWM_frequency(pins['speaker_tone'], 3000)
-    timestamp_queue.put('%i, experiment start tone start, %f'%(round, time.time()-start_time))
-    time.sleep(2)
-    pi.set_PWM_dutycycle(pins['speaker_tone'], 0)
-    print('experiment tone complete')
-    timestamp_queue.put('%i, experiment start tone start complete, %f'%(round, time.time()-start_time))
-    q.task_done()
 
 def door_close_tone(q):
 
