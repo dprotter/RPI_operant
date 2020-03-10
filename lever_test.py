@@ -7,7 +7,7 @@ for k in pins.keys():
     print(k)
     if 'lever' in k or 'switch' in k:
         print(k + ": IN")
-        GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        GPIO.setup(pins[k], GPIO.IN, pull_up_down=GPIO.PUD_UP)
         pins_here[k] = pins[k]
 
 for key in pins_here.keys():
@@ -15,7 +15,7 @@ for key in pins_here.keys():
     start = time.time()
     press = 0
     while(time.time() - start <20):
-        if GPIO.input(pins_here[key]):
+        if not GPIO.input(pins_here[key]):
             print('the %s lever was pressed!'%key)
             press += 1
         if press > 3:
