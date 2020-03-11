@@ -412,7 +412,7 @@ def retract_lever(q, args):
 def buzz(q, args):
     '''take time (s), hz, and name as inputs'''
 
-    time, hz, name = args
+    buzz_len, hz, name = args
 
     print(f'starting {name} tone {hz} hz')
 
@@ -420,32 +420,21 @@ def buzz(q, args):
     pi.set_PWM_dutycycle(pins['speaker_tone'], 255/2)
     pi.set_PWM_frequency(pins['speaker_tone'], hz)
 
-    timestamp_queue.put(f'{round}, {name} tone start {hz}:hz {time}:seconds, {time.time()-start_time}')
+    timestamp_queue.put(f'{round}, {name} tone start {hz}:hz {buzz_len}:seconds, {time.time()-start_time}')
 
-    time.sleep(time)
+    time.sleep(buzz_len)
 
     #sound off
     pi.set_PWM_dutycycle(pins['speaker_tone'], 0)
 
     print(f'{name} tone complete')
-    timestamp_queue.put(f'{round}, {name} tone complete {hz}:hz {time}:seconds, {time.time()-start_time}')
+    timestamp_queue.put(f'{round}, {name} tone complete {hz}:hz {buzz_len}:seconds, {time.time()-start_time}')
     q.task_done()
 
 
 def door_close_tone(q):
+    '''can replace with buzz()'''
 
-    print('starting door close tone')
-
-    pi.set_PWM_frequency(pins['speaker_tone'], 3500)
-    for i in range(5):
-        pi.set_PWM_dutycycle(pins['speaker_tone'], 255/2)
-        time.sleep(0.5)
-        pi.set_PWM_dutycycle(pins['speaker_tone'], 0)
-        time.sleep(0.1)
-    timestamp_queue.put('%i, door close tone start, %f'%(round, time.time()-start_time))
-
-    print('door close tone complete')
-    timestamp_queue.put('%i, door close tone complete, %f'%(round, time.time()-start_time))
     q.task_done()
 
 def dispense_pellet(q):
