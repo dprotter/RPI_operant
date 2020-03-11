@@ -16,7 +16,7 @@ comms_queue = None
 
 
 
-key_values = {'num_rounds': 2, 'round_time':8, 'timeII':2,
+key_values = {'num_rounds': 1, 'round_time':8, 'timeII':2,
             'timeIV':2, 'pellet_tone_time':2, 'pellet_tone_hz':3000,
             'door_close_tone_time':2, 'door_close_tone_hz':6000,
             'door_open_tone_time':2,'door_open_tone_hz':10000,
@@ -91,7 +91,7 @@ def run_script():
         t.start()
     ### master looper ###
 
-    for i in range(1, key_values['num_rounds']+1,1):
+    for i in range(1, key_values['num_rounds'],1):
         round_start = time.time()
         fn.round = i
         print("#-#-#-#-#-# new round #%i!!!-#-#-#-#-#"%i)
@@ -156,7 +156,7 @@ def run_script():
                             ('door_1',lever_angles['door_1'][0],lever_angles['door_1'][1])))
 
         do_stuff_queue.put(('monitor_lever_test',
-                            ('lever_1')))
+                            ('door_1')))
         print('ok is the door_1 lever out?')
         input('press any key to move on. feel free to press the lever')
         fn.monitor = False
@@ -170,7 +170,8 @@ def run_script():
         do_stuff_queue.put(('extend lever',
                             ('door_2',lever_angles['door_2'][0],lever_angles['door_2'][1])))
 
-        do_stuff_queue.put(('monitor_lever_test'),('lever_2'))
+        do_stuff_queue.put(('monitor_lever_test',
+                            ('door_2')))
         print('ok is the door_2 lever out?')
         input('press any key to move on. feel free to press the lever')
         fn.monitor = False
