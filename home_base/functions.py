@@ -366,6 +366,8 @@ def monitor_lever_test(q, args):
         time.sleep(25/1000.0)
     print('halting monitoring of %s lever'%lever_ID)
 
+
+
 def monitor_lever(q, args):
     global monitor
 
@@ -447,7 +449,7 @@ def retract_lever(q, args):
     while GPIO.input(pins[f'lever_{lever_ID}']):
         'hanging till lever not pressed'
         time.sleep(0.05)
-    print('LEDs off')
+    #print('LEDs off')
     #GPIO.output(pins['led_%s'%lever_ID], 0)
     servo_dict[f'lever_{lever_ID}'].angle = retract
     print('retracting levers')
