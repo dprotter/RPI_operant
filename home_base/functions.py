@@ -183,7 +183,7 @@ def reset_doors():
 
         if not door_states[door_ID]:
             print(f'ah crap, door {door_ID} didnt close!')
-        else:
+        
 
 
 def open_door(q, args):
