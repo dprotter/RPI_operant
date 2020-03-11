@@ -138,15 +138,15 @@ def run_script():
 
 
         do_stuff_queue.put(('extend lever',
-                            ('food_lever',lever_angles['food_lever'][0],lever_angles['food_lever'][1])))
+                            ('food',lever_angles['food'][0],lever_angles['food'][1])))
 
-        do_stuff_queue.put(('monitor_lever_test'),('food_lever'))
+        do_stuff_queue.put(('monitor_lever_test'),('food'))
         print('ok is the food lever out?')
         input('press any key to move on. feel free to press the lever')
         fn.monitor = False
 
         do_stuff_queue.put(('retract lever',
-                            ('food_lever', lever_angles['food_lever'][0],lever_angles['food_lever'][1])))
+                            ('food', lever_angles['food'][0],lever_angles['food'][1])))
 
         print('ok is the food lever retracted?')
         input('press any key to move on.')
