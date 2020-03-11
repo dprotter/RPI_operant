@@ -187,7 +187,7 @@ def reset_doors():
 
 
 def open_door(q, args):
-
+    '''open a door!'''
     door_ID = args
 
     timestamp_queue.put('%i, %s open begin, %f'%(round, door_ID, time.time()-start_time))
