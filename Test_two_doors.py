@@ -17,8 +17,8 @@ comms_queue = None
 
 
 key_values = {'num_rounds': 2, 'round_time':8, 'timeII':2,
-            'timeIV':2, 'pellet_tone_time':2, 'pellet_tone_hz':4000,
-            'door_close_tone_time':2, 'door_close_tone_hz':8000,
+            'timeIV':2, 'pellet_tone_time':2, 'pellet_tone_hz':3000,
+            'door_close_tone_time':2, 'door_close_tone_hz':6000,
             'door_open_tone_time':2,'door_open_tone_hz':10000,
             'round_start_tone_time':2, 'round_start_tone_hz':6000}
 
