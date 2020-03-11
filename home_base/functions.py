@@ -222,7 +222,7 @@ def close_door(q, args):
     global door_states
 
     door_ID= args
-    
+
     #double check the right number of args got passed
     if type(door_ID) is tuple:
         if len(door_ID) == 1:
@@ -409,6 +409,14 @@ def extend_lever(q, args):
 
     lever_ID = args
 
+    #double check the right number of args got passed
+    if type(lever_ID) is tuple:
+        if len(lever_ID) == 1:
+            lever_ID = lever_ID[0]
+        else:
+            print(f'yo! you passed extend_lever() too many arguments! should get 1 (the lever_ID), got {args}')
+            raise
+
     #get extention and retraction angles from the operant_cage_settings
     extend = lever_angles[lever_ID][0]
     retract = lever_angles[lever_ID][1]
@@ -423,6 +431,14 @@ def extend_lever(q, args):
 def retract_lever(q, args):
 
     lever_ID = args
+
+    #double check the right number of args got passed
+    if type(lever_ID) is tuple:
+        if len(lever_ID) == 1:
+            lever_ID = lever_ID[0]
+        else:
+            print(f'yo! you passed extend_lever() too many arguments! should get 1 (the lever_ID), got {args}')
+            raise
 
     #get extention and retraction angles from the operant_cage_settings
     extend = lever_angles[lever_ID][0]
