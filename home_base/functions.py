@@ -183,11 +183,14 @@ def reset_doors():
 def open_door(q, args):
     '''open a door!'''
     door_ID = args
-    if type(door_ID) is tuple and len(door_ID) == 1:
-        door_ID = door_ID[0]
-    else:
-        print(f'yo! you passed open_door() too many arguments! should get 1 (the door_ID), got {len(door_ID)}')
-        raise
+
+    #double check the right number of args got passed
+    if type(door_ID) is tuple:
+        if len(door_ID) == 1:
+            door_ID = door_ID[0]
+        else:
+            print(f'yo! you passed close_door() too many arguments! should get 1 (the door_ID), got {len(door_ID)}')
+            raise
 
     timestamp_queue.put('%i, %s open begin, %f'%(round, door_ID, time.time()-start_time))
     servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['open']
@@ -219,12 +222,14 @@ def close_door(q, args):
     global door_states
 
     door_ID= args
-
-    if type(door_ID) is tuple and len(door_ID) == 1:
-        door_ID = door_ID[0]
-    else:
-        print(f'yo! you passed close_door() too many arguments! should get 1 (the door_ID), got {len(door_ID)}')
-        raise
+    
+    #double check the right number of args got passed
+    if type(door_ID) is tuple:
+        if len(door_ID) == 1:
+            door_ID = door_ID[0]
+        else:
+            print(f'yo! you passed close_door() too many arguments! should get 1 (the door_ID), got {len(door_ID)}')
+            raise
 
     timestamp_queue.put('%i, %s close begin, %f'%(round, door_ID, time.time()-start_time))
 
