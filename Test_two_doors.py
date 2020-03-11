@@ -138,15 +138,15 @@ def run_script():
 
 
         do_stuff_queue.put(('extend lever',
-                            ('food',lever_angles['food'][0],lever_angles['food'][1])))
+                            ('food_lever',lever_angles['food_lever'][0],lever_angles['food_lever'][1])))
 
-        do_stuff_queue.put(('monitor_lever_test'),('food'))
+        do_stuff_queue.put(('monitor_lever_test'),('food_lever'))
         print('ok is the food lever out?')
         input('press any key to move on. feel free to press the lever')
         fn.monitor = False
 
         do_stuff_queue.put(('retract lever',
-                            ('food', lever_angles['food'][0],lever_angles['food'][1])))
+                            ('food_lever', lever_angles['food_lever'][0],lever_angles['food_lever'][1])))
 
         print('ok is the food lever retracted?')
         input('press any key to move on.')
@@ -179,69 +179,6 @@ def run_script():
         print('ok is the door_2 lever retracted?')
         input('press any key to move on.')
 
-
-
-        '''do_stuff_queue.put(('start tone',))
-
-        #wait till tone is done
-        do_stuff_queue.join()
-
-        do_stuff_queue.put(('extend lever',
-                            ('food',lever_angles['food'][0],lever_angles['food'][1])))
-
-
-
-        #for the timeII interval, monitor lever and overide pellet timing if pressed
-        while time.time() - timeII_start < key_values['timeII']:
-            #eventually, here we will call threads to monitor
-            #vole position and the levers. here its just random
-            if not fn.interrupt and not lever_press_queue.empty():
-                fn.interrupt = True
-                lever_ID = lever_press_queue.get()
-                print('the %s lever was pressed! woweeeee'%lever_ID)
-                timestamp_queue.put('%i, a lever was pressed! woweeeee, %f'%(fn.round, time.time()-fn.start_time))
-                do_stuff_queue.put(('pellet tone',))
-                do_stuff_queue.put(('dispense pellet',))
-                do_stuff_queue.join()
-            time.sleep(0.05)
-
-        #waited the interval for timeII, nothing happened
-        if not fn.interrupt:
-            print('the vole is dumb and didnt press a lever')
-            timestamp_queue.put('%i, no lever press, %f'%(fn.round, time.time()-fn.start_time))
-            do_stuff_queue.put(('pellet tone',))
-            do_stuff_queue.put(('dispense pellet',))
-            time.sleep(0.05)
-            do_stuff_queue.join()
-
-        time.sleep(0.05)
-
-        do_stuff_queue.put(('retract lever',
-                            ('food', lever_angles['food'][0],lever_angles['food'][1])))
-
-        time.sleep(key_values['timeIV'])
-        print('entering ITI for #-#-# round #%i -#-#-# '%i )
-
-        #wait for ITI to pass
-
-
-        #reset our global values fn.interrupt and monitor. This will turn off the lever
-        #if it is still being monitored. This resets the inerrupt value for the next
-        #loop of the training.
-        fn.interrupt = False
-        fn.monitor = False
-        if comms_queue != None:
-            comms_queue.put(f'round:{i}')
-
-    if fn.pellet_state:
-        timestamp_queue.put('%i, final pellet not retrieved, %f'%(fn.round, time.time()-fn.start_time))
-
-    do_stuff_queue.put(('clean up',))
-    while not timestamp_queue.empty():
-
-        time.sleep(0.05)
-    #wait for the csv writer
-    time.sleep(1)'''
 
 
 if __name__ == '__main__':
