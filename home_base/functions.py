@@ -197,6 +197,8 @@ def open_door(q, args):
     while time.time() < ( start + open_time ) and not door_override[door_ID]:
         servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
     if not GPIO.input(pins[f'{door_ID}_state_switch']):
+        if door_override[door_ID]:
+            print(f'open {door_ID} stopped due to override!')
         print(f'{door_ID} failed to open!!!')
         timestamp_queue.put('%i, %s open failure, %f'%(round, door_ID, time.time()-start_time))
     else:
@@ -291,13 +293,15 @@ def run_job(job, q, args = None):
             'retract lever':retract_lever,
             'buzz':buzz,
             'monitor lever':monitor_lever,
+            'monitor_lever_test':monitor_lever_test,
             'dispense pellet':dispense_pellet,
             'read pellet':read_pellet,
             'close door':close_door,
             'open door':open_door,
             'door override 1':override_door_1,
             'door override 2':override_door_2,
-            'clean up':clean_up
+            'clean up':clean_up,
+
             }
 
     if args:
