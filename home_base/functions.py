@@ -393,7 +393,7 @@ def extend_lever(q, args):
     print('extending lever %s'%lever_ID)
     print('LEDs on')
     servo_dict[lever_ID].angle = extend
-    GPIO.output(pins['led_%s'%lever_ID], 1)
+    #GPIO.output(pins['led_%s'%lever_ID], 1)
     timestamp_queue.put('%i, Levers out, %f'%(round, time.time()-start_time))
     q.task_done()
 
@@ -404,7 +404,7 @@ def retract_lever(q, args):
         'hanging till lever not pressed'
         time.sleep(0.05)
     print('LEDs off')
-    GPIO.output(pins['led_%s'%lever_ID], 0)
+    #GPIO.output(pins['led_%s'%lever_ID], 0)
     servo_dict[lever_ID].angle = retract
     print('retracting levers')
     timestamp_queue.put('%i, Levers retracted, %f'%(round, time.time()-start_time))
