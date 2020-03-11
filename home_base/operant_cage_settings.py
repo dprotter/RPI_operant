@@ -9,8 +9,8 @@ pins = {'lever_food':23,
     'led_social':19,
     'door_1_override_open_switch':4,
     'door_2_override_open_switch':16,
-    'door_1_override_close_switch':0,
-    'door_2_override_close_switch':0,
+    'door_1_override_close_switch':24,
+    'door_2_override_close_switch':25,
     'door_1_state_switch':17,
     'door_2_state_switch':18,
 
@@ -32,6 +32,6 @@ continuous_servo_speeds = {
                                                                             }
 
 
-servo_dict = {'food':kit.servo[14], 'dispense_pellet':kit.continuous_servo[1],
-                'lever_1':kit.servo[2], 'door_1':kit.continuous_servo[0],
-                'lever_2':kit.servo[12],'door_2':kit. continuous_servo[13]}
+servo_dict = {'lever_food':kit.servo[14], 'dispense_pellet':kit.continuous_servo[1],
+                'lever_door_1':kit.servo[2], 'door_1':kit.continuous_servo[0],
+                'lever_door_2':kit.servo[12],'door_2':kit. continuous_servo[13]}
