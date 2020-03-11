@@ -44,7 +44,6 @@ pellet_state = False
 #are we overriding the door activity?
 door_override = {'door_1':False, 'door_2':False}
 
-
 #true = closed, false = open
 door_states = {'door_1':False, 'door_2':False}
 
@@ -166,8 +165,7 @@ def reset_doors():
     for door_ID in open_doors:
         start = time.time()
 
-        #if its the first time the door has been overriden, we will open again slightly.
-        first_override = True
+
         while not door_states[door_ID] and time.time()-start < door_close_timeout:
                 if not door_override[door_ID]:
                     servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['close']
@@ -175,10 +173,6 @@ def reset_doors():
                 #we will close the door until pins for door close are raised, or until timeout
                 if not GPIO.input(pins[f'{door_ID}_state_switch']):
                     door_states[door_ID] = True
-                    servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
-                elif door_override[door_ID] and first_override:
-                    servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['open']
-                    time.sleep(0.1)
                     servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
 
         if not door_states[door_ID]:
@@ -194,8 +188,16 @@ def open_door(q, args):
     servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['open']
     open_time = continuous_servo_speeds[door_ID]['open time']
     start = time.time()
+
     while time.time() < ( start + open_time ) and not door_override[door_ID]:
-        servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
+        #wait for the door to open
+        time.sleep(0.05)
+
+    #door should be open!
+    servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['stop']
+
+    print('exiting door open attempts')
+
     if not GPIO.input(pins[f'{door_ID}_state_switch']):
         if door_override[door_ID]:
             print(f'open {door_ID} stopped due to override!')
@@ -390,6 +392,7 @@ def monitor_lever(q, args):
 def extend_lever(q, args):
 
     lever_ID, retract, extend = args
+    lever_ID = f'lever_{lever_ID}'
     print('extending lever %s'%lever_ID)
     print('LEDs on')
     servo_dict[lever_ID].angle = extend
