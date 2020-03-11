@@ -183,6 +183,8 @@ def reset_doors():
 
         if not door_states[door_ID]:
             print(f'ah crap, door {door_ID} didnt close!')
+        else:
+
 
 def open_door(q, args):
 
@@ -208,11 +210,6 @@ def close_door(q, args):
     global door_states
 
     door_ID= args
-
-    if door_ID == 'door_1':
-        door_override = door_1_override
-    else:
-        door_override = door_2_override
 
     timestamp_queue.put('%i, %s close begin, %f'%(round, door_ID, time.time()-start_time))
 
@@ -245,18 +242,18 @@ def override_door_1():
 
     while True:
         if not GPIO.input(pins['door_1_override_open_switch']):
-            door_1_override = True
+            door_override['door_1'] = True
             servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['open']
             while not GPIO.input(pins['door_1_override_open']):
                 time.sleep(0.05)
             servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['stop']
         if not GPIO.input(pins['door_1_override_close']):
-            door_1_override = True
+            door_override['door_1'] = True
             servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['close_full']
             while not GPIO.input(pins[f'door_1_override_close']):
                 time.sleep(0.05)
             servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['stop']
-        door_1_override = False
+        door_override['door_1'] = False
 
 
         time.sleep(0.1)
@@ -267,18 +264,18 @@ def override_door_2():
 
     while True:
         if not GPIO.input(pins['door_2_override_open_switch']):
-            door_2_override = True
+            door_override['door_2'] = True
             servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['open']
             while not GPIO.input(pins['door_1_override_open']):
                 time.sleep(0.05)
             servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['stop']
         if not GPIO.input(pins['door_1_override_close']):
-            door_2_override = True
+            door_override['door_2'] = True
             servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['close_full']
             while not GPIO.input(pins['door_2_override_close']):
                 time.sleep(0.05)
             servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['stop']
-        door_2_override = False
+        door_override['door_2'] = False
 
 
         time.sleep(0.1)
@@ -308,15 +305,15 @@ def run_job(job, q, args = None):
     else:
         jobs[job](q)
 
-def monitor_lever_test(ds_queue, args):
+def monitor_lever_test(q, args):
     global monitor
 
     monitor = True
-    lever_q, lever_ID = args
+    lever_ID = args
     "monitor a lever. If lever pressed, put lever_ID in queue. "
     lever=0
 
-    ds_queue.task_done()
+    do_stuff_queue.task_done()
     while monitor:
         if not GPIO.input(pins["lever_%s"%lever_ID]):
             lever +=1
@@ -327,7 +324,7 @@ def monitor_lever_test(ds_queue, args):
                 #send the lever_ID to the lever_q to trigger a  do_stuff.put in
                 #the main thread/loop
 
-                lever_q.put(lever_ID)
+                lever_press_queue.put(lever_ID)
 
                 timestamp_queue.put('%i, %s lever pressed productive, %f'%(round, lever_ID, time.time()-start_time))
                 print(f'{lever_ID} pressed! neato.')
@@ -347,15 +344,15 @@ def monitor_lever_test(ds_queue, args):
         time.sleep(25/1000.0)
     print('halting monitoring of %s lever'%lever_ID)
 
-def monitor_lever(ds_queue, args):
+def monitor_lever(q, args):
     global monitor
 
     monitor = True
-    lever_q, lever_ID = args
+    lever_ID = args
     "monitor a lever. If lever pressed, put lever_ID in queue. "
     lever=0
 
-    ds_queue.task_done()
+    do_stuff_queue.task_done()
     while monitor:
         if not GPIO.input(pins["lever_%s"%lever_ID]):
             lever +=1
@@ -366,7 +363,7 @@ def monitor_lever(ds_queue, args):
                 #send the lever_ID to the lever_q to trigger a  do_stuff.put in
                 #the main thread/loop
 
-                lever_q.put(lever_ID)
+                lever_press_queue.put(lever_ID)
 
                 timestamp_queue.put('%i, %s lever pressed productive, %f'%(round, lever_ID, time.time()-start_time))
                 while not GPIO.input(pins["lever_%s"%lever_ID]):
@@ -509,7 +506,7 @@ def clean_up(q):
     servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
     q.task_done()
 
-def breakpoint_monitor_lever(ds_queue, args):
+def breakpoint_monitor_lever(q,args):
     '''this lever monitor function tracks presses and returns when breakpoint reached'''
     global monitor
     monitor = True
@@ -519,7 +516,7 @@ def breakpoint_monitor_lever(ds_queue, args):
     do_stuff_queue.put(('extend lever',
                         (lever_ID,lever_angles[lever_ID][0],lever_angles[lever_ID][1])))
 
-    ds_queue.task_done()
+    do_stuff_queue.task_done()
     while monitor:
         if not GPIO.input(pins["lever_%s"%lever_ID]):
             lever +=1
@@ -536,7 +533,7 @@ def breakpoint_monitor_lever(ds_queue, args):
             do_stuff_queue.put(('retract lever',
                                 (lever_ID, lever_angles[lever_ID][0],lever_angles[lever_ID][1])))
 
-            lever_q.put(lever_ID)
+            lever_press_queue.put(lever_ID)
             lever = 0
             monitor = False
             break
