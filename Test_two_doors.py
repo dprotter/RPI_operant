@@ -91,7 +91,7 @@ def run_script():
         t.start()
     ### master looper ###
 
-    for i in range(1, key_values['num_rounds'],1):
+    for i in range(1, key_values['num_rounds']+1,1):
         round_start = time.time()
         fn.round = i
         print("#-#-#-#-#-# new round #%i!!!-#-#-#-#-#"%i)
