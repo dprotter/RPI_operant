@@ -248,13 +248,13 @@ def override_door_1():
         if not GPIO.input(pins['door_1_override_open_switch']):
             door_override['door_1'] = True
             servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['open']
-            while not GPIO.input(pins['door_1_override_open']):
+            while not GPIO.input(pins['door_1_override_open_switch']):
                 time.sleep(0.05)
             servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['stop']
-        if not GPIO.input(pins['door_1_override_close']):
+        if not GPIO.input(pins['door_1_override_close_switch']):
             door_override['door_1'] = True
             servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['close_full']
-            while not GPIO.input(pins[f'door_1_override_close']):
+            while not GPIO.input(pins[f'door_1_override_close_switch']):
                 time.sleep(0.05)
             servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['stop']
         door_override['door_1'] = False
@@ -270,13 +270,13 @@ def override_door_2():
         if not GPIO.input(pins['door_2_override_open_switch']):
             door_override['door_2'] = True
             servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['open']
-            while not GPIO.input(pins['door_1_override_open']):
+            while not GPIO.input(pins['door_2_override_open_switch']):
                 time.sleep(0.05)
             servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['stop']
-        if not GPIO.input(pins['door_1_override_close']):
+        if not GPIO.input(pins['door_2_override_close_switch']):
             door_override['door_2'] = True
             servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['close_full']
-            while not GPIO.input(pins['door_2_override_close']):
+            while not GPIO.input(pins['door_2_override_close_switch']):
                 time.sleep(0.05)
             servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['stop']
         door_override['door_2'] = False
@@ -403,7 +403,7 @@ def extend_lever(q, args):
 def retract_lever(q, args):
 
     lever_ID, retract, extend = args
-    while GPIO.input(pins["lever_%s"%lever_ID]):
+    while GPIO.input(pins[lever_ID]):
         'hanging till lever not pressed'
         time.sleep(0.05)
     print('LEDs off')
