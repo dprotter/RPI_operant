@@ -123,7 +123,7 @@ def run_script():
         do_stuff_queue.join()
         time.sleep(0.5)
 
-        do_stuff_queue.put(('open door',('door_2',)))
+        do_stuff_queue.put(('open door',('door_2')))
         do_stuff_queue.join()
 
         print('ok is the door 2 open? ill wait')
@@ -136,7 +136,7 @@ def run_script():
         input('just haning till you press enter. Then we will try the levers')
 
         do_stuff_queue.put(('extend lever',
-                            ('food',)))
+                            ('food')))
 
         do_stuff_queue.put(('monitor_lever_test',
                             ('food')))
@@ -145,7 +145,7 @@ def run_script():
         fn.monitor = False
 
         do_stuff_queue.put(('retract lever',
-                            ('food',)))
+                            ('food')))
 
         print('ok is the food lever retracted?')
         input('press any key to move on.')
