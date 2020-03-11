@@ -562,7 +562,7 @@ def breakpoint_monitor_lever(q,args):
     "monitor a lever. If lever pressed, put lever_ID in queue. "
     lever=0
     do_stuff_queue.put(('extend lever',
-                        (lever_ID,lever_angles[lever_ID][0],lever_angles[lever_ID][1])))
+                        (lever_ID)))
 
     do_stuff_queue.task_done()
     while monitor:
@@ -579,7 +579,7 @@ def breakpoint_monitor_lever(q,args):
 
 
             do_stuff_queue.put(('retract lever',
-                                (lever_ID, lever_angles[lever_ID][0],lever_angles[lever_ID][1])))
+                                (lever_ID)))
 
             lever_press_queue.put(lever_ID)
             lever = 0

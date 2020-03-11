@@ -151,7 +151,7 @@ def run_script():
         input('press any key to move on.')
 
         do_stuff_queue.put(('extend lever',
-                            ('door_1',)))
+                            ('door_1')))
 
         do_stuff_queue.put(('monitor_lever_test',
                             ('door_1')))
@@ -160,13 +160,13 @@ def run_script():
         fn.monitor = False
 
         do_stuff_queue.put(('retract lever',
-                            ('door_1', lever_angles['door_1'][0],lever_angles['door_1'][1])))
+                            ('door_1')))
 
         print('ok is the door_1 lever retracted?')
         input('press any key to move on.')
 
         do_stuff_queue.put(('extend lever',
-                            ('door_2',lever_angles['door_2'][0],lever_angles['door_2'][1])))
+                            ('door_2')))
 
         do_stuff_queue.put(('monitor_lever_test',
                             ('door_2')))
@@ -175,7 +175,7 @@ def run_script():
         fn.monitor = False
 
         do_stuff_queue.put(('retract lever',
-                            ('door_2', lever_angles['door_2'][0],lever_angles['door_2'][1])))
+                            ('door_2')))
 
         print('ok is the door_2 lever retracted?')
         input('press any key to move on.')
