@@ -130,7 +130,7 @@ def run_script():
         input('just haning till you press enter. then ill close it.')
 
         do_stuff_queue.put(('buzz',door_close_buzz))
-        do_stuff_queue.put(('close door',('door_2',)))
+        do_stuff_queue.put(('close door',('door_2')))
 
         print('ok is the door 2 closed? ill wait')
         input('just haning till you press enter. Then we will try the levers')
