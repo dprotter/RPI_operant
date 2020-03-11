@@ -247,10 +247,10 @@ def override_door_1():
         if not GPIO.input(pins['door_1_override_open_switch']):
             door_1_override = True
             servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['open']
-            while not GPIO.input(pins['door_1_door_override_open']):
+            while not GPIO.input(pins['door_1_override_open']):
                 time.sleep(0.05)
             servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['stop']
-        if not GPIO.input(pins['door_1_door_override_close']):
+        if not GPIO.input(pins['door_1_override_close']):
             door_1_override = True
             servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['close_full']
             while not GPIO.input(pins[f'door_1_override_close']):
@@ -269,10 +269,10 @@ def override_door_2():
         if not GPIO.input(pins['door_2_override_open_switch']):
             door_2_override = True
             servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['open']
-            while not GPIO.input(pins['door_1_door_override_open']):
+            while not GPIO.input(pins['door_1_override_open']):
                 time.sleep(0.05)
             servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['stop']
-        if not GPIO.input(pins['door_1_door_override_close']):
+        if not GPIO.input(pins['door_1_override_close']):
             door_2_override = True
             servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['close_full']
             while not GPIO.input(pins['door_2_override_close']):
@@ -298,7 +298,8 @@ def run_job(job, q, args = None):
             'read pellet':read_pellet,
             'close door':close_door,
             'open door':open_door,
-            'door override':override_door,
+            'door override 1':override_door_1,
+            'door override 2':override_door_2,
             'clean up':clean_up
             }
 
