@@ -391,24 +391,33 @@ def monitor_lever(q, args):
 
 def extend_lever(q, args):
 
-    lever_ID, retract, extend = args
-    lever_ID = f'lever_{lever_ID}'
+    lever_ID = args
+
+    #get extention and retraction angles from the operant_cage_settings
+    extend = lever_angles[lever_ID][0]
+    retract = lever_angles[lever_ID][1]
+
     print('extending lever %s'%lever_ID)
     print('LEDs on')
-    servo_dict[lever_ID].angle = extend
+    servo_dict[f'lever_{lever_ID}'].angle = extend
     #GPIO.output(pins['led_%s'%lever_ID], 1)
     timestamp_queue.put('%i, Levers out, %f'%(round, time.time()-start_time))
     q.task_done()
 
 def retract_lever(q, args):
 
-    lever_ID, retract, extend = args
-    while GPIO.input(pins[lever_ID]):
+    lever_ID = args
+
+    #get extention and retraction angles from the operant_cage_settings
+    extend = lever_angles[lever_ID][0]
+    retract = lever_angles[lever_ID][1]
+
+    while GPIO.input(pins[f'lever_{lever_ID}']):
         'hanging till lever not pressed'
         time.sleep(0.05)
     print('LEDs off')
     #GPIO.output(pins['led_%s'%lever_ID], 0)
-    servo_dict[lever_ID].angle = retract
+    servo_dict[f'lever_{lever_ID}'].angle = retract
     print('retracting levers')
     timestamp_queue.put('%i, Levers retracted, %f'%(round, time.time()-start_time))
     q.task_done()
