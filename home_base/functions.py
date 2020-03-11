@@ -183,7 +183,7 @@ def reset_doors():
 
         if not door_states[door_ID]:
             print(f'ah crap, door {door_ID} didnt close!')
-        
+
 
 
 def open_door(q, args):
@@ -415,7 +415,7 @@ def buzz(q, args):
 
     #set a 50% duty cycle, pass desired hz
     pi.set_PWM_dutycycle(pins['speaker_tone'], 255/2)
-    pi.set_PWM_frequency(pins['speaker_tone'], hz)
+    pi.set_PWM_frequency(pins['speaker_tone'], int(hz))
 
     timestamp_queue.put(f'{round}, {name} tone start {hz}:hz {buzz_len}:seconds, {time.time()-start_time}')
 
