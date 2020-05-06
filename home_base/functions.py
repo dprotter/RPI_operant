@@ -446,7 +446,7 @@ def retract_lever(q, args):
     extend = lever_angles[lever_ID][0]
     retract = lever_angles[lever_ID][1]
 
-    while GPIO.input(pins[f'lever_{lever_ID}']):
+    while not GPIO.input(pins[f'lever_{lever_ID}']):
         'hanging till lever not pressed'
         time.sleep(0.05)
     #print('LEDs off')
