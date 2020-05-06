@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     Base = declarative_base()
 
-    df = pd.read_csv('Experimental_timetable.csv')
+    df = pd.read_csv('Test_CSV.csv')
     cd
     #Create the database
     engine = create_engine(f'sqlite:///home/pi/DatabaseTest/Experiment_timeline.db')
