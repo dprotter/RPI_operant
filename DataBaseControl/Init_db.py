@@ -9,16 +9,14 @@ from sqlalchemy.orm import sessionmaker
 import os
 import pandas as pd
 
-if __name__ == "__main__":
 
-    path = os.getcwd()
-
+def init_db(file_location, database_target_loc):
     Base = declarative_base()
 
-    df = pd.read_csv('Experimental_timetable.csv')
+    df = pd.read_csv(file_location)
     cd
     #Create the database
-    engine = create_engine(f'sqlite:///home/pi/DatabaseTest/Experiment_timeline.db')
+    engine = create_engine(f'sqlite://{database_target_loc}')
     Base.metadata.create_all(engine)
 
     #Create the session
@@ -45,3 +43,7 @@ if __name__ == "__main__":
     except:
 
         print('woah woah woah, we had a problem making your DB!')
+
+    
+
+    

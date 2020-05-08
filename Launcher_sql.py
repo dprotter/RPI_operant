@@ -23,13 +23,27 @@ import os
 import time as time
 import threading
 
+where_am_i = os.getcwd()
+
 os.chdir('/home/pi/RPI_operant/')
 
-csv_path = '/home/pi/iter2_test/csv_test.csv'
-output_dir = '/home/pi/iter2_test/output/'
-experiment_status = pd.read_csv(csv_path)
+csv_path = f'{where_am_i}/experimental_timetable.csv'
 
-unfinished = experiment_status.loc[experiment_status.done != 'y']
+
+#connect to our sql database
+engine = create_engine(f'sqlite://{database_target_dir}/experimental_timetable.db')
+Base.metadata.create_all(engine)
+
+#Create the session
+session = sessionmaker()
+session.configure(bind=engine)
+s = session()
+experiment_status = pd.read_sql_table("experimental_timetable",
+                           con=engine)
+output_dir = '/home/pi/iter2_test/output/'
+
+
+unfinished = experiment_status.loc[experiment_status.done != True]
 print(unfinished)
 unfinished_loc = 0
 
