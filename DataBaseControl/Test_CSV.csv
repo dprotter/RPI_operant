@@ -1,4 +1,4 @@
-﻿date,run_time,vole,script,user,rounds,rounds_completed,done
-5/6/20,,1,Test_Door_Shape,protter,5,,FALSE
-5/6/20,,2,Test_Door_Shape,protter,5,,FALSE
-5/7/20,,1,Test_Door_Shape,protter,5,,FALSE
+﻿date,run_time,vole,script,user,rounds,rounds_completed,done,experiment_status
+5/6/20,,1,Test_Door_Shape,protter,5,,FALSE,
+5/6/20,,2,Test_Door_Shape,protter,5,,FALSE,
+5/7/20,,1,Test_Door_Shape,protter,5,,FALSE,
