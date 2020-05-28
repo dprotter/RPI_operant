@@ -478,10 +478,8 @@ def buzz(q, args):
     timestamp_queue.put(f'{round}, {name} tone complete {hz}:hz {buzz_len}:seconds, {time.time()-start_time}')
     q.task_done()
 
-
 def door_close_tone(q):
     '''can replace with buzz()'''
-
     q.task_done()
 
 def dispense_pellet(q):
