@@ -330,6 +330,8 @@ def run_job(job, q, args = None):
 def monitor_lever_test(q, args):
     global monitor
 
+    q.task_done()
+    
     monitor = True
     lever_ID = args
     "monitor a lever. If lever pressed, put lever_ID in queue. "
@@ -371,6 +373,8 @@ def monitor_lever_test(q, args):
 def monitor_lever(q, args):
     global monitor
 
+    q.task_done()
+    
     monitor = True
     lever_ID = args
     "monitor a lever. If lever pressed, put lever_ID in queue. "
