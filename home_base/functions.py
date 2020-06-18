@@ -427,7 +427,7 @@ def extend_lever(q, args):
     extend = lever_angles[lever_ID][0]
     retract = lever_angles[lever_ID][1]
 
-    print('extending lever %s'%lever_ID)
+    print(f'extending lever {lever_ID}: extend[ {extend} ], retract[ {retract} ]')
     print('LEDs on')
     servo_dict[f'lever_{lever_ID}'].angle = extend
     #GPIO.output(pins['led_%s'%lever_ID], 1)
