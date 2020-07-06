@@ -50,6 +50,8 @@ door_states = {'door_1':False, 'door_2':False}
 #timeout for closing the doors
 door_close_timeout = 10
 
+
+
 def start_timing():
     global start_time
     start_time = time.time()
@@ -180,7 +182,7 @@ def reset_doors():
 
 
 
-def open_door(q, args):
+def open_door( args):
     '''open a door!'''
     door_ID = args
 
@@ -206,6 +208,7 @@ def open_door(q, args):
 
     print('exiting door open attempts')
 
+    
     if not GPIO.input(pins[f'{door_ID}_state_switch']):
         if door_override[door_ID]:
             print(f'open {door_ID} stopped due to override!')
@@ -214,13 +217,12 @@ def open_door(q, args):
     else:
         timestamp_queue.put('%i, %s open finish, %f'%(round, door_ID, time.time()-start_time))
         door_states[door_ID] = False
-    q.task_done()
+    do_stuff_queue.task_done()
 
 
 
-def close_door(q, args):
-    global door_states
-
+def close_door( args):
+    
     door_ID= args
 
     #double check the right number of args got passed
@@ -253,7 +255,7 @@ def close_door(q, args):
     if not door_states[door_ID]:
         print(f'ah crap, door {door_ID} didnt close!')
 
-    q.task_done()
+    do_stuff_queue.task_done()
 
 
 #### run in a dedicated thread so we can open the doors whenever necessary
@@ -301,7 +303,7 @@ def override_door_2():
         time.sleep(0.1)
 
 
-def run_job(job, q, args = None):
+def run_job(job,args = None):
     print('job: ' + str(job) + '    args: ' +str(args))
 
     '''parse and run jobs'''
@@ -323,21 +325,36 @@ def run_job(job, q, args = None):
             }
 
     if args:
-        jobs[job](q, args)
+        jobs[job](args)
     else:
-        jobs[job](q)
+        jobs[job]()
 
-def monitor_lever_test(q, args):
+
+def thread_distributor():
+    '''this is main thread's job. To look for shit to do and send it to a thread'''
+    while True:
+        if not do_stuff_queue.empty():
+            do = do_stuff_queue.get()
+            name = do[0]
+            args = None
+            if len(do) >1:
+                args = do[1]
+
+            run_job(name, args)
+            time.sleep(0.05)
+        time.sleep(0.05)
+
+
+def monitor_lever_test( args):
     global monitor
 
-    q.task_done()
+    do_stuff_queue.task_done()
     
     monitor = True
     lever_ID = args
     "monitor a lever. If lever pressed, put lever_ID in queue. "
     lever=0
-
-    do_stuff_queue.task_done()
+    
     while monitor:
         if not GPIO.input(pins["lever_%s"%lever_ID]):
             lever +=1
@@ -370,17 +387,17 @@ def monitor_lever_test(q, args):
 
 
 
-def monitor_lever(q, args):
+def monitor_lever( args):
     global monitor
 
-    q.task_done()
+    do_stuff_queue.task_done()
     
     monitor = True
     lever_ID = args
     "monitor a lever. If lever pressed, put lever_ID in queue. "
     lever=0
 
-    do_stuff_queue.task_done()
+    
     while monitor:
         if not GPIO.input(pins["lever_%s"%lever_ID]):
             lever +=1
@@ -411,7 +428,7 @@ def monitor_lever(q, args):
         time.sleep(25/1000.0)
     print('halting monitoring of %s lever'%lever_ID)
 
-def extend_lever(q, args):
+def extend_lever( args):
 
     lever_ID = args
 
@@ -426,18 +443,30 @@ def extend_lever(q, args):
     #get extention and retraction angles from the operant_cage_settings
     extend = lever_angles[lever_ID][0]
     retract = lever_angles[lever_ID][1]
+
+    #we will wiggle the lever a bit to try and reduce binding and buzzing
+    modifier = 15
+    
+    if extend > retract:
+        retract_start = retract - modifier
+        extend_start = extend + modifier
+    else:
+        retract_start = retract + modifier
+        extend_start = extend - modifier
 
     print(f'extending lever {lever_ID}: extend[ {extend} ], retract[ {retract} ]')
-    print('LEDs on')
-    servo_dict[f'lever_{lever_ID}'].angle = extend
-    #GPIO.output(pins['led_%s'%lever_ID], 1)
+    servo_dict[f'lever_{lever_ID}'].angle = extend_start
     timestamp_queue.put('%i, Levers out, %f'%(round, time.time()-start_time))
-    q.task_done()
+    time.sleep(0.1)
+    servo_dict[f'lever_{lever_ID}'].angle = extend
+    
+    
+    do_stuff_queue.task_done()
 
-def retract_lever(q, args):
+def retract_lever( args):
 
     lever_ID = args
-
+    timeout = 5
     #double check the right number of args got passed
     if type(lever_ID) is tuple:
         if len(lever_ID) == 1:
@@ -450,17 +479,26 @@ def retract_lever(q, args):
     extend = lever_angles[lever_ID][0]
     retract = lever_angles[lever_ID][1]
 
-    while not GPIO.input(pins[f'lever_{lever_ID}']):
+    #we will wiggle the lever a bit to try and reduce binding and buzzing
+    modifier = 15
+    
+    if extend > retract:
+        retract_start = retract - modifier
+        extend_start = extend + modifier
+    else:
+        retract_start = retract + modifier
+        extend_start = extend - modifier
+        
+    start = time.time()
+    while not GPIO.input(pins[f'lever_{lever_ID}']) and time.time()-start < timeout:
         'hanging till lever not pressed'
         time.sleep(0.05)
-    #print('LEDs off')
-    #GPIO.output(pins['led_%s'%lever_ID], 0)
+        
     servo_dict[f'lever_{lever_ID}'].angle = retract
-    print('retracting levers')
     timestamp_queue.put('%i, Levers retracted, %f'%(round, time.time()-start_time))
-    q.task_done()
+    do_stuff_queue.task_done()
 
-def buzz(q, args):
+def buzz( args):
     '''take time (s), hz, and name as inputs'''
 
     buzz_len, hz, name = args
@@ -480,17 +518,17 @@ def buzz(q, args):
 
     print(f'{name} tone complete')
     timestamp_queue.put(f'{round}, {name} tone complete {hz}:hz {buzz_len}:seconds, {time.time()-start_time}')
-    q.task_done()
+    do_stuff_queue.task_done()
 
-def door_close_tone(q):
+def door_close_tone():
     '''can replace with buzz()'''
-    q.task_done()
+    do_stuff_queue.task_done()
 
-def dispense_pellet(q):
+def dispense_pellet():
 
     global pellet_state
 
-    q.task_done()
+    do_stuff_queue.task_done()
     timeout = time.time()
 
 
@@ -531,34 +569,35 @@ def dispense_pellet(q):
                 #that we check pretty quick if there's a pellet
                 time.sleep(0.025)
         servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
-        timestamp_queue.put('%i, Pellet dispense failure, %f'%(round, time.time()-start_time))
+        timestamp_queue.put(f'{round}, Pellet dispense failure, {time.time()-start_time}')
         return ''
     else:
         print("skipping pellet dispense due to pellet not retrieved")
-        timestamp_queue.put('%i, skip pellet dispense, %f'%(round, time.time()-start_time))
+        timestamp_queue.put(f'{round}, skip pellet dispense, {time.time()-start_time}')
         return ''
 
-def pulse_sync_line():
+def pulse_sync_line(length):
     '''not terribly accurate, but good enough. For now, this is called on every
-    lever press or pellet retrieval. I can't imagine a situation yet'''
+    lever press or pellet retrieval. Takes length in seconds'''
     GPIO.output(pins['gpio_sync'], 1)
-    time.sleep(0.08)
+    time.sleep(length)
     GPIO.output(pins['gpio_sync'], 0)
 
-def clean_up(q):
+def clean_up():
     global done
 
-    done = True
+    
     '''cleanup all servos etc'''
-    servo_dict['food'].angle = lever_angles['food'][0]
-    servo_dict['door_1'].angle = lever_angles['door_1'][0]
-    servo_dict['door_2'].angle = lever_angles['door_2'][0]
+    servo_dict['lever_food'].angle = lever_angles['food'][1]
+    servo_dict['lever_door_1'].angle = lever_angles['door_1'][1]
+    servo_dict['lever_door_2'].angle = lever_angles['door_2'][1]
     servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['stop']
     servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['stop']
     servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
-    q.task_done()
+    done = True
+    do_stuff_queue.task_done()
 
-def breakpoint_monitor_lever(q,args):
+def breakpoint_monitor_lever(args):
     '''this lever monitor function tracks presses and returns when breakpoint reached'''
     global monitor
     monitor = True
@@ -578,7 +617,7 @@ def breakpoint_monitor_lever(q,args):
 
             #send the lever_ID to the lever_q to trigger a  do_stuff.put in
             #the main thread/loop
-            pulse_sync_line()
+            
             timestamp_queue.put('%i, %s lever pressed, %f'%(round, lever_ID, time.time()-start_time))
 
 
@@ -593,11 +632,11 @@ def breakpoint_monitor_lever(q,args):
         time.sleep(25/1000.0)
     print('\nmonitor thread done')
 
-def read_pellet(q):
+def read_pellet():
     global pellet_state
 
     disp_start = time.time()
-    q.task_done()
+    do_stuff_queue.task_done()
     disp = False
     #retrieved, IE empty trough
     read_retr = 0
@@ -614,7 +653,7 @@ def read_pellet(q):
             read_disp += 1
 
         if read_retr > 5:
-            pulse_sync_line()
+            pulse_sync_line(0.075)
             timestamp_queue.put('%i, Pellet retrieved, %f'%(round, time.time()-start_time))
             print('Pellet taken! %f'%(time.time()-start_time))
             #no pellet in trough
@@ -631,19 +670,6 @@ def read_pellet(q):
     timestamp_queue.put('%i, pellet retreival timeout, %f'%(round, time.time()-start_time))
     return ''
 
-def thread_distributor():
-    '''this is main thread's job. To look for shit to do and send it to a thread'''
-    while True:
-        if not do_stuff_queue.empty():
-            do = do_stuff_queue.get()
-            name = do[0]
-            args = None
-            if len(do) >1:
-                args = do[1]
-
-            run_job(name, do_stuff_queue, args)
-            time.sleep(0.05)
-        time.sleep(0.05)
 
 def flush_to_CSV():
         '''a good time to write some stuff to file'''

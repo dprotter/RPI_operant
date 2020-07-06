@@ -136,9 +136,11 @@ def run_script():
         time.sleep(2)
 
         print('lets extend the food lever')
-        
+        print(f'unfinished1: {do_stuff_queue.unfinished_tasks}')
         do_stuff_queue.put(('extend lever',
                             ('food')))
+        
+        print(f'unfinished2: {do_stuff_queue.unfinished_tasks}')
 
         do_stuff_queue.put(('monitor_lever_test',
                             ('food')))
@@ -146,12 +148,13 @@ def run_script():
         time.sleep(2)
         
         fn.monitor = False
+        print(f'unfinished3: {do_stuff_queue.unfinished_tasks}')
 
         do_stuff_queue.put(('retract lever',
                             ('food')))
 
         time.sleep(2)
-
+        print(f'unfinished4: {do_stuff_queue.unfinished_tasks}')
         
         print('lets extend door 1 lever')
         
@@ -171,25 +174,30 @@ def run_script():
         time.sleep(2)
 
         
-        
         print('lets extend door 2 lever')
         
         do_stuff_queue.put(('extend lever',
                             ('door_2')))
 
+        
+        
         do_stuff_queue.put(('monitor_lever_test',
                             ('door_2')))
+        
         
         time.sleep(2)
         
         fn.monitor = False
-
+        
+        
+        
         do_stuff_queue.put(('retract lever',
                             ('door_2')))
-
+        time.sleep(1)
+        print(f'unfinished3: {do_stuff_queue.unfinished_tasks}')
         
+       
         do_stuff_queue.join()
-
 
 if __name__ == '__main__':
     '''is_test = input('is this just a test? y/n\n')'''

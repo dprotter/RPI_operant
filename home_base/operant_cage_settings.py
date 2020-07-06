@@ -1,6 +1,6 @@
 from adafruit_servokit import ServoKit
 kit = ServoKit(channels=16)
-pins = {'lever_food':23,
+pins = {'lever_food':24,
     'lever_door_1':27,
     'lever_door_2':22,
     'led_food':0,
@@ -18,7 +18,7 @@ pins = {'lever_food':23,
 
 
 #values Levers [extended, retracted]
-lever_angles = {'food':[100, 40], 'door_1':[70,120], 'door_2':[85,35]}
+lever_angles = {'food':[100, 50], 'door_1':[70,120], 'door_2':[85,35]}
 
 
 continuous_servo_speeds = {
