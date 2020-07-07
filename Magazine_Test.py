@@ -13,7 +13,7 @@ save_path = ''
 
 comms_queue = None
 
-default_setup = setup_dict = {'vole':'000','day':1, 'experiment':'Test_two_doors',
+default_setup = setup_dict = {'vole':'000','day':1, 'experiment':'Magazine',
                     'user':'Test User', 'output_directory':'/home/pi/test_outputs/'}
 
 

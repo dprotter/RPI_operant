@@ -93,9 +93,17 @@ def setup_experiment(args_dict):
     print(this_path)
     with open(this_path, 'w') as file:
         writer = csv.writer(file, delimiter = ',')
+        
+        
+        
         writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date,
         'experiment: %s'%exp, 'Day: %i'%day, 'Pi: %s'%socket.gethostname()])
 
+        settings_string = ''
+        for key in args_dict.keys():
+            settings_string+=f'{key}:{args_dict[key]}|'
+        writer.writerow([settings_string,])
+        
         writer.writerow(['Round, Event', 'Time'])
 
 
@@ -653,8 +661,8 @@ def read_pellet():
             read_disp += 1
 
         if read_retr > 5:
-            pulse_sync_line(0.075)
-            timestamp_queue.put('%i, Pellet retrieved, %f'%(round, time.time()-start_time))
+            pulse_sync_line(0.05)
+            timestamp_queue.put(f'{round}, pellet retrieved,{time.time()-start_time}')
             print('Pellet taken! %f'%(time.time()-start_time))
             #no pellet in trough
             pellet_state = False

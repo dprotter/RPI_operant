@@ -14,7 +14,7 @@ pins = {'lever_food':24,
     'door_1_state_switch':17,
     'door_2_state_switch':18,
 
-    'gpio_sync':23, }
+    'gpio_sync':6, }
 
 
 #values Levers [extended, retracted]
@@ -22,7 +22,7 @@ lever_angles = {'food':[100, 50], 'door_1':[70,120], 'door_2':[85,35]}
 
 
 continuous_servo_speeds = {
-                        'dispense_pellet':{'stop':0.15, 'fwd':0.09},
+                        'dispense_pellet':{'stop':0.15, 'fwd':0.12},
                         'door_1':{'stop':0.16, 'close':0.8, 'open':-0.1,
                         'open time':1.6,
                         },
