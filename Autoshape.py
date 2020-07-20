@@ -12,12 +12,12 @@ import time
 
 
 
-default_setup = setup_dict = {'vole':'000','day':1, 'experiment':'Magazine',
+default_setup = setup_dict = {'vole':'000','day':1, 'experiment':'Autoshape',
                     'user':'Test User', 'output_directory':'/home/pi/test_outputs/'}
 
 
-key_values = {'num_rounds': 15, 'round_time':120, 'time_II':2,
-            'time_IV':2, 'pellet_tone_time':1, 'pellet_tone_hz':3000,
+key_values = {'num_rounds': 15, 'round_time':120, 'time_II':30,
+            'time_IV':0, 'pellet_tone_time':1, 'pellet_tone_hz':3000,
             'door_close_tone_time':1, 'door_close_tone_hz':6000,
             'door_open_tone_time':1,'door_open_tone_hz':10000,
             'round_start_tone_time':1, 'round_start_tone_hz':6000}
@@ -136,10 +136,11 @@ def run_script():
             print('no lever press')
             fn.do_stuff_queue.put(('buzz', pellet_buzz))
             fn.do_stuff_queue.put(('dispense pellet',))
-        
-        time.sleep(key_values['time_IV'])
-        
-        if press == False:
+            
+            #for autoshaping, this is usually 0
+            time.sleep(key_values['time_IV'])
+            
+            #stop monitoring the lever, and then retract it
             fn.monitor = False
             fn.do_stuff_queue.put(('retract lever',
                                     ('food')))
@@ -160,8 +161,13 @@ if __name__ == '__main__':
     test_run = input('is this just a quick test run? if so, we will just do 1 round. (y/n)\n')
     if test_run.lower() in ['y', 'yes']:
         print('ok, test it is!')
-        key_values['num_rounds'] = 1
-        key_values['round_time'] = 20
+        
+        #if we want a quick test, we will just do 2 rounds, and make them short
+        key_values['num_rounds'] = 2
+        key_values['round_time'] = 15
+        
+        #leave levers out for 5 seconds before retracting and dispensing. this is just as a test
+        key_values['time_II'] = 5
         
     
     else:
@@ -181,7 +187,7 @@ if __name__ == '__main__':
                 no_vole = False
 
 
-        day = input('Which magazine training day is this? (starts at day 1)\n')
+        day = input('Which autoshape training day is this? (starts at day 1)\n')
         day = int(day)
         
         
