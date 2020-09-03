@@ -1,12 +1,12 @@
 import sys
 sys.path.append('/home/pi/RPI_operant/')
 
-import home_base.functions as fn
+import home_base.functions as FN
 
 import threading
 import time
 
-
+fn = FN.runtime_functions()
 
 
 default_setup = setup_dict = {'vole':'000','day':1, 'experiment':'Magazine',
@@ -78,7 +78,7 @@ def run_script():
     or2.start()
 
     #double check the doors are closed. close, if they arent
-    fn.close_door()
+    fn.reset_doors()
     
     ##### start timing this session ######
     fn.start_timing()
