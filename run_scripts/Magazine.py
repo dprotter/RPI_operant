@@ -9,9 +9,10 @@ import time
 fn = FN.runtime_functions()
 
 
-default_setup = setup_dict = {'vole':'000','day':1, 'experiment':'Magazine',
+default_setup_dict = {'vole':'000','day':1, 'experiment':'Magazine',
                     'user':'Test User', 'output_directory':'/home/pi/test_outputs/'}
 
+setup_dictionary = None
 
 key_values = {'num_rounds': 15, 
               'round_time':120, 
@@ -40,12 +41,14 @@ key_val_names_order = ['num_rounds', 'round_time', 'time_II', 'time_IV','pellet_
                         'door_open_tone_time','door_open_tone_hz', 'round_start_tone_time',
                         'round_start_tone_hz']
 
-def setup(setup_dictionary = None):
+def setup(setup_dict = None):
     #run this to get the RPi.GPIO pins setup
-    if setup_dictionary == None:
-        setup_dictionary = default_setup
+    if setup_dict == None:
+        setup_dict = default_setup_dict
+    else:
+        setup_dictionary = setup_dict
     fn.setup_pins()
-    fn.setup_experiment(setup_dictionary)
+    fn.setup_experiment(setup_dict)
 
 
 def run_script():
@@ -187,9 +190,9 @@ if __name__ == '__main__':
         day = int(day)
         
         
-        default_setup['vole'] = vole
-        default_setup['user'] = user
-        default_setup['output_directory'] = '/home/pi/Operant_Output/script_runs/'
+        default_setup_dict['vole'] = vole
+        default_setup_dict['user'] = user
+        default_setup_dict['output_directory'] = '/home/pi/Operant_Output/script_runs/'
 
-    setup(setup_dictionary=default_setup)
+    setup(setup_dict=default_setup_dict)
     run_script()
