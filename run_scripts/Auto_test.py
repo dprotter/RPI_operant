@@ -1,8 +1,10 @@
 import sys
 sys.path.append('/home/pi/RPI_operant/')
 
-import home_base.functions as fn
-from home_base.functions import do_stuff_queue, timestamp_queue, lever_press_queue, lever_angles
+import home_base.functions as FN
+fn = FN.runtime_functions()
+
+
 import threading
 import time
 
@@ -13,7 +15,9 @@ save_path = ''
 
 comms_queue = None
 
-default_setup = setup_dict = {'vole':'000','day':1, 'experiment':'Test_two_doors',
+setup_dictionary = None
+
+default_setup_dict = {'vole':'000','day':1, 'experiment':'Test_two_doors',
                     'user':'Test User', 'output_directory':'/home/pi/test_outputs/'}
 
 
@@ -36,11 +40,36 @@ key_val_names_order = ['num_rounds', 'round_time', 'timeII', 'timeIV','pellet_to
                         'door_open_tone_time','door_open_tone_hz', 'round_start_tone_time',
                         'round_start_tone_hz']
 
-def setup(setup_dictionary = None):
+def setup(setup_dict = None):
+    global setup_dictionary
+    global key_val_names_order
+    
     #run this to get the RPi.GPIO pins setup
-    if setup_dictionary == None:
-        setup_dictionary = default_setup
+    if setup_dict == None:
+        #set the module setup dictionary to default values so we can access vals, 
+        #like 'day' if necessary
+        print('no dict given for setup')
+        setup_dictionary = default_setup_dict
+    else:
+        print(f'dict given for setup ----- {setup_dict}')
+        setup_dictionary = setup_dict
+    print(setup_dictionary)
+    
+    
+    #resolve issues if people add values to the key value dictionary and dont define them or put them in the name order list
+    missing_def = [val for val in key_values if not val in key_values_def]
+    if len(missing_def) > 0:
+        print(f'no definition given for: {missing_def}')
+    for val in missing_def:
+        key_values_def[val] = 'unknown'
+
+    missing_order = [val for val in key_values_def if not val in key_val_names_order]
+
+    for val in missing_order:
+        key_val_names_order += [val]
+    
     fn.setup_pins()
+    
     fn.setup_experiment(setup_dictionary)
 
 
@@ -98,77 +127,77 @@ def run_script():
         round_start = time.time()
         fn.round = i
         print("#-#-#-#-#-# new round #%i!!!-#-#-#-#-#"%i)
-        timestamp_queue.put(f'{fn.round}, Starting new round, {time.time()-fn.start_time}')
-        do_stuff_queue.put(('buzz',round_buzz))
-        do_stuff_queue.join()
+        fn.timestamp_queue.put(f'{fn.round}, Starting new round, {time.time()-fn.start_time}')
+        fn.do_stuff_queue.put(('buzz',round_buzz))
+        fn.do_stuff_queue.join()
         time.sleep(1)
         print('ok lets try and open door 1')
 
-        do_stuff_queue.put(('buzz',door_open_buzz))
-        do_stuff_queue.join()
+        fn.do_stuff_queue.put(('buzz',door_open_buzz))
+        fn.do_stuff_queue.join()
         time.sleep(0.5)
 
-        do_stuff_queue.put(('open door',('door_1')))
-        do_stuff_queue.join()
+        fn.do_stuff_queue.put(('open door',('door_1')))
+        fn.do_stuff_queue.join()
 
         time.sleep(3)
 
-        do_stuff_queue.put(('buzz',door_close_buzz))
-        do_stuff_queue.put(('close door',('door_1')))
-        do_stuff_queue.join()
+        fn.do_stuff_queue.put(('buzz',door_close_buzz))
+        fn.do_stuff_queue.put(('close door',('door_1')))
+        fn.do_stuff_queue.join()
 
         time.sleep(2)
         
         print('ok lets try and open door 2')
 
-        do_stuff_queue.put(('buzz',door_open_buzz))
-        do_stuff_queue.join()
+        fn.do_stuff_queue.put(('buzz',door_open_buzz))
+        fn.do_stuff_queue.join()
         time.sleep(0.5)
 
-        do_stuff_queue.put(('open door',('door_2')))
-        do_stuff_queue.join()
+        fn.do_stuff_queue.put(('open door',('door_2')))
+        fn.do_stuff_queue.join()
         
         time.sleep(3)
 
-        do_stuff_queue.put(('buzz',door_close_buzz))
-        do_stuff_queue.put(('close door',('door_2')))
+        fn.do_stuff_queue.put(('buzz',door_close_buzz))
+        fn.do_stuff_queue.put(('close door',('door_2')))
 
         time.sleep(2)
 
         print('lets extend the food lever')
-        print(f'unfinished1: {do_stuff_queue.unfinished_tasks}')
-        do_stuff_queue.put(('extend lever',
+        print(f'unfinished1: {fn.do_stuff_queue.unfinished_tasks}')
+        fn.do_stuff_queue.put(('extend lever',
                             ('food')))
         
-        print(f'unfinished2: {do_stuff_queue.unfinished_tasks}')
+        print(f'unfinished2: {fn.do_stuff_queue.unfinished_tasks}')
 
-        do_stuff_queue.put(('monitor_lever_test',
+        fn.do_stuff_queue.put(('monitor_lever_test',
                             ('food')))
         
         time.sleep(2)
         
         fn.monitor = False
-        print(f'unfinished3: {do_stuff_queue.unfinished_tasks}')
+        print(f'unfinished3: {fn.do_stuff_queue.unfinished_tasks}')
 
-        do_stuff_queue.put(('retract lever',
+        fn.do_stuff_queue.put(('retract lever',
                             ('food')))
 
         time.sleep(2)
-        print(f'unfinished4: {do_stuff_queue.unfinished_tasks}')
+        print(f'unfinished4: {fn.do_stuff_queue.unfinished_tasks}')
         
         print('lets extend door 1 lever')
         
-        do_stuff_queue.put(('extend lever',
+        fn.do_stuff_queue.put(('extend lever',
                             ('door_1')))
 
-        do_stuff_queue.put(('monitor_lever_test',
+        fn.do_stuff_queue.put(('monitor_lever_test',
                             ('door_1')))
        
         time.sleep(2)
         
         fn.monitor = False
 
-        do_stuff_queue.put(('retract lever',
+        fn.do_stuff_queue.put(('retract lever',
                             ('door_1')))
 
         time.sleep(2)
@@ -176,12 +205,12 @@ def run_script():
         
         print('lets extend door 2 lever')
         
-        do_stuff_queue.put(('extend lever',
+        fn.do_stuff_queue.put(('extend lever',
                             ('door_2')))
 
         
         
-        do_stuff_queue.put(('monitor_lever_test',
+        fn.do_stuff_queue.put(('monitor_lever_test',
                             ('door_2')))
         
         
@@ -191,13 +220,13 @@ def run_script():
         
         
         
-        do_stuff_queue.put(('retract lever',
+        fn.do_stuff_queue.put(('retract lever',
                             ('door_2')))
         time.sleep(1)
-        print(f'unfinished3: {do_stuff_queue.unfinished_tasks}')
+        print(f'unfinished3: {fn.do_stuff_queue.unfinished_tasks}')
         
        
-        do_stuff_queue.join()
+        fn.do_stuff_queue.join()
 
 if __name__ == '__main__':
     '''is_test = input('is this just a test? y/n\n')'''

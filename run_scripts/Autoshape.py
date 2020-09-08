@@ -51,19 +51,6 @@ key_val_names_order = ['num_rounds', 'round_time', 'time_II', 'time_IV','pellet_
                         'round_start_tone_hz']
 
 
-#resolve issues if people add values to the key value dictionary and dont define them or put them in the name order list
-missing_def = [val for val in key_values if not val in key_values_def]
-if len(missing_def) > 0:
-    print(f'no definition given for: {missing_def}')
-    for val in missing_def:
-        key_values_def[val] = 'unknown'
-
-missing_order = [val for val in key_values_def if not val in key_val_names_order]
-
-for val in missing_order:
-    key_val_names_order += [val]
- 
-
 def setup(setup_dict = None):
     global setup_dictionary
     #run this to get the RPi.GPIO pins setup
@@ -76,8 +63,24 @@ def setup(setup_dict = None):
         print(f'dict given for setup ----- {setup_dict}')
         setup_dictionary = setup_dict
     print(setup_dictionary)
+    
+    
+    #resolve issues if people add values to the key value dictionary and dont define them or put them in the name order list
+    missing_def = [val for val in key_values if not val in key_values_def]
+    if len(missing_def) > 0:
+        print(f'no definition given for: {missing_def}')
+    for val in missing_def:
+        key_values_def[val] = 'unknown'
+
+    missing_order = [val for val in key_values_def if not val in key_val_names_order]
+
+    for val in missing_order:
+        key_val_names_order += [val]
+    
     fn.setup_pins()
+    
     fn.setup_experiment(setup_dictionary)
+    
 
 
 def run_script():
