@@ -6,6 +6,7 @@ from tabulate import tabulate
 import os
 import time as time
 import traceback
+import threading
 
 class Experiment:
     def __init__(self, csv_location, output_loc = None, start_index = 0):
@@ -88,12 +89,14 @@ class Experiment:
     def modify_vars_from_csv(self):
         '''read and update vars from var_change column of csv'''
         mods = self.vals['var_changes']
+    
+        print(f'vals are {self.vals}')
         for mod in mods.split(','):
-            key, value = mods.split(':')
             try:
-                self.module.key_values[key] = value
+                key, value = mods.split(':')
+                self.current_setup_dictionary[key] = value
             except:
-                print(f'couldnt update {key} : {value}')
+                print(f'couldnt update var changes {mods}')
                 
     def modify_vars(self, var_dict):
         '''to manually update variables. these will get put in the var_change column, as well'''
@@ -115,22 +118,7 @@ class Experiment:
                 print(f'adding {key}:{self.vals[key]} to setup dictionary')
                 self.current_setup_dictionary[key] = self.vals[key]
         
-    def insert_row(df, row_number,  row_values):
-        df_top_copy = df.loc[df.index<=row_number].copy()
-        df_bottom_copy = df.loc[df.index>=row_number].copy()
-        df_bottom_copy.index = df_bottom_copy.index + 1
-        if row_values!=None:
-            new_row_cols = row_values.keys()
-
-        for col in df.columns:
-            if col in new_row_cols:
-                df_top_copy.loc[df_top_copy.experiment_status.index ==row_number, col] = row_values[col]
-            else:
-                df_top_copy.loc[df_top_copy.experiment_status.index ==row_number, col]=''
-
-        # return the dataframe
-        return df_top_copy.append(df_bottom_copy)
-
+    
         
     def skip_vole(skip_forever = False):
         
@@ -149,8 +137,9 @@ class Experiment:
     
     def ask_to_run(self):
         
-        print('\n\n\n\nshould we run this experiment? (y/n)\n\n')
+        
         self.print_vals()
+        print('\n\n\n\nshould we run this experiment? (y/n)\n\n')
         
         resp = input('').lower()
         
@@ -172,20 +161,27 @@ class Experiment:
     def update_rounds(self, round_number):
         self.experiment_status.loc[self.experiment_status.index ==next_exp_index, 'completed_rounds'] = round_number
 
-        self.experiment_status.to_csv(csv_path, index = False)
+        self.experiment_status.to_csv(self.file, index = False)
     
     def experiment_finished(self):
         self.experiment_status.loc[self.experiment_status.index ==next_exp_index, 'done'] = True
-        self.experiment_status.to_csv(csv_path, index = False)
+        self.experiment_status.to_csv(self.file, index = False)
     
     def run(self):
         self.module.setup(self.current_setup_dictionary)
+        csv_up = threading.Thread(target = self.track_script_progress, daemon = True)
+        csv_up.start()
+        
         self.module.run_script()
+    
+    def track_script_progress(self):
         
         round = 1
-        while not module.fn.done:
+        while not self.module.fn.done:
             if self.module.fn.round != round:
+                print('\n\n\n\nupdating csv new round!!!!!!!!!!!! \n\n\n')
                 self.update_rounds(round)
+                round = self.module.fn.round
             time.sleep(0.1)
         self.experiment_finished()
         
@@ -279,6 +275,21 @@ class Experiment:
                 print(f'couldnt update {key} with value {vals[key]}\ndouble check the var name in the csv file')
 
     
-    
+    def insert_row(df, row_number,  row_values):
+        df_top_copy = df.loc[df.index<=row_number].copy()
+        df_bottom_copy = df.loc[df.index>=row_number].copy()
+        df_bottom_copy.index = df_bottom_copy.index + 1
+        if row_values!=None:
+            new_row_cols = row_values.keys()
+
+        for col in df.columns:
+            if col in new_row_cols:
+                df_top_copy.loc[df_top_copy.experiment_status.index ==row_number, col] = row_values[col]
+            else:
+                df_top_copy.loc[df_top_copy.experiment_status.index ==row_number, col]=''
+
+        # return the dataframe
+        return df_top_copy.append(df_bottom_copy)
+
     
         """
