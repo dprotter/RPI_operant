@@ -106,39 +106,8 @@ class runtime_functions:
                 settings_string+=f'{key}:{args_dict[key]}|'
             writer.writerow([settings_string,])
             
-            writer.writerow(['Round, Event', 'Time'])
+            writer.writerow(['Round', 'Event', 'Time'])
 
-
-    '''def skip_setup(exp = 'Generic Test', save_dir = '/home/pi/Operant_Output', day = 0, user = None):
-        if you want to run a test script without entering any info
-        #get user info
-        #get vole number
-        #push to email after done?
-
-        user = 'Test'
-
-        vole = '000'
-
-
-        push = 'y'
-
-
-        """fname will be of format m_d_y__h_m_vole_#_fresh.csv. fresh will be removed
-        once the file has been send via email."""
-
-        date = datetime.datetime.now()
-        fdate = '%s_%s_%s__%s_%s_'%(date.month, date.day, date.year, date.hour, date.minute)
-
-        fname = fdate+'_vole_%s.csv'%vole
-        path = os.path.join(save_dir, fname)
-
-        with open(path, 'w') as file:
-            writer = csv.writer(file, delimiter = ',')
-            writer.writerow(['user: %s'%user, 'vole: %s'%vole, 'date: %s'%date,
-            'experiment: %s'%exp, 'Day: %i'%day, 'Pi: %s'%socket.gethostname()])
-            writer.writerow(['Round, Event', 'Time'])
-
-        return path'''
 
     def setup_pins(self):
         '''here we get the gpio pins setup, and instantiate pigpio object.'''
@@ -289,7 +258,7 @@ class runtime_functions:
                 servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['stop']
             if not GPIO.input(pins['door_1_override_close_switch']):
                 self.door_override['door_1'] = True
-                servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['close_full']
+                servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['close']
                 while not GPIO.input(pins[f'door_1_override_close_switch']):
                     time.sleep(0.05)
                 servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['stop']
@@ -311,7 +280,7 @@ class runtime_functions:
                 servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['stop']
             if not GPIO.input(pins['door_2_override_close_switch']):
                 self.door_override['door_2'] = True
-                servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['close_full']
+                servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['close']
                 while not GPIO.input(pins['door_2_override_close_switch']):
                     time.sleep(0.05)
                 servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['stop']
@@ -595,10 +564,12 @@ class runtime_functions:
     def pulse_sync_line(self, length):
         '''not terribly accurate, but good enough. For now, this is called on every
         lever press or pellet retrieval. Takes length in seconds'''
+        
         GPIO.output(pins['gpio_sync'], 1)
         time.sleep(length)
         GPIO.output(pins['gpio_sync'], 0)
-
+        self.timestamp_queue.put(f'{self.round}, pulse sync line|{length}, {time.time()-self.start_time}')
+        
     def clean_up(self):
 
         

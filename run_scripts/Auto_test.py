@@ -232,6 +232,6 @@ if __name__ == '__main__':
     '''is_test = input('is this just a test? y/n\n')'''
     is_test = 'y'
     if is_test.lower() == 'y':
-        setup_dict = default_setup
+        setup_dict = default_setup_dict
     setup(setup_dict)
     run_script()

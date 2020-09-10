@@ -19,13 +19,13 @@ key_values = {'num_rounds': 4,
               'time_II':2,
               'time_IV':2, 
               'pellet_tone_time':1, 
-              'pellet_tone_hz':5000,
+              'pellet_tone_hz':2500,
               'door_close_tone_time':1, 
               'door_close_tone_hz':7000,
               'door_open_tone_time':1,
               'door_open_tone_hz':10000,
               'round_start_tone_time':1, 
-              'round_start_tone_hz':3000}
+              'round_start_tone_hz':5000}
 
 key_values_def = {'num_rounds':'number of rounds', 
                   'round_time':'total round length',
@@ -53,7 +53,7 @@ def setup(setup_dict = None):
 
 
 def run_script():
-    
+    key_values['num_rounds'] = int(key_values['num_rounds'])
     #buzz args passed as (time, hz, name), just to make
     #code a little cleaner
     round_buzz = (key_values['round_start_tone_time'],
