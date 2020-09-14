@@ -14,7 +14,7 @@ pins = {'lever_food':24,
     'door_1_state_switch':17,
     'door_2_state_switch':18,
 
-    'gpio_sync':6, }
+    'gpio_sync':12, }
 
 
 #values Levers [extended, retracted]

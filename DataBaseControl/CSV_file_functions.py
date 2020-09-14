@@ -232,7 +232,10 @@ class Experiment:
         '''check if self.vals['var_changes'] is a dict. if not, make it one'''
         current_vals = self.vals['var_changes']
         if not type(current_vals) == dict:
-            self.vals['var_changes'] = {kv.split(':')[0]:kv.split(':')[1] for kv in current_vals.split(',')}
+            if not type(current_vals) == np.float64:
+                self.vals['var_changes'] = {kv.split(':')[0]:kv.split(':')[1] for kv in current_vals.split(',')}
+            else:
+                self.vals['var_changes'] = {}
             
     def skip_vole(skip_forever = False):
         
@@ -277,7 +280,7 @@ class Experiment:
         defs = [[i, val, self.module.key_values_def[val], self.module.key_values[val]] for i, val in enumerate(self.module.key_val_names_order)]
         defs += [[-1, 'done','','']]
         print(tabulate(defs, headers = ['select','var name', 'var def', 'var value'], tablefmt = 'grid'))
-        print(f'\n\nrunning script {self.current_setup_dictionary["script"]}\nvole: {self.current_setup_dictionary["vole"]}\nday:{self.current_setup_dictionary["day"]}')
+        print(f'\n\nrunning script {self.current_setup_dictionary["script"]}\n\nvole: {self.current_setup_dictionary["vole"]}\n\nday:{self.current_setup_dictionary["day"]}\n\n')
         return defs
     
     def print_setup_dict(self):
