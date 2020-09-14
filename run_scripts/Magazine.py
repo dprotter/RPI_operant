@@ -14,7 +14,7 @@ default_setup_dict = {'vole':'000','day':1, 'experiment':'Magazine',
 
 setup_dictionary = None
 
-key_values = {'num_rounds': 4, 
+key_values = {'num_rounds': 15, 
               'round_time':120, 
               'time_II':2,
               'time_IV':2, 

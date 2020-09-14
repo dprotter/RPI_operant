@@ -57,8 +57,12 @@ experiment = cff.Experiment(csv_file, output_loc = output)
 
 resp = experiment.ask_to_run()
 
-if resp:
+while resp:
     experiment.run()
+    experiment.next_experiment()
+    resp = experiment.ask_to_run()
+
+print('whew! what a day of experiments!')
 
 
 

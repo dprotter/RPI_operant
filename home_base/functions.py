@@ -291,7 +291,7 @@ class runtime_functions:
 
 
     def run_job(self, job,args = None):
-        print('job: ' + str(job) + '    args: ' +str(args))
+        print('\n*** job: ' + str(job) + '    args: ' +str(args)+' \n\n')
 
         '''parse and run jobs'''
 
@@ -354,7 +354,7 @@ class runtime_functions:
                     self.lever_press_queue.put(lever_ID)
 
                     self.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.round, lever_ID, time.time()-self.start_time))
-                    print(f'{lever_ID} pressed! neato.')
+                    print(f'\n\n{lever_ID} pressed! neato.\n\n')
                     while not GPIO.input(pins["lever_%s"%lever_ID]):
                         'hanging till lever not pressed'
                         time.sleep(0.05)

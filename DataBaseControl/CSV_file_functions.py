@@ -1,5 +1,6 @@
 
 import pandas as pd
+import numpy as np
 import importlib
 import queue
 from tabulate import tabulate
@@ -7,6 +8,7 @@ import os
 import time as time
 import traceback
 import threading
+import datetime
 
 class Experiment:
     def __init__(self, csv_location, output_loc = None, start_index = 0):
@@ -25,7 +27,7 @@ class Experiment:
         
         #here we get the index value in the dataframe of our next experiment, 
         #starting with the first experiment listed as unfinished. 
-        self.exp_index = self.cur_row.index.values[self.unfinished_loc]
+        self.exp_index = self.cur_row.index.values[0]
         
         #sometimes a dictionary is just easier to deal with than a pandas row
         self.vals = {col:self.cur_row[col].values[0] for col in sorted(self.cur_row.columns)}
@@ -67,21 +69,26 @@ class Experiment:
         
         #here we get the index value in the dataframe of our next experiment, 
         #starting with the first experiment listed as unfinished. 
-        self.exp_index = self.cur_row.index.values[self.unfinished_loc]
+        self.exp_index = self.cur_row.index.values[0]
         
         #sometimes a dictionary is just easier to deal with than a pandas row
         self.vals = {col:self.cur_row[col].values[0] for col in sorted(self.cur_row.columns)}
         if self.vals['experiment_status'] == 'skipped':
             print('this experiment was previously skipped.')
         print(f"next_script: {self.vals['script']}")
-        
-        
+
         #dynamically reload the module with the new vole info.
         spec = importlib.util.spec_from_file_location(self.vals["script"],
                     f'{self.path_to_scripts}/{self.vals["script"]}.py')
         self.module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.module)
-          
+        
+        #default setup dictionary for this module
+        self.default_setup_dict = self.module.default_setup_dict
+        
+        #setup dictionary for the current experiment row
+        self.current_setup_dictionary = self.default_setup_dict
+
         #overwrite the default setup dict with values from the csv file
         self.instantiate_experiment()
         #change any values in the modules variable dictionary as necessary from the csv column
@@ -157,8 +164,46 @@ class Experiment:
         
         #update current row, since we've made changes
         self.cur_row = self.unfinished.iloc[[self.unfinished_loc]]
+    
+    def user_modify_setup_dict(self):
+            ''' manually update setup dictionary. '''
         
-        
+            defs = self.print_setup_dict()
+            
+            
+            mod_index = int(input('\n\n\nmodify which value?\n'))
+            
+            acceptable_values = [i for i in range(len(defs)-1)] + [-1]
+            track_changes = {}
+            
+            while mod_index != -1:
+                if not mod_index in acceptable_values:
+                    print(f'whoops, that was input ( {mod_index} ) was not acceptedy. try again!')
+                    continue
+                else:
+                    key = defs[mod_index][1]
+                    val = input(f'\nwhat do you want to set {key} to?\n')
+                    
+                    key_type = type(self.current_setup_dictionary[key])
+                    
+                    if key_type == int or key_type == np.int64:
+                        self.current_setup_dictionary[key] = int(val)
+                        track_changes[key] = val
+                    elif key_type == float or key_type == np.float64:
+                        self.current_setup_dictionary[key] = float(val)
+                        track_changes[key] = val
+                    elif key_type == str:
+                        self.current_setup_dictionary[key] = str(val)
+                        track_changes[key] = val
+                    else:
+                        print(f'cant identify the datatype for <{key}> key. getting {type(self.current_setup_dictionary[key])} cant properly change it.')
+                defs = self.print_setup_dict()
+                mod_index = int(input('\n\n\nmodify which value?\n'))
+            print('adding changed variabls to csv files')
+            for key in track_changes.keys():
+                if key in self.experiment_status.columns:
+                    self.experiment_status.loc[self.experiment_status.index ==self.exp_index, key] = track_changes[key]
+                self.experiment_status.to_csv(self.file, index = False)
     def modify_vars(self, var_dict):
         '''to manually update variables. these will get put in the var_change column, as well'''
         
@@ -235,10 +280,11 @@ class Experiment:
         print(f'\n\nrunning script {self.current_setup_dictionary["script"]}\nvole: {self.current_setup_dictionary["vole"]}\nday:{self.current_setup_dictionary["day"]}')
         return defs
     
-    def print_dict_vals(self):
+    def print_setup_dict(self):
         defs = [[i, key, self.current_setup_dictionary[key]] for i, key in enumerate(self.current_setup_dictionary.keys())]
         defs += [[-1, 'done','','']]
         print(tabulate(defs, headers = ['select','key', 'value'], tablefmt = 'grid'))
+        return defs
     
     def update_rounds(self, round_number):
         self.experiment_status.loc[self.experiment_status.index ==self.exp_index, 'rounds_completed'] = round_number
@@ -271,6 +317,12 @@ class Experiment:
         csv_up = threading.Thread(target = self.track_script_progress, daemon = True)
         csv_up.start()
         
+        
+        
+        date = datetime.datetime.now()
+        fdate = '%s_%s_%s__%s_%s_'%(date.month, date.day, date.year, date.hour, date.minute)
+        self.experiment_status.loc[self.experiment_status.index ==self.exp_index, 'run_time'] = fdate
+        self.experiment_status.to_csv(self.file, index = False)
         self.module.run_script()
         self.experiment_finished()
         
