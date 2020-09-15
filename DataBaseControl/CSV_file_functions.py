@@ -65,6 +65,9 @@ class Experiment:
     def next_experiment(self):
         
         self.unfinished_loc += 1
+        if self.unfinished_loc not in self.unfinished.index.values:
+            print('wow, think we are out of experiments to run! you must be all done.')
+            return False
         self.cur_row = self.unfinished.iloc[[self.unfinished_loc]]
         
         #here we get the index value in the dataframe of our next experiment, 
@@ -88,13 +91,15 @@ class Experiment:
         
         #setup dictionary for the current experiment row
         self.current_setup_dictionary = self.default_setup_dict
-
+        self.current_setup_dictionary['output_directory'] = self.output_location
+        
         #overwrite the default setup dict with values from the csv file
         self.instantiate_experiment()
         #change any values in the modules variable dictionary as necessary from the csv column
         #var_change
         self.modify_setup_dict_from_csv()
         self.modify_module_key_values()
+        return True
     
     def modify_setup_dict_from_csv(self):
         '''read and update vars from var_change column of csv'''
@@ -290,30 +295,27 @@ class Experiment:
         return defs
     
     def update_rounds(self, round_number):
+        print(f'\n\n\n\n-------updating csv log, new round completed {round_number}----------\n\n\n')
         self.experiment_status.loc[self.experiment_status.index ==self.exp_index, 'rounds_completed'] = round_number
-
         self.experiment_status.to_csv(self.file, index = False)
-    
-    def experiment_finished(self):
-        round = self.experiment_status.loc[self.experiment_status.index ==self.exp_index, 'rounds_completed'].values
-        
-        self.update_rounds(round+1)
-        
-        self.experiment_status.loc[self.experiment_status.index ==self.exp_index, 'done'] = True
-        self.experiment_status.to_csv(self.file, index = False)
-    
     
     
     def track_script_progress(self):
         
-        round = 1
+        round = 0
         while not self.module.fn.done:
             if self.module.fn.round != round:
-                print('\n\n\n\nupdating csv new round!!!!!!!!!!!! \n\n\n')
                 self.update_rounds(round)
                 round = self.module.fn.round
             time.sleep(0.1)
+        self.update_rounds(self.module.fn.round)
         self.experiment_finished()
+    
+    def experiment_finished(self):
+        
+        self.experiment_status.loc[self.experiment_status.index ==self.exp_index, 'done'] = True
+        self.experiment_status.to_csv(self.file, index = False)
+    
     
     def run(self):
         self.module.setup(self.current_setup_dictionary)
@@ -321,9 +323,8 @@ class Experiment:
         csv_up.start()
         
         
-        
         date = datetime.datetime.now()
-        fdate = '%s_%s_%s__%s_%s_'%(date.month, date.day, date.year, date.hour, date.minute)
+        fdate = '%s_%s_%s__%s_%s'%(date.month, date.day, date.year, date.hour, date.minute)
         self.experiment_status.loc[self.experiment_status.index ==self.exp_index, 'run_time'] = fdate
         self.experiment_status.to_csv(self.file, index = False)
         self.module.run_script()

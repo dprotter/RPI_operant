@@ -59,8 +59,11 @@ resp = experiment.ask_to_run()
 
 while resp:
     experiment.run()
-    experiment.next_experiment()
-    resp = experiment.ask_to_run()
+    next_exists = experiment.next_experiment()
+    if next_exists:
+        resp = experiment.ask_to_run()
+    else:
+        break
 
 print('whew! what a day of experiments!')
 

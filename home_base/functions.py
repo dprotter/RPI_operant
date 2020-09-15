@@ -581,6 +581,7 @@ class runtime_functions:
         servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['stop']
         servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
         self.done = True
+        time.sleep(2)
         self.do_stuff_queue.task_done()
 
     def breakpoint_monitor_lever(self, args):
