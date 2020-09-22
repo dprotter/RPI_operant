@@ -1,34 +1,39 @@
 import sys
 sys.path.append('/home/pi/RPI_operant/')
 
-import home_base.functions as fn
+import home_base.functions as FN
 
 import threading
 import time
 
-
-
-
-
+fn = FN.runtime_functions()
 
 
 default_setup = setup_dict = {'vole':'000','day':1, 'experiment':'Magazine',
                     'user':'Test User', 'output_directory':'/home/pi/test_outputs/'}
 
 
-key_values = {'num_rounds': 15, 'round_time':120, 'time_II':2,
-            'time_IV':2, 'pellet_tone_time':1, 'pellet_tone_hz':3000,
-            'door_close_tone_time':1, 'door_close_tone_hz':6000,
-            'door_open_tone_time':1,'door_open_tone_hz':10000,
-            'round_start_tone_time':1, 'round_start_tone_hz':6000}
+key_values = {'num_rounds': 15, 
+              'round_time':120, 
+              'time_II':2,
+              'time_IV':2, 
+              'pellet_tone_time':1, 
+              'pellet_tone_hz':5000,
+              'door_close_tone_time':1, 
+              'door_close_tone_hz':7000,
+              'door_open_tone_time':1,
+              'door_open_tone_hz':10000,
+              'round_start_tone_time':1, 
+              'round_start_tone_hz':3000}
 
-key_values_def = {'num_rounds':'number of rounds', 'round_time':'total round length',
-            'time_II':'time after levers out before pellet',
-            'time_IV':'''time after pellet delivered before levers retracted''',
-            'pellet_tone_time':'in s', 'pellet_tone_hz':'in hz',
-            'door_close_tone_time':'in s', 'door_close_tone_hz':'in hz',
-            'door_open_tone_time':'in s','door_open_tone_hz':'in hz',
-            'round_start_tone_time':'in s', 'round_start_tone_hz':'in hz'}
+key_values_def = {'num_rounds':'number of rounds', 
+                  'round_time':'total round length',
+                  'time_II':'time after levers out before pellet',
+                  'time_IV':'''time after pellet delivered before levers retracted''',
+                  'pellet_tone_time':'in s', 'pellet_tone_hz':'in hz',
+                  'door_close_tone_time':'in s', 'door_close_tone_hz':'in hz',
+                  'door_open_tone_time':'in s','door_open_tone_hz':'in hz',
+                  'round_start_tone_time':'in s', 'round_start_tone_hz':'in hz'}
 
 key_val_names_order = ['num_rounds', 'round_time', 'time_II', 'time_IV','pellet_tone_time',
                         'pellet_tone_hz','door_close_tone_time','door_close_tone_hz',
@@ -44,6 +49,7 @@ def setup(setup_dictionary = None):
 
 
 def run_script():
+    
     #buzz args passed as (time, hz, name), just to make
     #code a little cleaner
     round_buzz = (key_values['round_start_tone_time'],
@@ -62,7 +68,7 @@ def run_script():
                     key_values['door_close_tone_hz'],
                     'door_close_tone')
     
-        #spin up a dedicated writer thread
+    #spin up a dedicated writer thread
     wrt = threading.Thread(target = fn.flush_to_CSV, daemon = True)
     wrt.start()
 
@@ -72,12 +78,7 @@ def run_script():
     or2.start()
 
     #double check the doors are closed. close, if they arent
-    print('resetting door states')
     fn.reset_doors()
-    open_doors = [id for id in ['door_1', 'door_2'] if not fn.door_states[id]]
-    if len(open_doors) > 0 :
-        print(f'oh dip! theres a problem closing the doors: {open_doors}')
-        raise
     
     ##### start timing this session ######
     fn.start_timing()
@@ -97,6 +98,7 @@ def run_script():
     ### master looper ###
     print(f"range for looping: {[i for i in range(1, key_values['num_rounds']+1,1)]}")
     
+    #start at round 1 instead of the pythonic default of 0 for readability
     for i in range(1, key_values['num_rounds']+1,1):
         round_start = time.time()
         fn.round = i

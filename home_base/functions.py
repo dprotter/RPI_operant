@@ -160,6 +160,14 @@ def setup_pins():
             GPIO.setup(pins[k], GPIO.OUT)
             print(k + ": OUT")
 
+def close_doors():
+    print('resetting door states')
+    reset_doors()
+    open_doors = [id for id in ['door_1', 'door_2'] if not door_states[id]]
+    if len(open_doors) > 0 :
+        print(f'oh dip! theres a problem closing the doors: {open_doors}')
+        raise
+    
 def reset_doors():
 
     #check if the doors are closed
