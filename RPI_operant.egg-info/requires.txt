@@ -1,0 +1,4 @@
+RPi.GPIO
+adafruit-circuitpython-servokit
+netifaces
+numpy

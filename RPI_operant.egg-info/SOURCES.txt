@@ -1,0 +1,7 @@
+README.md
+setup.py
+RPI_operant.egg-info/PKG-INFO
+RPI_operant.egg-info/SOURCES.txt
+RPI_operant.egg-info/dependency_links.txt
+RPI_operant.egg-info/requires.txt
+RPI_operant.egg-info/top_level.txt
