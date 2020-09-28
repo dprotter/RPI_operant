@@ -168,7 +168,7 @@ if __name__ == '__main__':
     test_run = input('is this just a quick test run? if so, we will just do 1 round. (y/n)\n')
     if test_run.lower() in ['y', 'yes']:
         print('ok, test it is!')
-        key_values['num_rounds'] = 1
+        key_values['num_rounds'] = 5
         key_values['round_time'] = 20
         
     
