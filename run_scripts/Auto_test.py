@@ -108,6 +108,7 @@ def run_script():
     open_doors = [id for id in ['door_1', 'door_2'] if not fn.door_states[id]]
     if len(open_doors) > 0 :
         print(f'oh dip! theres a problem closing the doors: {open_doors}')
+        fn.stop_all_servos()
         raise
 
     #start the internal timer of the module

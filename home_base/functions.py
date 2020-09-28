@@ -673,3 +673,8 @@ class runtime_functions:
                             csv_writer.writerow(line)
                             time.sleep(0.005)
                 time.sleep(0.01)
+
+    def stop_all_servos(self):
+        self.servo_dict['door_1'].throttle = self.continuous_servo_speeds['door_1']['stop']
+        self.servo_dict['door_2'].throttle = self.continuous_servo_speeds['door_2']['stop']
+        self.servo_dict['food'].throttle = self.continuous_servo_speeds['food']['stop']
