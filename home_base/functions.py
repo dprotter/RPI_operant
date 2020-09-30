@@ -64,6 +64,7 @@ class runtime_functions:
 
 
         if args_dict['user']=='':
+            no_user = True
             while no_user:
                 self.user = input('no user listed. who is doing this experiment? \n')
 
