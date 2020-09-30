@@ -10,7 +10,7 @@ import numpy as np
 
 
 
-default_setup_dict = {'vole':'000','day':1, 'experiment':'Autoshape',
+default_setup_dict = {'vole':'000','day':1, 'experiment':'Door_shape',
                     'user':'Test User', 'output_directory':'/home/pi/test_outputs/', 'partner':'door_1', 'novel_num':'000'}
 
 setup_dictionary = None
@@ -143,7 +143,7 @@ def run_script():
         t.start()
         
         
-
+    key_values['num_rounds'] = int(key_values['num_rounds'])
     ### master looper ###
     print(f"range for looping: {[i for i in range(1, key_values['num_rounds']+1,1)]}")
     
@@ -167,7 +167,7 @@ def run_script():
         round_start = time.time()
         fn.pulse_sync_line(0.1)
         fn.round = i
-        print(f"#-#-#-#-#-# new round #%{i}, rep {rep_count} {this_door}!!!-#-#-#-#-#")
+        print(f"\n\n\n#-#-#-#-#-# new round #%{i}, rep {rep_count} {this_door}!!!-#-#-#-#-#\n\n\n")
         
         #round start buzz
         fn.timestamp_queue.put(f'{fn.round}, Starting new round, {time.time()-fn.start_time}') 
@@ -230,8 +230,10 @@ def run_script():
         fn.do_stuff_queue.put(('close door', 
                                   (this_door)))
         
+        fn.do_stuff_queue.put(('buzz',door_close_buzz))
+        
         print('\n\ntime to move that vole over!')
-        fn.timestamp_queue.put(f'{round}, start of move animal time, {time.time()-fn.start_time}')
+        fn.timestamp_queue.put(f'{fn.round}, start of move animal time, {time.time()-fn.start_time}')
         
         move_ani_start = time.time()
         while time.time() - move_ani_start < key_values['move_time']:
@@ -256,7 +258,8 @@ if __name__ == '__main__':
         key_values['time_II'] = 5
         key_values['repetitions'] = 2
         key_values['move_time'] = 4
-        day = input('Which autoshape training day is this? (for training)\n')
+        exp = default_setup_dict['experiment']
+        day = input(f'Which {exp} training day is this? (for training)\n')
         day = int(day)
         default_setup_dict['day'] = day
         
