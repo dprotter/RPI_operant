@@ -19,13 +19,13 @@ key_values = {'num_rounds': 15,
               'time_II':30,
               'time_IV':0, 
               'pellet_tone_time':1, 
-              'pellet_tone_hz':5000,
+              'pellet_tone_hz':2500,
               'door_close_tone_time':1, 
               'door_close_tone_hz':7000,
               'door_open_tone_time':1,
               'door_open_tone_hz':10000,
               'round_start_tone_time':1, 
-              'round_start_tone_hz':3000,
+              'round_start_tone_hz':5000
               'delay by day':[0,0,1,1,2],
               'delay default':2}
 

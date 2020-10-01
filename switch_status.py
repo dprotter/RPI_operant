@@ -1,8 +1,9 @@
-from home_base.functions import runtime_functions as FN
+import home_base.functions as FN
+fn = FN.runtime_functions()
 from home_base.functions import pins, GPIO
 from tabulate import tabulate
 import time
-
+import threading
 
 fn.setup_pins()
 fn.start_time = time.time()
@@ -13,10 +14,19 @@ or1 = threading.Thread(target = fn.override_door_1, daemon = True)
 or2 = threading.Thread(target = fn.override_door_2, daemon = True)
 or1.start()
 or2.start()
-fn = FN()
+
 
 fn.setup_pins()
 num_pins = len(pins)
+
+for x in range(5):
+
+        #spin up threads for the thread distributor
+        t = threading.Thread(target = fn.thread_distributor)
+
+        #when main thread finishes, kill these threads
+        t.daemon = True
+        t.start()
 
 fn.do_stuff_queue.put(('extend lever',
                             ('door_1')))
