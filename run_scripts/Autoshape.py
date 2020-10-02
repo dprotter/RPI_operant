@@ -25,7 +25,7 @@ key_values = {'num_rounds': 15,
               'door_open_tone_time':1,
               'door_open_tone_hz':10000,
               'round_start_tone_time':1, 
-              'round_start_tone_hz':5000
+              'round_start_tone_hz':5000,
               'delay by day':[0,0,1,1,2],
               'delay default':2}
 
