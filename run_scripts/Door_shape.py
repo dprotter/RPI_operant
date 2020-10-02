@@ -29,7 +29,7 @@ key_values = {'num_rounds': 0,
               'door_open_tone_hz':10000,
               'round_start_tone_time':1, 
               'round_start_tone_hz':3000,
-              'delay by day':[0,0,1,2,2],
+              'delay by day':[0,0,1,1,1],
               'delay default':2}
 
 key_values['num_rounds'] = key_values['repetitions'] * key_values['sets']
@@ -160,14 +160,15 @@ def run_script():
             d = this_door
             this_door = next_door
             next_door = d
-            rep_count = 0
+            rep_count = 1
         else:
             rep_count += 1
 
         round_start = time.time()
-        fn.pulse_sync_line(0.1)
+        
         fn.round = i
-        print(f"\n\n\n#-#-#-#-#-# new round #%{i}, rep {rep_count} {this_door}!!!-#-#-#-#-#\n\n\n")
+        fn.pulse_sync_line(0.1)
+        print(f"\n\n\n#-#-#-#-#-# new round #{i}, rep {rep_count} {this_door}!!!-#-#-#-#-#\n\n\n")
         
         #round start buzz
         fn.timestamp_queue.put(f'{fn.round}, Starting new round, {time.time()-fn.start_time}') 
