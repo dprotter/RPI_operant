@@ -32,7 +32,7 @@ key_values = {'num_rounds': 0,
               'delay by day':[0,0,1,1,1],
               'delay default':1}
 
-key_values['num_rounds'] = key_values['repetitions'] * key_values['sets']
+key_values['num_rounds'] = 2 * key_values['repetitions'] * key_values['sets']
 
 key_values_def = {'num_rounds':'number of rounds',
                   'repetitions':'number of consecutive rounds',
