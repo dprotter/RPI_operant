@@ -1,8 +1,10 @@
+
 import home_base.functions as FN
 fn = FN.runtime_functions()
-
-import threading
+from home_base.functions import pins, GPIO
 import time
+import threading
+
 
 fn.setup_pins()
 fn.start_time = time.time()
