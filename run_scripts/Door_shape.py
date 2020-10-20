@@ -113,7 +113,7 @@ def run_script():
     
     day_num = int(setup_dictionary['day'])
     if day_num > len(key_values['delay by day']):
-        delay = key_values['default delay']
+        delay = key_values['delay default']
     else:
         delay = key_values['delay by day'][day_num-1]
     

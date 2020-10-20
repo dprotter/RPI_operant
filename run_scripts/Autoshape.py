@@ -26,7 +26,7 @@ key_values = {'num_rounds': 15,
               'door_open_tone_hz':10000,
               'round_start_tone_time':1, 
               'round_start_tone_hz':5000,
-              'delay by day':[0,0,1,1,2],
+              'delay by day':[0,0,1,1,2,0,0,0,1,1,2],
               'delay default':2}
 
 key_values_def = {'num_rounds':'number of rounds', 
@@ -106,7 +106,7 @@ def run_script():
     
     day_num = int(setup_dictionary['day'])
     if day_num > len(key_values['delay by day']):
-        delay = key_values['default delay']
+        delay = key_values['delay default']
     else:
         delay = key_values['delay by day'][day_num-1]
     
@@ -136,7 +136,7 @@ def run_script():
         t.start()
         
         
-
+    key_values['num_rounds'] = int(key_values['num_rounds'])
     ### master looper ###
     print(f"range for looping: {[i for i in range(1, key_values['num_rounds']+1,1)]}")
     
