@@ -200,7 +200,7 @@ def run_script():
                 #do not give reward until after delay
                 time.sleep(delay)
                 fn.do_stuff_queue.put(('buzz', door_open_buzz))
-                
+                fn.do_stuff_queue.join()
                 fn.do_stuff_queue.put(('open door', 
                                        (this_door)))
                 
@@ -218,7 +218,7 @@ def run_script():
             fn.do_stuff_queue.put(('retract lever',
                                     (this_door)))
             fn.do_stuff_queue.put(('buzz', door_open_buzz))
-                
+            fn.do_stuff_queue.join()
             fn.do_stuff_queue.put(('open door', 
                                   (this_door)))
 
@@ -230,6 +230,8 @@ def run_script():
         
         fn.do_stuff_queue.put(('close door', 
                                   (this_door)))
+        fn.do_stuff_queue.join()
+        time.sleep(0.5)
         
         fn.do_stuff_queue.put(('buzz',door_close_buzz))
         
