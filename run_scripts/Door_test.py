@@ -245,10 +245,9 @@ if __name__ == '__main__':
     test_run = input('is this just a quick test run? if so, we will just do 1 round. (y/n)\n')
     if test_run.lower() in ['y', 'yes']:
         print('ok, test it is!')
-        key_values['num_rounds'] = 4
-        key_values['round_time'] = 15
+        key_values['num_rounds'] = 3
+        key_values['round_time'] = 10
         key_values['time_II'] = 5
-        key_values['repetitions'] = 2
         key_values['move_time'] = 4
         exp = default_setup_dict['experiment']
         day = input(f'Which {exp} training day is this? (for training)\n')
