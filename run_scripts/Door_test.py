@@ -107,7 +107,7 @@ def run_script():
     
     day_num = int(setup_dictionary['day'])
     if day_num > len(key_values['delay by day']):
-        delay = key_values['default delay']
+        delay = key_values['delay default']
     else:
         delay = key_values['delay by day'][day_num-1]
     
@@ -191,6 +191,7 @@ def run_script():
                 #do not give reward until after delay
                 time.sleep(delay)
                 fn.do_stuff_queue.put(('buzz', door_open_buzz))
+                fn.do_stuff_queue.join()
 
                 #open the door of the lever that was pressed 
                 fn.do_stuff_queue.put(('open door', 
@@ -219,6 +220,8 @@ def run_script():
         #if the door was opened, close it
         if press:
             fn.do_stuff_queue.put(('buzz',door_close_buzz))
+            fn.do_stuf_queue.join()
+            time.sleep(0.5)
             fn.do_stuff_queue.put(('close door', 
                                   (lever_press)))
         
