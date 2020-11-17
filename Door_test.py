@@ -1,6 +1,6 @@
 from adafruit_servokit import ServoKit
 import time
-from operant_cage_settings import servo_dict
+from home_base.operant_cage_settings import servo_dict
 kit = ServoKit(channels = 16)
 
 open_throttle = 0.8
