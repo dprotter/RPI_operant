@@ -9,11 +9,12 @@ from home_base.operant_cage_settings import (kit, pins,
     lever_angles, continuous_servo_speeds,servo_dict)
 import datetime
 import csv
-from home_base.email_push import email_push
+from home_base import analysis
 import numpy as np
 import queue
 import random
 import pigpio
+import sys
 
 
 class runtime_functions:
@@ -309,6 +310,7 @@ class runtime_functions:
                 'door override 1':self.override_door_1,
                 'door override 2':self.override_door_2,
                 'clean up':self.clean_up,
+                'analyze':self.analyze,
 
                 }
 
@@ -583,6 +585,11 @@ class runtime_functions:
         servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
         self.done = True
         time.sleep(2)
+
+        self.do_stuff_queue.task_done()
+
+    def analyze(self):
+        analyze.run_analysis_script(self.this_path)
         self.do_stuff_queue.task_done()
 
     def breakpoint_monitor_lever(self, args):
@@ -674,6 +681,15 @@ class runtime_functions:
                             csv_writer.writerow(line)
                             time.sleep(0.005)
                 time.sleep(0.01)
+
+    def countdown_timer(self, args):
+        self.do_stuff_queue.task_done()
+        timeinterval, next_event = args
+        start = time.time()
+        while time.time() - start < timeinterval:
+            sys.stdout.write(f"\r{np.round(timeinterval - (time.time()-move_ani_start))} seconds left before next round")
+            time.sleep(0.5)
+            sys.stdout.flush()
 
     def stop_all_servos(self):
         self.servo_dict['door_1'].throttle = self.continuous_servo_speeds['door_1']['stop']
