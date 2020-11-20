@@ -87,7 +87,7 @@ class runtime_functions:
         print('date is: \n')
         print(datetime.date.today())
 
-        fname = fdate+f'_{exp}_vole_{vole}.csv'
+        fname = fdate+f'_{exp}_vole_{int(vole)}.csv'
         self.this_path = os.path.join(save_dir, fname)
 
 

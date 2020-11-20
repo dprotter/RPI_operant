@@ -10,7 +10,7 @@ import numpy as np
 
 
 
-default_setup_dict = {'vole':'000','day':1, 'experiment':'Door_shape',
+default_setup_dict = {'vole':'000','day':1, 'experiment':'Door_test',
                     'user':'Test User', 'output_directory':'/home/pi/test_outputs/', 'partner':'door_1', 'novel_num':'000'}
 
 setup_dictionary = None
@@ -220,7 +220,7 @@ def run_script():
         #if the door was opened, close it
         if press:
             fn.do_stuff_queue.put(('buzz',door_close_buzz))
-            fn.do_stuf_queue.join()
+            fn.do_stuff_queue.join()
             time.sleep(0.5)
             fn.do_stuff_queue.put(('close door', 
                                   (lever_press)))
