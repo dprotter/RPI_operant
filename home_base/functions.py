@@ -5,11 +5,11 @@ if os.system('sudo lsof -i TCP:8888'):
     os.system('sudo pigpiod')
 import socket
 import time
-from home_base.operant_cage_settings import (kit, pins,
+from RPI_operant.home_base.operant_cage_settings import (kit, pins,
     lever_angles, continuous_servo_speeds,servo_dict)
 import datetime
 import csv
-from home_base import analysis
+from RPI_operant.home_base import analysis
 import numpy as np
 import queue
 import random
@@ -567,11 +567,11 @@ class runtime_functions:
     def pulse_sync_line(self, length):
         '''not terribly accurate, but good enough. For now, this is called on every
         lever press or pellet retrieval. Takes length in seconds'''
-        
+        self.timestamp_queue.put(f'{self.round}, pulse sync line|{length}, {time.time()-self.start_time}')
         GPIO.output(pins['gpio_sync'], 1)
         time.sleep(length)
         GPIO.output(pins['gpio_sync'], 0)
-        self.timestamp_queue.put(f'{self.round}, pulse sync line|{length}, {time.time()-self.start_time}')
+        
         
     def clean_up(self):
 

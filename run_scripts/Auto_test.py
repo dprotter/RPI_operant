@@ -1,7 +1,7 @@
 import sys
 sys.path.append('/home/pi/RPI_operant/')
 
-import home_base.functions as FN
+import RPI_operant.home_base.functions as FN
 fn = FN.runtime_functions()
 
 
