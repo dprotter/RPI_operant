@@ -1,0 +1,28 @@
+import sys
+import os
+sys.path.append('/home/pi/RPI_operant/')
+import traceback
+import importlib
+
+def door_test():
+    try:
+        import home_base.analysis_scripts.door_test_analysis as door_test
+    except:
+        traceback.print_exc()
+        print('couldnt import door_test analysis script')
+    return door_test
+
+def load_custom_script(fpath):
+    '''this will directly load a module from an fpath for using custom analysis scripts
+    outside of the RPi_Operant package.'''
+    #dynamically load a module from its filepath
+    try:
+        spec = importlib.util.spec_from_file_location(fpath)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+    except:
+        traceback.print_exc()
+        print(f'couldnt import custom script {fpath}')
+    
+        return None
+    return module
