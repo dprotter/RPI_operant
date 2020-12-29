@@ -4,6 +4,11 @@ sys.path.append('/home/pi/RPI_operant/')
 import traceback
 import importlib
 
+def script_lookup(experiment):
+    table = {'Door_test':door_test()}
+
+    return table[experiment]
+
 def door_test():
     try:
         import home_base.analysis_scripts.door_test_analysis as door_test

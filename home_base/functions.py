@@ -15,7 +15,7 @@ import queue
 import random
 import pigpio
 import sys
-
+import home_base.analysis.analysis_functions as af
 
 class runtime_functions:
     
@@ -55,16 +55,17 @@ class runtime_functions:
         #timeout for closing the doors
         self.door_close_timeout = 10
 
+        self.args_dict = None
 
 
     def start_timing(self):
         self.start_time = time.time()
 
 
-    def setup_experiment(self, args_dict):
+    def setup_experiment(self, args_dict_in):
+        self.args_dict = args_dict_in
 
-
-        if args_dict['user']=='':
+        if self.args_dict['user']=='':
             no_user = True
             while no_user:
                 self.user = input('no user listed. who is doing this experiment? \n')
@@ -73,44 +74,52 @@ class runtime_functions:
                 if check.lower() in ['y', 'yes']:
                     no_user = False
         else:
-            self.user = args_dict['user']
+            self.user = self.args_dict['user']
 
-        #unpack dict, but just to make string assembly cleaner for the first
-        #line of the output file.
-        vole = args_dict['vole']
-        save_dir = args_dict['output_directory']
-        exp = args_dict['experiment']
-        day = args_dict['day']
-
-
-        date = datetime.datetime.now()
-        fdate = '%s_%s_%s__%s_%s_'%(date.month, date.day, date.year, date.hour, date.minute)
-        print('date is: \n')
-        print(datetime.date.today())
-
-        fname = fdate+f'_{exp}_vole_{vole}.csv'
+        
+        fname = self.generate_filename()
         self.this_path = os.path.join(save_dir, fname)
 
+        vole = self.args_dict['vole']
+        save_dir = self.args_dict['output_directory']
+        exp = self.args_dict['experiment']
+        day = self.args_dict['day']
 
 
         print('Path is: ')
         print(self.this_path)
         with open(self.this_path, 'w') as file:
             writer = csv.writer(file, delimiter = ',')
-            
-            
+
             
             writer.writerow(['user: %s'%self.user, 'vole: %s'%vole, 'date: %s'%date,
             'experiment: %s'%exp, 'Day: %i'%day, 'Pi: %s'%socket.gethostname()])
 
-            settings_string = ''
-            for key in args_dict.keys():
-                settings_string+=f'{key}:{args_dict[key]}|'
+            settings_string = self.create_header_string()
             writer.writerow([settings_string,])
             
             writer.writerow(['Round', 'Event', 'Time'])
 
+    def generate_filename(self):
+        
+        #unpack dict, but just to make string assembly cleaner for the first
+        #line of the output file.
+        vole = self.args_dict['vole']
+        save_dir = self.args_dict['output_directory']
+        exp = self.args_dict['experiment']
+        day = self.args_dict['day']
+        
+        date = datetime.datetime.now()
+        fdate = '%s_%s_%s__%s_%s_'%(date.month, date.day, date.year, date.hour, date.minute)
 
+        fname = fdate+f'_{exp}_vole_{vole}.csv'
+        return fname
+    
+    def create_header_string(self):
+        '''make a file header from a header_dict'''
+        
+        return af.create_header_string(self.args_dict)
+    
     def setup_pins(self):
         '''here we get the gpio pins setup, and instantiate pigpio object.'''
         #setup our pins. Lever pins are input, all else are output
