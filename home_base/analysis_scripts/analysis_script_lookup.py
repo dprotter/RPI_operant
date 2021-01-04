@@ -5,10 +5,40 @@ import traceback
 import importlib
 
 def script_lookup(experiment):
-    table = {'Door_test':door_test()}
+    table = {'Door_test':door_test(),
+             'Autoshape':autoshape(),
+             'Door_shape':door_shape(),
+             'Magazine':magazine()}
 
     return table[experiment]
 
+def magazine():
+    try:
+        import home_base.analysis_scripts.magazine_analysis as magazine
+    except:
+        traceback.print_exc()
+        print('couldnt import magazine analysis script')
+        raise
+    return magazine
+
+def autoshape():
+    try:
+        import home_base.analysis_scripts.autoshape_analysis as autoshape
+    except:
+        traceback.print_exc()
+        print('couldnt import Autoshape analysis script')
+        raise
+    return autoshape
+
+def door_shape():
+    try:
+        import home_base.analysis_scripts.door_shape_analysis as door_shape
+    except:
+        traceback.print_exc()
+        print('couldnt import Autoshape analysis script')
+        raise
+    return door_shape
+    
 def door_test():
     try:
         import home_base.analysis_scripts.door_test_analysis as door_test

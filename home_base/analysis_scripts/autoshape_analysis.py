@@ -47,7 +47,7 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     food_lever_press_prop_of_rounds = total_presses / total_rounds
     summary += [['proportion of rounds on which food lever was pressed', 
                 'percent_food_presses', 
-                door_1_lever_press_prop_of_rounds]]
+                food_lever_press_prop_of_rounds]]
 
     summary+= [['mean food lever press latency (excludes NaN)',
             'mean_food_lever_press_latency',

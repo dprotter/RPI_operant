@@ -91,7 +91,7 @@ def latency_by_round(df, event_1, event_2,
             sli_2.iloc[:-1, new_col] = lat
             return new_col, sli_2
     else:
-        raise IndexError('these two events have an unequal number of recordings (diff > 1).')
+        raise IndexError(f'these two events, "{event_1}" and "{event_2}" have an unequal number of recordings (diff > 1).\n e1: {len(sli_1)} e2: {len(sli_2)}')
     
 def count_event(df, event):
     return len(df.loc[df.Event == event])

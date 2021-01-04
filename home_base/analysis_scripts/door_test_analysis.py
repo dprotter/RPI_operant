@@ -61,12 +61,24 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
                 'door_2_lever_press_round_proportion', 
                 door_2_lever_press_prop_of_rounds]]
 
-    door_1_lever_press_prop_of_presses = door_1_lever_press_count / total_presses
+    
+    
+    if total_presses > 0:
+        door_1_lever_press_prop_of_presses = door_1_lever_press_count / total_presses
+    else:
+        door_1_lever_press_prop_of_presses = np.nan
+    
     summary += [['proportion of all presses that were for door_1', 
                 'door_1_lever_press_total_press_proportion', 
                 door_1_lever_press_prop_of_presses]]
 
-    door_2_lever_press_prop_of_presses = door_2_lever_press_count / total_presses
+    
+    
+    if total_presses > 0:
+        door_2_lever_press_prop_of_presses = door_2_lever_press_count / total_presses
+    else:
+        door_2_lever_press_prop_of_presses = np.nan    
+        
     summary += [['proportion of all presses that were for door_2', 
                 'door_2_lever_press_total_press_proportion', 
                 door_2_lever_press_prop_of_presses]]
