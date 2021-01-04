@@ -125,14 +125,14 @@ def create_header_string(header_dict):
             heading_string+=f'{key}:{header_dict[key]}|'
         return heading_string
 
-def get_header(fname):
+def get_header(fname, skiplines = 1):
     """header looks like:
     
     vole:3558.0|day:4.0|experiment:Door_shape|user:protter|output_directory:/home/pi/Documents/operant_experiment|partner:door_1|novel_num:000|completed_rounds:nan|done:False|expected_date:10_2_20|experiment_status:nan|num_rounds:20.0|rounds_completed:nan|run_time:nan|script:Door_shape|
     """
     with open(fname) as f:
-        #skip first line
-        f.readline()
+        for _ in range(skiplines):
+            f.readline()
         header_vals = f.readline().split('|')
         header_dict = {}
         for val in header_vals:

@@ -51,7 +51,8 @@ key_val_names_order = ['num_rounds', 'time_II', 'move_time','pellet_tone_time',
                         'door_open_tone_time','door_open_tone_hz', 'round_start_tone_time',
                         'round_start_tone_hz']
 
-shape
+
+def setup(setup_dict = None):
     global setup_dictionary
     global key_val_names_order
     #run this to get the RPi.GPIO pins setup

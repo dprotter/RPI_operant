@@ -15,6 +15,7 @@ def door_test():
     except:
         traceback.print_exc()
         print('couldnt import door_test analysis script')
+        raise
     return door_test
 
 def load_custom_script(fpath):

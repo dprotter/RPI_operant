@@ -696,7 +696,7 @@ class runtime_functions:
         timeinterval, next_event = args
         start = time.time()
         while time.time() - start < timeinterval:
-            sys.stdout.write(f"\r{np.round(timeinterval - (time.time()-move_ani_start))} seconds left before next round")
+            sys.stdout.write(f"\r{np.round(timeinterval - (time.time()-start))} seconds left before {next_event}")
             time.sleep(0.5)
             sys.stdout.flush()
 
