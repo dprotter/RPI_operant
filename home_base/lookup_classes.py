@@ -48,6 +48,10 @@ class Operant_event_strings:
     door2_open_end = ' door_2 open finish' 
     door2_open_failure = ' door_2 open failure'
     door2_close = ' door_2 close begin'
+
+    food_leverpress_prod = ' food lever pressed productive'
+    disp = ' Pellet dispensed'
+    retr = ' pellet retrieved'
     
     
     #I kept the space for now
