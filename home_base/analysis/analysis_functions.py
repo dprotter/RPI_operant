@@ -60,8 +60,8 @@ def latency_by_round(df, event_1, event_2,
         sli_1 = df.loc[(df.Event == event_1)&(df.Round.isin(rounds))].copy()
         sli_2 = df.loc[(df.Event == event_2)&(df.Round.isin(rounds))].copy()
     else:
-        sli_1 = df.loc[(df.Event == event_1)]
-        sli_2 = df.loc[(df.Event == event_2)]
+        sli_1 = df.loc[(df.Event == event_1)].copy()
+        sli_2 = df.loc[(df.Event == event_2)].copy()
     
         
     if len(sli_1) == len(sli_2):
@@ -72,23 +72,23 @@ def latency_by_round(df, event_1, event_2,
         #pellet was dispensed. But it could be useful to instead use the round
         #on which the pellet was retrieved. 
         if get_rounds_from == 'first':
-            sli_1[new_col] = sli_2.Time.values - sli_1.Time.values
+            sli_1.loc[:, new_col] = sli_2.Time.values - sli_1.Time.values
             return new_col, sli_1
         else:
             #use the slice for the second event to get rounds
-            sli_2[new_col] = sli_2.Time.values - sli_1.Time.values
+            sli_2.loc[:,new_col] = sli_2.Time.values - sli_1.Time.values
             return new_col, sli_2
         
     elif len(sli_1) == len(sli_2) + 1:
         if get_rounds_from == 'first':
-            sli_1[new_col] = np.nan
+            sli_1.loc[:, new_col] = np.nan
             lat = sli_2.Time.values - sli_1.Time.values[:-1]
-            sli_1.iloc[:-1, new_col] = lat
+            sli_1.iloc[:-1].loc[:, new_col] = lat
             return new_col, sli_1
         else:
-            sli_2[new_col] = np.nan
+            sli_2.loc[:,new_col] = np.nan
             lat = sli_2.Time.values - sli_1.Time.values[:-1]
-            sli_2.iloc[:-1, new_col] = lat
+            sli_2.iloc[:-1].loc[:, new_col] = lat
             return new_col, sli_2
     else:
         raise IndexError(f'these two events, "{event_1}" and "{event_2}" have an unequal number of recordings (diff > 1).\n e1: {len(sli_1)} e2: {len(sli_2)}')

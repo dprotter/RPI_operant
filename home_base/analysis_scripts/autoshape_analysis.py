@@ -8,8 +8,7 @@ import numpy as np
 
 
 def run_analysis(data_raw, head, by_round_fname, summary_fname):
-    data = af.remove_duplicate_events(data_raw, event_str = ' Levers out')
-
+    data = data_raw
     #calculations: food lever lat, pellet lat, percent press
     event_1 = oes.lever_out
     event_2 = oes.food_leverpress_prod
@@ -23,14 +22,14 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     new_df_blank = np.asarray([[r, np.nan] for r in data.Round.unique()])
     
     new_df = pd.DataFrame(data = new_df_blank, columns = ['Round',new_col])
-    new_df.Round = new_df.Round.astype(int)
+    new_df = new_df.astype({'Round':int})
     new_df = af.roundwise_join(new_df, new_data, new_col)
 
     # pellet lat
     event_1 = oes.disp
     event_2 = oes.retr
     col_name = 'pellet_latency'
-    new_col, new_data = af.latency_by_round(data, event_1, event_2, new_col_name = col_name, selected_by = event_2)
+    new_col, new_data = af.latency_by_round(data, event_1, event_2, new_col_name = col_name)
     round_df = af.roundwise_join(new_df, new_data, new_col)
 
 
