@@ -21,7 +21,7 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     new_df_blank = np.asarray([[r, np.nan] for r in data.Round.unique()])
     
     new_df = pd.DataFrame(data = new_df_blank, columns = ['Round',new_col])
-    new_df.Round = new_df.Round.astype(int)
+    new_df = new_df.astype({'Round':int})
     round_df = af.roundwise_join(new_df, new_data, new_col)
     
 
@@ -43,6 +43,17 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     summary+= [['mean pellet retrieval latency (excludes NaN)',
             'mean_pellet_latency',
                 round_df.pellet_latency.mean()]]
+    
+    
+    pel_retrievals = af.count_event(data, oes.retr)
+    summary+= [['number of times a pellet was retrieved',
+            'num_pellet_retrieved',
+                pel_retrievals]]
+    
+    summary+= [['proportion of rounds when a pellet was retrieved',
+            'proportion_round_pellet_retrieved',
+                pel_retrievals / total_rounds]]
+    
     summary+= [['animal ID',
             'animal_ID',
                 head['vole']]]

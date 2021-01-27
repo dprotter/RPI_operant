@@ -6,12 +6,14 @@ sys.path.append('/home/pi/RPI_operant/')
 import home_base.analysis.analysis_functions as af
 import home_base.analysis.analyze as ana
 import traceback
+import datetime
 
 #longitudinal functions
 def read_summary_csv(filepath):
     head = af.get_header(filepath, skiplines = 0)
     df = pd.read_csv(filepath, header = 1)
     df.set_index('Unnamed: 0', inplace = True)
+    head['date'] = get_date(filepath)
     return head, df.transpose()
     
     
@@ -21,6 +23,12 @@ def read_round_csv(filepath):
     
     return head, df
 
+def get_date(f):
+    path, fname = os.path.split(f)
+    vals = fname.split('__')
+    m, d, y = vals[0].split('_')
+    return datetime.date(int(y),int(m),int(d))
+    
 class LongitudinalAnalysis:
     
     def __init__(self, experiment_name):
@@ -51,8 +59,8 @@ class LongitudinalAnalysis:
         
         for var_n in df.var_name.unique():
             value = df.loc[df.var_name == var_n, 'var'].values[0]
-            new_row = {'animal':[animal], 'day':[day], 'value':[value],
-                      'experiment':[experiment], 'file':[file]}
+            new_row = {'animal':[int(float(animal))], 'day':[day], 'value':[value],
+                      'experiment':[experiment], 'file':[file], 'date':head['date']}
             if var_n in self.metrics.keys():
                 metric = self.metrics[var_n]
                 
@@ -110,7 +118,7 @@ class Metric:
     def __init__(self, name, var_desc):
         self.name = name
         self.description = var_desc
-        self.data = pd.DataFrame(columns=['animal', 'day','value','experiment', 'file'])
+        self.data = pd.DataFrame(columns=['animal', 'day','value','experiment', 'file', 'date'])
         self.data_type = str
         self.plottable = False
         self._do_not_plot = ['day', 'date']
@@ -162,7 +170,7 @@ class Metric:
         self.data = self.data.astype({'day':float})
         self.data = self.data.astype({'value':self.data_type, 'day':int})
         
-        self.data.sort_values(['animal','experiment','day'], inplace = True)
+        self.data.sort_values(['animal','date'], inplace = True)
         
         
     

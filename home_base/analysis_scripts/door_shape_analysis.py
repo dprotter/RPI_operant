@@ -24,7 +24,7 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     new_df_blank = np.asarray([[r, np.nan] for r in data.Round.unique()])
     
     new_df = pd.DataFrame(data = new_df_blank, columns = ['Round',new_col])
-    print(new_df)
+    
     new_df = new_df.astype({'Round':int})
     new_df = af.roundwise_join(new_df, new_data, new_col)
 
