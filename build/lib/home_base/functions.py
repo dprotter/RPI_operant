@@ -41,7 +41,6 @@ class runtime_functions:
 
         #whether or not to monitor levers.
         self.monitor = False
-        self.monitor_beam_brake = False
 
         #is there a pellet currently in the trough?
         self.pellet_state = False
@@ -88,7 +87,7 @@ class runtime_functions:
         print('date is: \n')
         print(datetime.date.today())
 
-        fname = fdate+f'_{exp}_vole_{int(vole)}.csv'
+        fname = fdate+f'_{exp}_vole_{vole}.csv'
         self.this_path = os.path.join(save_dir, fname)
 
 
@@ -132,7 +131,6 @@ class runtime_functions:
             else:
                 GPIO.setup(pins[k], GPIO.OUT)
                 print(k + ": OUT")
-
 
     def close_doors(self):
         print('resetting door states')
@@ -374,50 +372,7 @@ class runtime_functions:
             time.sleep(25/1000.0)
         print('halting monitoring of %s lever'%lever_ID)
 
-    def monitor_beam_break(self):
-        self.do_stuff_queue.task_done()
 
-        self.monitor_beam_brake = True
-        beam_1 = False
-        beam_2 = False
-
-        while self.monitor_beam_brake:
-            if not GPIO.input(pins['read_ir_1']) and not beam_1:
-                self.timestamp_queue.put(f'{self.round}, beam_break_1_crossed, {time.time()-self.start_time}')
-                beam_1 = True
-            else:
-                beam_1 = False
-
-            if not GPIO.input(pins['read_ir_2']) and not beam_1:
-                self.timestamp_queue.put(f'{self.round}, beam_break_2_crossed, {time.time()-self.start_time}')
-                beam_2 = True
-            else:
-                beam_2 = False
-        
-        time.sleep(0.05)
-        
-
-    def monitor_first_beam_break(self):
-        '''run monitor_beam_break until either beam is broken, and then stop'''
-        self.do_stuff_queue.task_done()
-
-        self.monitor_beam_brake = True
-        beam_1 = False
-        beam_2 = False
-
-        while self.monitor_beam_brake:
-            if not GPIO.input(pins['read_ir_1']) and not beam_1:
-                self.timestamp_queue.put(f'{self.round}, beam_break_1_crossed, {time.time()-self.start_time}')
-                beam_1 = True
-                break
-            
-
-            if not GPIO.input(pins['read_ir_2']) and not beam_1:
-                self.timestamp_queue.put(f'{self.round}, beam_break_2_crossed, {time.time()-self.start_time}')
-                beam_2 = True
-                break
-        self.monitor_beam_brake = False
-        time.sleep(0.05)
 
     def monitor_lever(self, args):
 

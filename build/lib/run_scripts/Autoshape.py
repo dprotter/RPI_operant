@@ -6,21 +6,18 @@ fn = FN.runtime_functions()
 
 import threading
 import time
-import numpy as np
 
 
 
-default_setup_dict = {'vole':'000','day':1, 'experiment':'Door_shape',
-                    'user':'Test User', 'output_directory':'/home/pi/test_outputs/', 'partner':'door_1', 'novel_num':'000'}
+default_setup_dict = {'vole':'000','day':1, 'experiment':'Autoshape',
+                    'user':'Test User', 'output_directory':'/home/pi/test_outputs/'}
 
 setup_dictionary = None
 
-key_values = {'num_rounds': 0,
-              'repetitions':5,
-              'sets':2,
-              'round_time':90, 
+key_values = {'num_rounds': 15,
+              'round_time':120, 
               'time_II':30,
-              'move_time':20,
+              'time_IV':0, 
               'pellet_tone_time':1, 
               'pellet_tone_hz':2500,
               'door_close_tone_time':1, 
@@ -29,17 +26,13 @@ key_values = {'num_rounds': 0,
               'door_open_tone_hz':10000,
               'round_start_tone_time':1, 
               'round_start_tone_hz':5000,
-              'delay by day':[0,0,1,1,1],
-              'delay default':1}
+              'delay by day':[0,0,1,1,2,0,0,0,1,1,2],
+              'delay default':2}
 
-key_values['num_rounds'] = 2 * key_values['repetitions'] * key_values['sets']
-
-key_values_def = {'num_rounds':'number of rounds',
-                  'repetitions':'number of consecutive rounds',
-                  'sets':'number of sets of training (1 set = partner reps + novel reps)',
+key_values_def = {'num_rounds':'number of rounds', 
                   'round_time':'total round length',
-                  'time_II':'time after levers out before reward',
-                  'move_time':'seconds to move the vole back to the lever room',
+                  'time_II':'time after levers out before pellet',
+                  'time_IV':'''time after pellet delivered before levers retracted''',
                   'pellet_tone_time':'in s', 
                   'pellet_tone_hz':'in hz',
                   'door_close_tone_time':'in s', 
@@ -52,7 +45,7 @@ key_values_def = {'num_rounds':'number of rounds',
                   'delay default':'delay between lever press and reward if beyond delay by day length'}
 
 #for display purposes. put values you think are most likely to be changed early
-key_val_names_order = ['num_rounds', 'repetitions','round_time', 'time_II', 'move_time','pellet_tone_time',
+key_val_names_order = ['num_rounds', 'round_time', 'time_II', 'time_IV','pellet_tone_time',
                         'pellet_tone_hz','door_close_tone_time','door_close_tone_hz',
                         'door_open_tone_time','door_open_tone_hz', 'round_start_tone_time',
                         'round_start_tone_hz']
@@ -132,7 +125,7 @@ def run_script():
     ##### start timing this session ######
     fn.start_timing()
     fn.pulse_sync_line(0.1)
-    fn.monitor_beam_brake()
+    
     for x in range(5):
 
         #spin up threads for the thread distributor
@@ -147,28 +140,11 @@ def run_script():
     ### master looper ###
     print(f"range for looping: {[i for i in range(1, key_values['num_rounds']+1,1)]}")
     
-    rep_count = 0
-    this_door = 'door_1'
-    next_door = 'door_2'
-
     #start at round 1 instead of the pythonic default of 0 for readability
     for i in range(1, key_values['num_rounds']+1,1):
-        
-        
-        if rep_count == key_values['repetitions']:
-            'swap doors if we have reach the rep count'
-            d = this_door
-            this_door = next_door
-            next_door = d
-            rep_count = 1
-        else:
-            rep_count += 1
-
         round_start = time.time()
-        
         fn.round = i
-        fn.pulse_sync_line(0.1)
-        print(f"\n\n\n#-#-#-#-#-# new round #{i}, rep {rep_count} {this_door}!!!-#-#-#-#-#\n\n\n")
+        print("#-#-#-#-#-# new round #%i!!!-#-#-#-#-#"%i)
         
         #round start buzz
         fn.timestamp_queue.put(f'{fn.round}, Starting new round, {time.time()-fn.start_time}') 
@@ -176,10 +152,10 @@ def run_script():
         fn.do_stuff_queue.join()
         
         fn.do_stuff_queue.put(('extend lever',
-                            (this_door)))
+                            ('food')))
         
         fn.do_stuff_queue.put(('monitor lever',
-                           (this_door)))
+                           ('food')))
         
         
         time_II_start = time.time()
@@ -195,14 +171,13 @@ def run_script():
                 #retract lever
                 fn.monitor = False
                 fn.do_stuff_queue.put(('retract lever',
-                                    (this_door)))
+                                    ('food')))
                 
                 #do not give reward until after delay
                 time.sleep(delay)
-                fn.do_stuff_queue.put(('buzz', door_open_buzz))
-                fn.do_stuff_queue.join()
-                fn.do_stuff_queue.put(('open door', 
-                                       (this_door)))
+                fn.do_stuff_queue.put(('buzz', pellet_buzz))
+                
+                fn.do_stuff_queue.put(('dispense pellet',))
                 
                 #get the lever press tuple just to clear the queue
                 lever_press = fn.lever_press_queue.get()
@@ -213,38 +188,21 @@ def run_script():
         #if the vole didnt press:
         if press == False:
             print('no lever press')
+            fn.do_stuff_queue.put(('buzz', pellet_buzz))
+            fn.do_stuff_queue.put(('dispense pellet',))
+        
+        time.sleep(key_values['time_IV'])
+        
+        if press == False:
             fn.monitor = False
-            
             fn.do_stuff_queue.put(('retract lever',
-                                    (this_door)))
-            fn.do_stuff_queue.put(('buzz', door_open_buzz))
-            fn.do_stuff_queue.join()
-            fn.do_stuff_queue.put(('open door', 
-                                  (this_door)))
-
+                                    ('food')))
+        
         while time.time() - round_start < key_values['round_time']:
-            sys.stdout.write(f"\r{np.round(key_values['round_time'] - (time.time()-round_start))} seconds left before moving")
-            time.sleep(1)
-            sys.stdout.flush()
-            time.sleep(1)
+            time.sleep(0.1)
         
-        fn.do_stuff_queue.put(('close door', 
-                                  (this_door)))
-        fn.do_stuff_queue.join()
-        time.sleep(0.5)
-        
-        fn.do_stuff_queue.put(('buzz',door_close_buzz))
-        
-        print('\n\ntime to move that vole over!')
-        fn.timestamp_queue.put(f'{fn.round}, start of move animal time, {time.time()-fn.start_time}')
-        
-        move_ani_start = time.time()
-        while time.time() - move_ani_start < key_values['move_time']:
-            sys.stdout.write(f"\r{np.round(key_values['move_time'] - (time.time()-move_ani_start))} seconds left before next round")
-            time.sleep(1)
-            sys.stdout.flush()
-        print('\nvole should be moved now')
-    
+    if fn.pellet_state:
+        fn.timestamp_queue.put('%i, final pellet not retrieved, %f'%(fn.round, time.time()-fn.start_time))
     
     fn.do_stuff_queue.put(('clean up',))
     fn.do_stuff_queue.join()
@@ -256,13 +214,10 @@ if __name__ == '__main__':
     test_run = input('is this just a quick test run? if so, we will just do 1 round. (y/n)\n')
     if test_run.lower() in ['y', 'yes']:
         print('ok, test it is!')
-        key_values['num_rounds'] = 4
-        key_values['round_time'] = 15
+        key_values['num_rounds'] = 2
+        key_values['round_time'] = 20
         key_values['time_II'] = 5
-        key_values['repetitions'] = 2
-        key_values['move_time'] = 4
-        exp = default_setup_dict['experiment']
-        day = input(f'Which {exp} training day is this? (for training)\n')
+        day = input('Which autoshape training day is this? (for training)\n')
         day = int(day)
         default_setup_dict['day'] = day
         

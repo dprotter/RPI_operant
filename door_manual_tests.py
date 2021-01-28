@@ -45,7 +45,7 @@ while True:
                                     (door)))
         fn.do_stuff_queue.put(('open door', 
                                        (door)))
-        time.sleep(1)
+        time.sleep(5)
         fn.do_stuff_queue.put(('extend lever',
                             (door)))
         

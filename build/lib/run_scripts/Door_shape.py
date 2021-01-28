@@ -132,7 +132,7 @@ def run_script():
     ##### start timing this session ######
     fn.start_timing()
     fn.pulse_sync_line(0.1)
-    fn.monitor_beam_brake()
+    
     for x in range(5):
 
         #spin up threads for the thread distributor
