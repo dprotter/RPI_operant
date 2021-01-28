@@ -41,7 +41,7 @@ class runtime_functions:
 
         #whether or not to monitor levers.
         self.monitor = False
-        self.monitor_beam_brake = False
+        self.monitor_beams = False
 
         #is there a pellet currently in the trough?
         self.pellet_state = False
@@ -311,6 +311,9 @@ class runtime_functions:
                 'door override 1':self.override_door_1,
                 'door override 2':self.override_door_2,
                 'clean up':self.clean_up,
+                'monitor beam breaks':self.monitor_beam_breaks,
+                'monitor first beam breaks':self.monitor_first_beam_breaks,
+                'print timestamp queue':self.print_timestamp_queue,
 
                 }
 
@@ -374,38 +377,53 @@ class runtime_functions:
             time.sleep(25/1000.0)
         print('halting monitoring of %s lever'%lever_ID)
 
-    def monitor_beam_break(self):
+    def monitor_beam_breaks(self):
         self.do_stuff_queue.task_done()
 
-        self.monitor_beam_brake = True
+        self.monitor_beams = True
         beam_1 = False
         beam_2 = False
 
-        while self.monitor_beam_brake:
+        while self.monitor_beams:
+            
+            #if led blocked (1 -> 0) and last state was unblocked, write timestamp
             if not GPIO.input(pins['read_ir_1']) and not beam_1:
                 self.timestamp_queue.put(f'{self.round}, beam_break_1_crossed, {time.time()-self.start_time}')
                 beam_1 = True
-            else:
+            
+            #led no longer blocked
+            elif GPIO.input(pins['read_ir_1']):
                 beam_1 = False
+            
+            #led still blocked, dont reset
+            else:
+                pass
 
-            if not GPIO.input(pins['read_ir_2']) and not beam_1:
+            #if led blocked (1 -> 0) and last state was unblocked, write timestamp
+            if not GPIO.input(pins['read_ir_2']) and not beam_2:
                 self.timestamp_queue.put(f'{self.round}, beam_break_2_crossed, {time.time()-self.start_time}')
                 beam_2 = True
-            else:
+            
+            #led no longer blocked
+            elif GPIO.input(pins['read_ir_2']):
                 beam_2 = False
+            
+            #led still blocked, dont reset
+            else:
+                pass
         
-        time.sleep(0.05)
+            time.sleep(0.05)
         
 
-    def monitor_first_beam_break(self):
+    def monitor_first_beam_breaks(self):
         '''run monitor_beam_break until either beam is broken, and then stop'''
         self.do_stuff_queue.task_done()
 
-        self.monitor_beam_brake = True
+        self.monitor_beams = True
         beam_1 = False
         beam_2 = False
 
-        while self.monitor_beam_brake:
+        while self.monitor_beams:
             if not GPIO.input(pins['read_ir_1']) and not beam_1:
                 self.timestamp_queue.put(f'{self.round}, beam_break_1_crossed, {time.time()-self.start_time}')
                 beam_1 = True
@@ -416,7 +434,7 @@ class runtime_functions:
                 self.timestamp_queue.put(f'{self.round}, beam_break_2_crossed, {time.time()-self.start_time}')
                 beam_2 = True
                 break
-        self.monitor_beam_brake = False
+        self.monitor_beams = False
         time.sleep(0.05)
 
     def monitor_lever(self, args):
@@ -724,3 +742,11 @@ class runtime_functions:
         self.servo_dict['door_1'].throttle = self.continuous_servo_speeds['door_1']['stop']
         self.servo_dict['door_2'].throttle = self.continuous_servo_speeds['door_2']['stop']
         self.servo_dict['food'].throttle = self.continuous_servo_speeds['food']['stop']
+
+    def print_timestamp_queue(self):
+        self.do_stuff_queue.task_done()
+        while True:
+            if not self.timestamp_queue.empty():
+                line = self.timestamp_queue.get().split(',')
+                print(f'writing ###### {line}')
+            time.sleep(0.1)

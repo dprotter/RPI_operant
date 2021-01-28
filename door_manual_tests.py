@@ -15,7 +15,7 @@ or2 = threading.Thread(target = fn.override_door_2, daemon = True)
 or1.start()
 or2.start()
 
-for x in range(5):
+for x in range(10):
 
         #spin up threads for the thread distributor
         t = threading.Thread(target = fn.thread_distributor)
@@ -36,17 +36,25 @@ fn.do_stuff_queue.put(('extend lever',
 fn.do_stuff_queue.put(('monitor lever',
                            ('door_2')))
 
+fn.do_stuff_queue.put(('monitor beam breaks',))
+
+fn.do_stuff_queue.put(('print timestamp queue',))
+
 fn.monitor = True
 
-while True:
-    if not fn.lever_press_queue.empty():
-        door = fn.lever_press_queue.get()
-        fn.do_stuff_queue.put(('retract lever',
-                                    (door)))
-        fn.do_stuff_queue.put(('open door', 
-                                       (door)))
-        time.sleep(5)
-        fn.do_stuff_queue.put(('extend lever',
-                            (door)))
-        
-    time.sleep(0.05)
+try:
+    while True:
+        if not fn.lever_press_queue.empty():
+            door = fn.lever_press_queue.get()
+            fn.do_stuff_queue.put(('retract lever',
+                                        (door)))
+            fn.do_stuff_queue.put(('open door', 
+                                        (door)))
+            time.sleep(5)
+            fn.do_stuff_queue.put(('extend lever',
+                                (door)))
+            
+        time.sleep(0.05)
+except KeyboardInterrupt:
+    print('\ncleaning up')
+    fn.clean_up()

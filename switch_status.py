@@ -54,5 +54,12 @@ def print_pin_status():
     print(tabulate(status, headers = ['pin', 'status', 'pin', 'status']))
     time.sleep(0.05)
 
-while True:
-    print_pin_status()
+try:
+    while True:
+        print_pin_status()
+        time.sleep(0.05)
+
+except KeyboardInterrupt:
+    print('\n\ncleaning up')
+    fn.do_stuff_queue.put(('clean up', ))
+    fn.do_stuff_queue.join()
