@@ -253,7 +253,7 @@ def run_script():
             sys.stdout.flush()
         print('\nvole should be moved now')
     
-    fn.analyze()
+    fn.do_stuff_queue.put(('analyze',))
     fn.do_stuff_queue.put(('clean up',))
     fn.do_stuff_queue.join()
     

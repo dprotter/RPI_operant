@@ -92,7 +92,7 @@ class runtime_functions:
 
     def setup_experiment(self, args_dict_in):
         self.args_dict = args_dict_in
-
+        
         if self.args_dict['user']=='':
             no_user = True
             while no_user:
@@ -108,7 +108,8 @@ class runtime_functions:
         save_dir = self.args_dict['output_directory']
         fname, date = self.generate_filename()
         self.this_path = os.path.join(save_dir, fname)
-
+        self.args_dict['run_time'] = date
+        
         print('\n\nPath is: ')
         print(self.this_path)
         print('\n')

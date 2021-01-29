@@ -2,7 +2,7 @@ import sys
 sys.path.append('/home/pi/')
 
 import RPI_operant.home_base.analysis.analysis_functions as af
-from home_base.lookup_classes import Operant_event_strings as oes
+from RPI_operant.home_base.lookup_classes import Operant_event_strings as oes
 import pandas as pd
 import numpy as np
 

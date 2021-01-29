@@ -32,6 +32,7 @@ def autoshape():
 
 def door_shape():
     try:
+        print('importing door_shape analysis module')
         import RPI_operant.home_base.analysis_scripts.door_shape_analysis as door_shape
     except:
         traceback.print_exc()

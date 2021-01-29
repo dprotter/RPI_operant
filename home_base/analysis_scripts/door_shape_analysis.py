@@ -129,15 +129,17 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
             d2_beambreaks / d2_openings]]
 
 ####
+    
+    prop_d1_beambreak_by_press = d1_beambreaks / door_1_lever_press_count if door_1_lever_press_count else np.nan
+    
 
-    prop_d1_beambreak_by_press = d1_beambreaks / door_1_lever_press_count
     summary+= [['proportion of door_1 lever presses on which the beam was subsequently broken',
         'prop_d1_beambreak_by_press',
             prop_d1_beambreak_by_press]]
 
-    prop_d2_beambreak_by_press = d2_beambreaks / door_2_lever_press_count
+    prop_d2_beambreak_by_press = d2_beambreaks / door_2_lever_press_count if door_2_lever_press_count else np.nan
     summary+= [['proportion of door_2 lever presses on which the beam was subsequently broken',
-        'prop_d1_beambreak_by_press',
+        'prop_d2_beambreak_by_press',
             prop_d2_beambreak_by_press]]
 
 ###
