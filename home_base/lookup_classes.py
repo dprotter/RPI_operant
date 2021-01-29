@@ -52,7 +52,12 @@ class Operant_event_strings:
     food_leverpress_prod = ' food lever pressed productive'
     disp = ' Pellet dispensed'
     retr = ' pellet retrieved'
-    
+
+    beam_break_1 = ' beam_break_1_crossed'
+    beam_break_2 = ' beam_break_2_crossed'
+
+    first_beam_break_1 = ' first_beam_break_1_crossed'
+    first_beam_break_2 = ' first_beam_break_2_crossed'
     
     #I kept the space for now
     #also may need to add others, I was working from a door shape file

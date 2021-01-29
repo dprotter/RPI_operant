@@ -132,7 +132,7 @@ def run_script():
     ##### start timing this session ######
     fn.start_timing()
     fn.pulse_sync_line(0.1)
-    fn.monitor_beam_brake()
+    
     for x in range(5):
 
         #spin up threads for the thread distributor
@@ -153,7 +153,7 @@ def run_script():
 
     #start at round 1 instead of the pythonic default of 0 for readability
     for i in range(1, key_values['num_rounds']+1,1):
-        
+        fn.do_stuff_queue.put(('monitor first beam breaks',))
         
         if rep_count == key_values['repetitions']:
             'swap doors if we have reach the rep count'
@@ -227,7 +227,12 @@ def run_script():
             time.sleep(1)
             sys.stdout.flush()
             time.sleep(1)
-        
+
+        #must stop monitoring beams so we dont trip them when moving the animal
+        #(doesnt really matter when only using monitor_first_beam_breaks(), but if continuously monitoring
+        # this would be important)
+        fn.monitor_beams = False
+
         fn.do_stuff_queue.put(('close door', 
                                   (this_door)))
         fn.do_stuff_queue.join()
@@ -245,7 +250,7 @@ def run_script():
             sys.stdout.flush()
         print('\nvole should be moved now')
     
-    
+    fn.analyze()
     fn.do_stuff_queue.put(('clean up',))
     fn.do_stuff_queue.join()
     

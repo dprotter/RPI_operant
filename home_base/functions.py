@@ -1,20 +1,25 @@
 """all of the necessary functions for running the operant pi boxes"""
+
 import RPi.GPIO as GPIO
 import os
 if os.system('sudo lsof -i TCP:8888'):
     os.system('sudo pigpiod')
+
+import sys
+sys.path.append('/home/pi/RPI_operant/')
+
 import socket
 import time
-from RPI_operant.home_base.operant_cage_settings import (kit, pins,
+from home_base.operant_cage_settings import (kit, pins,
     lever_angles, continuous_servo_speeds,servo_dict)
 import datetime
 import csv
-from RPI_operant.home_base import analysis
+from home_base import analysis
 import numpy as np
 import queue
 import random
 import pigpio
-import sys
+import traceback
 import home_base.analysis.analysis_functions as af
 
 class runtime_functions:
@@ -77,12 +82,8 @@ class runtime_functions:
         else:
             self.user = self.args_dict['user']
 
-<<<<<<< HEAD
-        fname = fdate+f'_{exp}_vole_{int(vole)}.csv'
-=======
         
         fname = self.generate_filename()
->>>>>>> analysis
         self.this_path = os.path.join(save_dir, fname)
 
         vole = self.args_dict['vole']
@@ -325,13 +326,10 @@ class runtime_functions:
                 'door override 1':self.override_door_1,
                 'door override 2':self.override_door_2,
                 'clean up':self.clean_up,
-<<<<<<< HEAD
                 'monitor beam breaks':self.monitor_beam_breaks,
                 'monitor first beam breaks':self.monitor_first_beam_breaks,
                 'print timestamp queue':self.print_timestamp_queue,
-=======
                 'analyze':self.analyze,
->>>>>>> analysis
 
                 }
 
@@ -668,8 +666,13 @@ class runtime_functions:
         self.do_stuff_queue.task_done()
 
     def analyze(self):
-        analyze.run_analysis_script(self.this_path)
-        self.do_stuff_queue.task_done()
+        try:
+            analyze.run_analysis_script(self.this_path)
+            self.do_stuff_queue.task_done()
+        except:
+            print('there was a problem running analysis for this script!')
+            traceback.print_exc()
+            self.do_stuff_queue.task_done()
 
     def breakpoint_monitor_lever(self, args):
         '''this lever monitor function tracks presses and returns when breakpoint reached'''
