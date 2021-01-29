@@ -6,21 +6,23 @@ if os.system('sudo lsof -i TCP:8888'):
     os.system('sudo pigpiod')
 
 import sys
-sys.path.append('/home/pi/RPI_operant/')
+sys.path.append('/home/pi/')
 
 import socket
 import time
-from home_base.operant_cage_settings import (kit, pins,
-    lever_angles, continuous_servo_speeds,servo_dict)
 import datetime
 import csv
-from home_base import analysis
 import numpy as np
 import queue
 import random
 import pigpio
 import traceback
-import home_base.analysis.analysis_functions as af
+
+from RPI_operant.home_base.operant_cage_settings import (kit, pins,
+    lever_angles, continuous_servo_speeds,servo_dict)
+
+import RPI_operant.home_base.analysis.analysis_functions as af
+import RPI_operant.home_base.analysis.analyze as ana
 
 class runtime_functions:
     
@@ -63,6 +65,26 @@ class runtime_functions:
 
         self.args_dict = None
 
+        self.jobs = {'extend lever':self.extend_lever,
+                'dispense pellet':self.dispense_pellet,
+                'retract lever':self.retract_lever,
+                'buzz':self.buzz,
+                'monitor lever':self.monitor_lever,
+                'monitor_lever_test':self.monitor_lever_test,
+                'dispense pellet':self.dispense_pellet,
+                'read pellet':self.read_pellet,
+                'close door':self.close_door,
+                'open door':self.open_door,
+                'door override 1':self.override_door_1,
+                'door override 2':self.override_door_2,
+                'clean up':self.clean_up,
+                'monitor beam breaks':self.monitor_beam_breaks,
+                'monitor first beam breaks':self.monitor_first_beam_breaks,
+                'print timestamp queue':self.print_timestamp_queue,
+                'analyze':self.analyze,
+
+                }
+
 
     def start_timing(self):
         self.start_time = time.time()
@@ -81,25 +103,26 @@ class runtime_functions:
                     no_user = False
         else:
             self.user = self.args_dict['user']
-
         
-        fname = self.generate_filename()
+        #create the output file path
+        save_dir = self.args_dict['output_directory']
+        fname, date = self.generate_filename()
         self.this_path = os.path.join(save_dir, fname)
 
-        vole = self.args_dict['vole']
-        save_dir = self.args_dict['output_directory']
-        exp = self.args_dict['experiment']
-        day = self.args_dict['day']
-
-
-        print('Path is: ')
+        print('\n\nPath is: ')
         print(self.this_path)
+        print('\n')
+
         with open(self.this_path, 'w') as file:
             writer = csv.writer(file, delimiter = ',')
 
             
-            writer.writerow(['user: %s'%self.user, 'vole: %s'%vole, 'date: %s'%date,
-            'experiment: %s'%exp, 'Day: %i'%day, 'Pi: %s'%socket.gethostname()])
+            writer.writerow([f"user: {self.user}", 
+                                f"vole: {self.args_dict['vole']}", 
+                                f'date: {date}',
+                                f"experiment: {self.args_dict['experiment']}", 
+                                f"Day: {self.args_dict['day']}", 
+                                f"Pi: {socket.gethostname()}"])
 
             settings_string = self.create_header_string()
             writer.writerow([settings_string,])
@@ -119,7 +142,7 @@ class runtime_functions:
         fdate = '%s_%s_%s__%s_%s_'%(date.month, date.day, date.year, date.hour, date.minute)
 
         fname = fdate+f'_{exp}_vole_{vole}.csv'
-        return fname
+        return fname, fdate
     
     def create_header_string(self):
         '''make a file header from a header_dict'''
@@ -313,30 +336,10 @@ class runtime_functions:
 
         '''parse and run jobs'''
 
-        jobs = {'extend lever':self.extend_lever,
-                'dispense pellet':self.dispense_pellet,
-                'retract lever':self.retract_lever,
-                'buzz':self.buzz,
-                'monitor lever':self.monitor_lever,
-                'monitor_lever_test':self.monitor_lever_test,
-                'dispense pellet':self.dispense_pellet,
-                'read pellet':self.read_pellet,
-                'close door':self.close_door,
-                'open door':self.open_door,
-                'door override 1':self.override_door_1,
-                'door override 2':self.override_door_2,
-                'clean up':self.clean_up,
-                'monitor beam breaks':self.monitor_beam_breaks,
-                'monitor first beam breaks':self.monitor_first_beam_breaks,
-                'print timestamp queue':self.print_timestamp_queue,
-                'analyze':self.analyze,
-
-                }
-
         if args:
-            jobs[job](args)
+            self.jobs[job](args)
         else:
-            jobs[job]()
+            self.jobs[job]()
 
 
     def thread_distributor(self):
@@ -667,12 +670,12 @@ class runtime_functions:
 
     def analyze(self):
         try:
-            analyze.run_analysis_script(self.this_path)
+            ana.run_analysis_script(self.this_path)
             self.do_stuff_queue.task_done()
         except:
             print('there was a problem running analysis for this script!')
             traceback.print_exc()
-            self.do_stuff_queue.task_done()
+            
 
     def breakpoint_monitor_lever(self, args):
         '''this lever monitor function tracks presses and returns when breakpoint reached'''

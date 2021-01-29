@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import sys
 import os
-sys.path.append('/home/pi/RPI_operant/')
+sys.path.append('/home/pi/')
 
 
 def get_data_by_x(metric_df, by_x):

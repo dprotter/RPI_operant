@@ -1,7 +1,7 @@
 import sys
-sys.path.append('/home/pi/RPI_operant/')
+sys.path.append('/home/pi/')
 
-import home_base.functions as FN
+import RPI_operant.home_base.functions as FN
 fn = FN.runtime_functions()
 
 import threading
@@ -151,6 +151,9 @@ def run_script():
     this_door = 'door_1'
     next_door = 'door_2'
 
+
+
+    
     #start at round 1 instead of the pythonic default of 0 for readability
     for i in range(1, key_values['num_rounds']+1,1):
         fn.do_stuff_queue.put(('monitor first beam breaks',))

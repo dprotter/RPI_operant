@@ -1,8 +1,8 @@
 import sys
-sys.path.append('/home/pi/RPI_operant/')
+sys.path.append('/home/pi/')
 
-import home_base.analysis.analysis_functions as af
-from home_base.lookup_classes import Operant_event_strings as oes
+import RPI_operant.home_base.analysis.analysis_functions as af
+from RPI_operant.home_base.lookup_classes import Operant_event_strings as oes
 import pandas as pd
 import numpy as np
 

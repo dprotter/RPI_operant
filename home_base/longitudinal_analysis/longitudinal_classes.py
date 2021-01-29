@@ -2,9 +2,9 @@ import pandas as pd
 import numpy as np
 import sys
 import os
-sys.path.append('/home/pi/RPI_operant/')
-import home_base.analysis.analysis_functions as af
-import home_base.analysis.analyze as ana
+sys.path.append('/home/pi/')
+import RPI_operant.home_base.analysis.analysis_functions as af
+import RPI_operant.home_base.analysis.analyze as ana
 import traceback
 import datetime
 

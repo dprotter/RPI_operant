@@ -2,9 +2,9 @@ import pandas as pd
 import traceback
 import sys
 import os
-sys.path.append('/home/pi/RPI_operant/')
-import home_base.analysis_scripts.analysis_script_lookup as asl
-import home_base.analysis.analysis_functions as af
+sys.path.append('/home/pi/')
+import RPI_operant.home_base.analysis_scripts.analysis_script_lookup as asl
+import RPI_operant.home_base.analysis.analysis_functions as af
 
 def run_analysis_script(filepath, custom_script = None, output_loc = None):
     '''fpath of csv output from operant experiment. Can direct to a custom 

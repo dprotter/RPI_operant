@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import sys
 import os
-sys.path.append('/home/pi/RPI_operant/')
-from home_base.lookup_classes import Operant_event_strings as oes
+sys.path.append('/home/pi/')
+from RPI_operant.home_base.lookup_classes import Operant_event_strings as oes
 
 def latency_by_round(df, event_1, event_2,  
                     new_col_name = None, 

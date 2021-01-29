@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append('/home/pi/RPI_operant/')
+sys.path.append('/home/pi/')
 import traceback
 import importlib
 
@@ -14,7 +14,7 @@ def script_lookup(experiment):
 
 def magazine():
     try:
-        import home_base.analysis_scripts.magazine_analysis as magazine
+        import RPI_operant.home_base.analysis_scripts.magazine_analysis as magazine
     except:
         traceback.print_exc()
         print('couldnt import magazine analysis script')
@@ -23,7 +23,7 @@ def magazine():
 
 def autoshape():
     try:
-        import home_base.analysis_scripts.autoshape_analysis as autoshape
+        import RPI_operant.home_base.analysis_scripts.autoshape_analysis as autoshape
     except:
         traceback.print_exc()
         print('couldnt import Autoshape analysis script')
@@ -32,7 +32,7 @@ def autoshape():
 
 def door_shape():
     try:
-        import home_base.analysis_scripts.door_shape_analysis as door_shape
+        import RPI_operant.home_base.analysis_scripts.door_shape_analysis as door_shape
     except:
         traceback.print_exc()
         print('couldnt import Autoshape analysis script')
@@ -41,7 +41,7 @@ def door_shape():
     
 def door_test():
     try:
-        import home_base.analysis_scripts.door_test_analysis as door_test
+        import RPI_operant.home_base.analysis_scripts.door_test_analysis as door_test
     except:
         traceback.print_exc()
         print('couldnt import door_test analysis script')
