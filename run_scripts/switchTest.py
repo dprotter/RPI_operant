@@ -36,7 +36,7 @@ def run_script():
     print(pins)
     try:
         while True:
-            print(GPIO.input(pins['read_pellet']))
+            print(GPIO.input(pins['lever_food']))
     except KeyboardInterrupt:
         pass
 run_script()
