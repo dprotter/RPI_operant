@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: RPI-operant
+Version: 0.1.0
+Summary: A Rasbperry Pi based operant test chamber package
+Home-page: https://github.com/dprotter/RPI_operant
+Author: David Protter
+Author-email: david.protter@colorado.edu
+License: University of Colorado, Donaldson Lab
+Description: 
+        
+        The scripts that run the Donaldson labs custom operant cages.
+Platform: UNKNOWN
+Requires-Python: >=3.4.0
+Description-Content-Type: text/markdown

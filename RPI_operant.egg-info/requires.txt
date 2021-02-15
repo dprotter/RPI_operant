@@ -1,0 +1,8 @@
+cython
+numpy
+RPi.GPIO
+adafruit-circuitpython-servokit
+netifaces
+pigpio
+tabulate
+pandas
