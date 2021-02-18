@@ -57,4 +57,4 @@ try:
         time.sleep(0.05)
 except KeyboardInterrupt:
     print('\ncleaning up')
-    fn.clean_up()
+    fn.do_stuff_queue.put(('clean up',))

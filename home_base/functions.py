@@ -7,7 +7,7 @@ if os.system('sudo lsof -i TCP:8888'):
 
 import sys
 sys.path.append('/home/pi/')
-
+from concurrent.futures import ThreadPoolExecutor
 import socket
 import time
 import datetime
@@ -17,12 +17,16 @@ import queue
 import random
 import pigpio
 import traceback
-
+import inspect
 from RPI_operant.home_base.operant_cage_settings import (kit, pins,
     lever_angles, continuous_servo_speeds,servo_dict)
 
 import RPI_operant.home_base.analysis.analysis_functions as af
 import RPI_operant.home_base.analysis.analyze as ana
+
+
+
+
 
 class runtime_functions:
     
@@ -64,27 +68,40 @@ class runtime_functions:
         self.door_close_timeout = 10
 
         self.args_dict = None
+        self.thread_executor = ThreadPoolExecutor(max_workers=6)
 
-        self.jobs = {'extend lever':self.extend_lever,
-                'dispense pellet':self.dispense_pellet,
-                'retract lever':self.retract_lever,
-                'buzz':self.buzz,
-                'monitor lever':self.monitor_lever,
-                'monitor_lever_test':self.monitor_lever_test,
-                'dispense pellet':self.dispense_pellet,
-                'read pellet':self.read_pellet,
-                'close door':self.close_door,
-                'open door':self.open_door,
-                'door override 1':self.override_door_1,
-                'door override 2':self.override_door_2,
-                'clean up':self.clean_up,
-                'monitor beam breaks':self.monitor_beam_breaks,
-                'monitor first beam breaks':self.monitor_first_beam_breaks,
-                'print timestamp queue':self.print_timestamp_queue,
-                'analyze':self.analyze,
+    def thread_it(func, *args, **kwargs):
+        '''simple decorator to pass function to our thread distributor via a queue. 
+        these 4 lines took about 4 hours of googling and trial and error.
+        the returned 'future' object has some useful features, such as its own task-done monitor. '''
+        def pass_to_thread(self, *args, **kwargs):
+            future = self.thread_executor.submit(func, *args, **kwargs)
+            return future
+        return pass_to_thread
 
-                }
+    def run_job(self, func, *args, **kwargs):
+        print('\n*** job: ' + str(job) + '    args: ' +str(args)+' \n\n')
 
+        '''parse and run jobs'''
+
+        if args:
+            self.func(kwargs)
+        else:
+            self.func()
+    
+    def thread_distributor(self):
+        '''this is main thread's job. To look for shit to do and send it to a thread'''
+        while True:
+            if not self.do_stuff_queue.empty():
+                do = self.do_stuff_queue.get()
+                func = do[0]
+                args = None
+                if len(do) >1:
+                    args = do[1]
+
+                self.run_job(name, args)
+                time.sleep(0.05)
+            time.sleep(0.05)
 
     def start_timing(self):
         self.start_time = time.time()
@@ -117,13 +134,12 @@ class runtime_functions:
         with open(self.this_path, 'w') as file:
             writer = csv.writer(file, delimiter = ',')
 
-            
             writer.writerow([f"user: {self.user}", 
-                                f"vole: {self.args_dict['vole']}", 
-                                f'date: {date}',
-                                f"experiment: {self.args_dict['experiment']}", 
-                                f"Day: {self.args_dict['day']}", 
-                                f"Pi: {socket.gethostname()}"])
+                            f"vole: {self.args_dict['vole']}", 
+                            f'date: {date}',
+                            f"experiment: {self.args_dict['experiment']}", 
+                            f"Day: {self.args_dict['day']}", 
+                            f"Pi: {socket.gethostname()}"])
 
             settings_string = self.create_header_string()
             writer.writerow([settings_string,])
@@ -208,12 +224,27 @@ class runtime_functions:
 
             if not self.door_states[door_ID]:
                 print(f'ah crap, door {door_ID} didnt close!')
+    
+    
+    def open_door(self, door_ID = None, wait = False)
+        '''open a door. can past a list of door IDs to open more than one door at once.'''
 
+        workers = []
+        if isinstance(door_ID, list):
+            for arg in door_ID:
+                workers+= [self._open_door(self, door_ID = arg)]
+        elif not door_ID:
+            print('you must specify a door ID to open it.')
+        else:
+            workers+= [self._open_door(self, door_ID = door_ID)]
+        
+        if wait:
+            name = inspect.currentframe().f_code.co_name
+            self.wait(workers, name)
 
-
-    def open_door(self, args):
+    def _open_door(self, **kwargs):
         '''open a door!'''
-        door_ID = args
+        door_ID = kwargs['door_ID']
 
         #double check the right number of args got passed
         if type(door_ID) is tuple:
@@ -246,11 +277,14 @@ class runtime_functions:
         else:
             self.timestamp_queue.put('%i, %s open finish, %f'%(self.round, door_ID, time.time()-self.start_time))
             self.door_states[door_ID] = False
-        self.do_stuff_queue.task_done()
+        
 
 
+    def close_door(self, door_ID = ['door_1', 'door_2']):
+        '''can close doors'''
 
-    def close_door(self, args):
+
+    def _close_door(self, args):
         
         door_ID= args
 
@@ -332,72 +366,12 @@ class runtime_functions:
             time.sleep(0.1)
 
 
-    def run_job(self, job,args = None):
-        print('\n*** job: ' + str(job) + '    args: ' +str(args)+' \n\n')
-
-        '''parse and run jobs'''
-
-        if args:
-            self.jobs[job](args)
-        else:
-            self.jobs[job]()
-
-
-    def thread_distributor(self):
-        '''this is main thread's job. To look for shit to do and send it to a thread'''
-        while True:
-            if not self.do_stuff_queue.empty():
-                do = self.do_stuff_queue.get()
-                name = do[0]
-                args = None
-                if len(do) >1:
-                    args = do[1]
-
-                self.run_job(name, args)
-                time.sleep(0.05)
-            time.sleep(0.05)
-
-
-    def monitor_lever_test(self, args):
-
-        self.do_stuff_queue.task_done()
-        
-        self.monitor = True
-        lever_ID = args
-        "monitor a lever. If lever pressed, put lever_ID in queue. "
-        lever=0
-        
-        while self.monitor:
-            if not GPIO.input(pins["lever_%s"%lever_ID]):
-                lever +=1
-
-            #just guessing on this value, should probably check somehow empirically
-            if lever > 2:
-                if not self.interrupt:
-                    #send the lever_ID to the lever_q to trigger a  do_stuff.put in
-                    #the main thread/loop
-
-                    self.lever_press_queue.put(lever_ID)
-
-                    self.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.round, lever_ID, time.time()-self.start_time))
-                    print(f'\n\n{lever_ID} pressed! neato.\n\n')
-                    while not GPIO.input(pins["lever_%s"%lever_ID]):
-                        'hanging till lever not pressed'
-                        time.sleep(0.05)
-                    lever = 0
-                else:
-                    #we can still record from the lever until monitoring is turned
-                    #off. note that this wont place anything in the lever_press queue,
-                    #as that is just to tell the main thread the vole did something
-                    self.timestamp_queue.put('%i, %s lever pressed, %f'%(self.round, lever_ID, time.time()-self.start_time))
-                    while GPIO.input(pins["lever_%s"%lever_ID]):
-                        'hanging till lever not pressed'
-                    lever = 0
-
-            time.sleep(25/1000.0)
-        print('halting monitoring of %s lever'%lever_ID)
-
     def monitor_beam_breaks(self):
+        '''monitor any beam breaks until monitor_beams is set to False'''
+        _ = self._monitor_beam_breaks()
+
+    @thread_it
+    def _monitor_beam_breaks(self):
         self.do_stuff_queue.task_done()
 
         self.monitor_beams = True
@@ -436,8 +410,11 @@ class runtime_functions:
         
 
     def monitor_first_beam_breaks(self):
+        _ = self.monitor_first_beam_breaks()
+
+    @thread_it
+    def _monitor_first_beam_breaks(self):
         '''run monitor_beam_break until either beam is broken, and then stop'''
-        self.do_stuff_queue.task_done()
 
         self.monitor_beams = True
         beam_1 = False
@@ -457,12 +434,24 @@ class runtime_functions:
         self.monitor_beams = False
         time.sleep(0.05)
 
-    def monitor_lever(self, args):
 
-        self.do_stuff_queue.task_done()
+    def monitor_levers(self, lever_ID):
+        '''monitor a lever. lever_IDs can be "food", "door_1", "door_2", or a list containing a combination (ie ["food", "door_1"]'''
+
+
+        workers = []
+        if isinstance(lever_ID, list):
+            for arg in lever_ID:
+                _ = self._monitor_levers(self, lever_ID = arg)
+        else:
+            _ = self._monitor_levers(self, lever_ID = lever_ID)
+
+
+    def _monitor_levers(self, **kwargs):
+
         
         self.monitor = True
-        lever_ID = args
+        lever_ID = kwargs['lever_ID']
         "monitor a lever. If lever pressed, put lever_ID in queue. "
         lever=0
 
@@ -496,18 +485,64 @@ class runtime_functions:
 
             time.sleep(25/1000.0)
         print('halting monitoring of %s lever'%lever_ID)
+    
+    def wait(self, worker, func_name):
+        
+        if isinstance(worker, list):
+            print(f'waiting for one of the workers assigned to function "{func_name}"')
+            while not any([w.done() for w in worker]):
+                '''waiting for threads to finish'''
+                time.sleep(0.25)
 
-    def extend_lever(self, args):
+        else:
+            print(f'waiting for function "{func_name}"')
+            while not worker.done():
+                time.sleep(0.25)
+        print(f'"{func_name}" complete')
+        
 
-        lever_ID = args
+    def test_threading(self, message, wait = False):
+        
+        worker = self._test_decoration(self, message = message)
+        
+        if wait:
+            name = inspect.currentframe().f_code.co_name
+            self.wait(worker, name)
 
-        #double check the right number of args got passed
-        if type(lever_ID) is tuple:
-            if len(lever_ID) == 1:
-                lever_ID = lever_ID[0]
-            else:
-                print(f'yo! you passed extend_lever() too many arguments! should get 1 (the lever_ID), got {args}')
-                raise
+
+    @thread_it
+    def _test_decoration(self, **kwargs):
+        print(kwargs['message'])
+        time.sleep(1)
+
+    def test_threading(self, message, wait = False):
+        
+        worker = self._test_decoration(self, message = message)
+        
+        if wait:
+            name = inspect.currentframe().f_code.co_name
+            self.wait(worker, name)
+
+    def extend_lever(self, lever_ID, wait = False):
+        '''extend a lever. lever_IDs can be "food", "door_1", "door_2", or a list containing a combination (ie ["food", "door_1"]'''
+
+
+        workers = []
+        if isinstance(lever_ID, list):
+            for arg in lever_ID:
+                workers+= [self._extend_lever(self, lever_ID = arg)]
+        else:
+            workers+= [self._extend_lever(self, lever_ID = lever_ID)]
+        
+        if wait:
+            name = inspect.currentframe().f_code.co_name
+            self.wait(workers, name)
+
+    @thread_it
+    def _extend_lever(self, **kwargs):
+        
+        lever_ID = kwargs['lever_ID']
+        
 
         #get extention and retraction angles from the operant_cage_settings
         extend = lever_angles[lever_ID][0]
@@ -523,18 +558,30 @@ class runtime_functions:
             retract_start = retract + modifier
             extend_start = extend - modifier
 
-        print(f'extending lever {lever_ID}: extend[ {extend} ], retract[ {retract} ]')
+        print(f'\n\n**** extending lever {lever_ID}: extend[ {extend} ], retract[ {retract} ]****')
         servo_dict[f'lever_{lever_ID}'].angle = extend_start
         self.timestamp_queue.put('%i, Levers out, %f'%(self.round, time.time()-self.start_time))
         time.sleep(0.1)
         servo_dict[f'lever_{lever_ID}'].angle = extend
-        
-        
-        self.do_stuff_queue.task_done()
 
-    def retract_lever(self, args):
+    def retract_levers(self, lever_ID = ['food', 'door_1', 'door_2'], wait = False):
+        '''retract lever. defaults to retracting all levers. lever_IDs can be "food", "door_1", "door_2", or a list containing a combination (ie ["food", "door_1"]'''
 
-        lever_ID = args
+        workers = []
+        if isinstance(lever_ID, list):
+            for arg in lever_ID:
+                workers+= [self._retract_lever(self, lever_ID = arg)]
+        else:
+            workers+= [self._retract_lever(self, lever_ID = lever_ID)]
+        
+        if wait:
+            name = inspect.currentframe().f_code.co_name
+            self.wait(workers, name)
+
+    @thread_it
+    def _retract_lever(self, *args, **kwargs):
+
+        lever_ID = kwargs
         timeout = 5
         #double check the right number of args got passed
         if type(lever_ID) is tuple:
@@ -567,7 +614,13 @@ class runtime_functions:
         self.timestamp_queue.put('%i, Levers retracted, %f'%(self.round, time.time()-self.start_time))
         self.do_stuff_queue.task_done()
 
-    def buzz(self, args):
+    def buzz(self, buzz_length, hz, name, wait = False):
+        worker = self._buzz()
+        if wait:
+            name = inspect.currentframe().f_code.co_name
+            self.wait(worker, name)
+
+    def _buzz(self, args):
         '''take time (s), hz, and name as inputs'''
 
         buzz_len, hz, name = args
@@ -589,12 +642,15 @@ class runtime_functions:
         self.timestamp_queue.put(f'{self.round}, {name} tone complete {hz}:hz {buzz_len}:seconds, {time.time()-self.start_time}')
         self.do_stuff_queue.task_done()
 
-    def door_close_tone(self):
-        '''can replace with buzz()'''
-        self.do_stuff_queue.task_done()
 
+    def dispense_pellet(self, wait = False):
+        worker = self._dispense_pellet()
+        if wait:
+            name = inspect.currentframe().f_code.co_name
+            self.wait(worker, name)
+
+    @thread_it
     def dispense_pellet(self):
-
         
 
         self.do_stuff_queue.task_done()
@@ -645,18 +701,31 @@ class runtime_functions:
             self.timestamp_queue.put(f'{self.round}, skip pellet dispense, {time.time()-self.start_time}')
             return ''
 
-    def pulse_sync_line(self, length):
+    def pulse_sync_line(self, length, event_name, wait = False):
+        worker = self._pulse_sync_line(length, event_name)
+        if wait:
+            name = inspect.currentframe().f_code.co_name
+            self.wait(worker, name)
+
+    @thread_it
+    def _pulse_sync_line(self, length, event_name):
         '''not terribly accurate, but good enough. For now, this is called on every
         lever press or pellet retrieval. Takes length in seconds'''
         self.timestamp_queue.put(f'{self.round}, pulse sync line|{length}, {time.time()-self.start_time}')
         GPIO.output(pins['gpio_sync'], 1)
         time.sleep(length)
         GPIO.output(pins['gpio_sync'], 0)
-        
-        
-    def clean_up(self):
+    
+    def clean_up(self, wait = True):
+        '''cleanup all servos etc'''
+        worker = self._clean_up()
+        if wait:
+            name = inspect.currentframe().f_code.co_name
+            self.wait(worker, name)
 
-        
+    @thread_it  
+    def _clean_up(self):
+
         '''cleanup all servos etc'''
         servo_dict['lever_food'].angle = lever_angles['food'][1]
         servo_dict['lever_door_1'].angle = lever_angles['door_1'][1]
@@ -677,18 +746,29 @@ class runtime_functions:
             print('there was a problem running analysis for this script!')
             traceback.print_exc()
             
+    def breakpoint_monitor_lever(self, lever_ID):
+        '''this lever monitor function tracks presses and returns when breakpoint reached'''
+        workers = []
+        if isinstance(lever_ID, list):
+            for arg in lever_ID:
+                workers+= [self._breakpoint_monitor_lever(self, lever_ID = arg)]
+        else:
+            workers+= [self._breakpoint_monitor_lever(self, lever_ID = lever_ID)]
+        
+        if wait:
+            name = inspect.currentframe().f_code.co_name
+            self.wait(workers, name)
 
-    def breakpoint_monitor_lever(self, args):
+    @thread_it
+    def _breakpoint_monitor_lever(self, *args, **kwargs):
         '''this lever monitor function tracks presses and returns when breakpoint reached'''
         
         self.monitor = True
-        lever_q, lever_ID= args
+        lever_ID= kwargs['lever_ID']
         "monitor a lever. If lever pressed, put lever_ID in queue. "
         lever=0
-        self.do_stuff_queue.put(('extend lever',
-                            (lever_ID)))
 
-        self.do_stuff_queue.task_done()
+
         while self.monitor:
             if not GPIO.input(pins["lever_%s"%lever_ID]):
                 lever +=1
@@ -702,8 +782,7 @@ class runtime_functions:
                 self.timestamp_queue.put('%i, %s lever pressed, %f'%(self.round, lever_ID, time.time()-self.start_time))
 
 
-                self.do_stuff_queue.put(('retract lever',
-                                    (lever_ID)))
+                self._retract_lever(lever_ID = lever_ID)
 
                 self.lever_press_queue.put(lever_ID)
                 lever = 0
@@ -711,9 +790,12 @@ class runtime_functions:
                 break
 
             time.sleep(25/1000.0)
-        print('\nmonitor thread done')
+        print(f'\nmonitor thread done for lever {lever_ID}')
 
     def read_pellet(self):
+        worker = self._read_pellet()
+
+    def _read_pellet(self):
         
 
         disp_start = time.time()
@@ -767,10 +849,15 @@ class runtime_functions:
                             csv_writer.writerow(line)
                             time.sleep(0.005)
                 time.sleep(0.01)
+                
+    def countdown_timer(self, time_interval, next_event):
+        worker = self._countdown_timer(**kwargs)
 
-    def countdown_timer(self, args):
-        self.do_stuff_queue.task_done()
-        timeinterval, next_event = args
+    def _countdown_timer(self, **kwargs):
+
+        timeinterval = kwargs['time_interval']
+        next_event = kwargs['next_event']
+
         start = time.time()
         while time.time() - start < timeinterval:
             sys.stdout.write(f"\r{np.round(timeinterval - (time.time()-start))} seconds left before {next_event}")
@@ -783,7 +870,7 @@ class runtime_functions:
         self.servo_dict['food'].throttle = self.continuous_servo_speeds['food']['stop']
 
     def print_timestamp_queue(self):
-        self.do_stuff_queue.task_done()
+        '''use if you arent using the csv fush function in order to debug'''
         while True:
             if not self.timestamp_queue.empty():
                 line = self.timestamp_queue.get().split(',')

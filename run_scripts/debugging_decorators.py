@@ -10,7 +10,7 @@ import numpy as np
 
 
 
-default_setup_dict = {'vole':'000','day':1, 'experiment':'Door_shape',
+default_setup_dict = {'vole':'000','day':1, 'experiment':'Door_shape_debug',
                     'user':'Test User', 'output_directory':'/home/pi/test_outputs/', 'partner':'door_1', 'novel_num':'000'}
 
 setup_dictionary = None
@@ -95,21 +95,21 @@ def run_script():
     
     #buzz args passed as (time, hz, name), just to make
     #code a little cleaner
-    round_buzz = (key_values['round_start_tone_time'],
-                    key_values['round_start_tone_hz'],
-                    'round_start_tone')
+    round_buzz = {'buzz_length':key_values['round_start_tone_time'],
+                    'hz':key_values['round_start_tone_hz'],
+                    'name':'round_start_tone'}
 
-    pellet_buzz = (key_values['pellet_tone_time'],
-                    key_values['pellet_tone_hz'],
-                    'pellet_tone')
+    pellet_buzz = {'buzz_length':key_values['pellet_tone_time'],
+                    'hz':key_values['pellet_tone_hz'],
+                    'name':'pellet_tone'}
 
-    door_open_buzz = (key_values['door_open_tone_time'],
-                    key_values['door_open_tone_hz'],
-                    'door_open_tone')
+    door_open_buzz = {'buzz_length':key_values['door_open_tone_time'],
+                    'hz':key_values['door_open_tone_hz'],
+                    'name':'door_open_tone'}
 
-    door_close_buzz = (key_values['door_close_tone_time'],
-                    key_values['door_close_tone_hz'],
-                    'door_close_tone')
+    door_close_buzz = {'buzz_length':key_values['door_close_tone_time'],
+                    'hz':key_values['door_close_tone_hz'],
+                    'name':'door_close_tone'}
     
     day_num = int(setup_dictionary['day'])
     if day_num > len(key_values['delay by day']):
@@ -121,6 +121,7 @@ def run_script():
     wrt = threading.Thread(target = fn.flush_to_CSV, daemon = True)
     wrt.start()
 
+    #spin up door override threads
     or1 = threading.Thread(target = fn.override_door_1, daemon = True)
     or2 = threading.Thread(target = fn.override_door_2, daemon = True)
     or1.start()
@@ -131,7 +132,7 @@ def run_script():
     
     ##### start timing this session ######
     fn.start_timing()
-    fn.pulse_sync_line(0.1)
+    fn.pulse_sync_line(0.1, )
     
     for x in range(5):
 
