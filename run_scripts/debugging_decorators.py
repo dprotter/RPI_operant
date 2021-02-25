@@ -157,7 +157,7 @@ def run_script():
     
     #start at round 1 instead of the pythonic default of 0 for readability
     for i in range(1, key_values['num_rounds']+1,1):
-        fn.do_stuff_queue.put(('monitor first beam breaks',))
+        fn.monitor_first_beam_breaks()
         
         if rep_count == key_values['repetitions']:
             'swap doors if we have reach the rep count'
@@ -171,13 +171,14 @@ def run_script():
         round_start = time.time()
         
         fn.round = i
-        fn.pulse_sync_line(0.1)
+        fn.pulse_sync_line(0.1, event_name = 'experiment start')
         print(f"\n\n\n#-#-#-#-#-# new round #{i}, rep {rep_count} {this_door}!!!-#-#-#-#-#\n\n\n")
         
         #round start buzz
         fn.timestamp_queue.put(f'{fn.round}, Starting new round, {time.time()-fn.start_time}') 
-        fn.do_stuff_queue.put(('buzz',round_buzz))
-        fn.do_stuff_queue.join()
+        
+        fn.buzz(**round_buzz, wait = True)
+        
         
         fn.do_stuff_queue.put(('extend lever',
                             (this_door)))

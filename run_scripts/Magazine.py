@@ -86,17 +86,7 @@ def run_script():
     
     ##### start timing this session ######
     fn.start_timing()
-    fn.pulse_sync_line(0.1)
-    
-    for x in range(5):
-
-        #spin up threads for the thread distributor
-        t = threading.Thread(target = fn.thread_distributor)
-
-        #when main thread finishes, kill these threads
-        t.daemon = True
-        t.start()
-        
+    fn.pulse_sync_line(length = 0.1, event_name = 'experiment_start')
         
 
     ### master looper ###
@@ -110,14 +100,11 @@ def run_script():
         
         #round start buzz
         fn.timestamp_queue.put(f'{fn.round}, Starting new round, {time.time()-fn.start_time}') 
-        fn.do_stuff_queue.put(('buzz',round_buzz))
-        fn.do_stuff_queue.join()
+        fn.buzz(**round_buzz, wait = True)
         
-        fn.do_stuff_queue.put(('extend lever',
-                            ('food')))
         
-        fn.do_stuff_queue.put(('monitor lever',
-                           ('food')))
+        fn.extend_lever(lever_ID = 'food')
+        fn.monitor_levers(lever_ID = 'food')
         
         
         time_II_start = time.time()
@@ -126,40 +113,42 @@ def run_script():
         press = False
         while time.time() - time_II_start < key_values['time_II']:
             if not fn.lever_press_queue.empty() and not press:
-                fn.pulse_sync_line(0.025)
-                fn.do_stuff_queue.put(('buzz', pellet_buzz))
+                fn.pulse_sync_line(length = 0.025, event_name = 'lever_press')
+                fn.buzz(**pellet_buzz)
                 fn.monitor = False
                 
-                fn.do_stuff_queue.put(('retract lever',
-                                    ('food')))
-                fn.do_stuff_queue.put(('dispense pellet',))
+                fn.retract_levers(lever_ID='food')
+                fn.dispense_pellet()
                 
                 #get the lever press tuple just to clear the queue
                 lever_press = fn.lever_press_queue.get()
+                
+                #set press to True to avoid reentering this code block until next round
                 press = True
             time.sleep(0.05)
             
         #if the vole didnt press:
         if press == False:
             print('no lever press')
-            fn.do_stuff_queue.put(('buzz', pellet_buzz))
-            fn.do_stuff_queue.put(('dispense pellet',))
+            fn.buzz(**pellet_buzz)
+            fn.dispense_pellet()
         
         time.sleep(key_values['time_IV'])
         
         if press == False:
             fn.monitor = False
-            fn.do_stuff_queue.put(('retract lever',
-                                    ('food')))
+            fn.retract_levers(lever_ID='food')
         
+        fn.countdown_timer(time_interval = key_values['round_time'] - (time.time()-round_start),
+                           next_event='next round')
         while time.time() - round_start < key_values['round_time']:
             time.sleep(0.1)
         
     if fn.pellet_state:
         fn.timestamp_queue.put('%i, final pellet not retrieved, %f'%(fn.round, time.time()-fn.start_time))
     
-    fn.do_stuff_queue.put(('clean up',))
-    fn.do_stuff_queue.join()
+    fn.clean_up(wait = True)
+    
     
     
 if __name__ == '__main__':

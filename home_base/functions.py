@@ -79,31 +79,9 @@ class runtime_functions:
             return future
         return pass_to_thread
 
-    def run_job(self, func, *args, **kwargs):
-        print('\n*** job: ' + str(job) + '    args: ' +str(args)+' \n\n')
-
-        '''parse and run jobs'''
-
-        if args:
-            self.func(kwargs)
-        else:
-            self.func()
-    
-    def thread_distributor(self):
-        '''this is main thread's job. To look for shit to do and send it to a thread'''
-        while True:
-            if not self.do_stuff_queue.empty():
-                do = self.do_stuff_queue.get()
-                func = do[0]
-                args = None
-                if len(do) >1:
-                    args = do[1]
-
-                self.run_job(name, args)
-                time.sleep(0.05)
-            time.sleep(0.05)
 
     def start_timing(self):
+        '''set the start time of experiment'''
         self.start_time = time.time()
 
 
@@ -171,7 +149,6 @@ class runtime_functions:
         #setup our pins. Lever pins are input, all else are output
         GPIO.setmode(GPIO.BCM)
 
-
         for k in pins.keys():
             print(k)
             if 'lever' in k or 'switch' in k:
@@ -188,8 +165,24 @@ class runtime_functions:
                 GPIO.setup(pins[k], GPIO.OUT)
                 print(k + ": OUT")
 
+    def close_doors(self, door_ID = None, wait = False):
+        '''close a door. can past a list of door IDs to open more than one door at once.'''
 
-    def close_doors(self):
+        workers = []
+        if isinstance(door_ID, list):
+            for arg in door_ID:
+                workers+= [self._close_doors(self, door_ID = arg)]
+                
+        elif not door_ID:
+            print('you must specify a door ID to open it.')
+        else:
+            workers+= [self._close_doors(self, door_ID = door_ID)]
+        
+        if wait:
+            name = inspect.currentframe().f_code.co_name
+            self.wait(workers, name)
+    
+    def _close_doors(self):
         print('resetting door states')
         reset_doors()
         open_doors = [id for id in ['door_1', 'door_2'] if not self.door_states[id]]
@@ -226,13 +219,14 @@ class runtime_functions:
                 print(f'ah crap, door {door_ID} didnt close!')
     
     
-    def open_door(self, door_ID = None, wait = False)
+    def open_door(self, door_ID = None, wait = False):
         '''open a door. can past a list of door IDs to open more than one door at once.'''
 
         workers = []
         if isinstance(door_ID, list):
             for arg in door_ID:
                 workers+= [self._open_door(self, door_ID = arg)]
+                
         elif not door_ID:
             print('you must specify a door ID to open it.')
         else:
