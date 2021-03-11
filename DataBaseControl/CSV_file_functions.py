@@ -227,25 +227,44 @@ class Experiment:
     def instantiate_experiment(self):
         '''take values from the csv file and put them in the setup dict'''   
         update = {}
-        self.convert_var_changes()
+
+        if not np.isnan(self.vals['var_changes']):
+            self.convert_var_changes()
+        else:
+            self.vals['var_changes'] = {}
+
+        
+        
         for key in self.vals.keys():
             if key != 'var_changes':
                 update[key] = self.vals[key]
             
-            for key in self.vals['var_changes'].keys():
-                update[key] = self.vals['var_changes'][key]
+        for key in self.vals['var_changes'].keys():
+            update[key] = self.vals['var_changes'][key]
+
         self.current_setup_dictionary.update(update)
     
     def convert_var_changes(self):
         '''check if self.vals['var_changes'] is a dict. if not, make it one'''
         current_vals = self.vals['var_changes']
+        print(f'var_changes = {current_vals}')
         converted = {}
         if not isinstance(current_vals, dict):
-            if is instance(current_vals, str):
-                'if we have a string of key:value pairs, split on "," and iterate over them.'
-                for pair in current_vals.split(','):
-                    key, value = pair.split(':')
-                    self
+            if not isinstance(current_vals, str):
+                try:
+                    current_vals = str(current_vals)
+                    
+                except:
+                    print('couldnt convert var_changes to str')
+            else:
+                current_vals = current_vals.strip()
+
+            'if we have a string of key:value pairs, split on "," and iterate over them.'
+            for pair in current_vals.split(','):
+                        key, value = pair.split(':')
+                        print(f'var_change pair {key} : {value}')
+                        converted[key] = value
+            self.vals['var_changes'] = converted
 
 
         if not type(current_vals) == dict:
