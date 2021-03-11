@@ -96,53 +96,9 @@ def run_script():
         
         #round start buzz
         fn.timestamp_queue.put(f'{fn.round}, Starting new round, {time.time()-fn.start_time}') 
-        fn.buzz(**round_buzz, wait = True)
-        
-        
-        fn.extend_lever(lever_ID = 'food')
-        fn.monitor_levers(lever_ID = 'food')
-        
-        
-        time_II_start = time.time()
-        
-        #reset our info about whether the animal has pressed
-        press = False
-        while time.time() - time_II_start < key_values['time_II']:
-            if not fn.lever_press_queue.empty() and not press:
-                fn.pulse_sync_line(length = 0.025, event_name = 'lever_press')
-                fn.buzz(**pellet_buzz)
-                fn.monitor = False
-                
-                fn.retract_levers(lever_ID='food')
-                fn.dispense_pellet()
-                
-                #get the lever press tuple just to clear the queue
-                lever_press = fn.lever_press_queue.get()
-                
-                #set press to True to avoid reentering this code block until next round
-                press = True
-            time.sleep(0.05)
-            
-        #if the vole didnt press:
-        if press == False:
-            print('no lever press')
-            fn.buzz(**pellet_buzz)
-            fn.dispense_pellet()
-        
-        time.sleep(key_values['time_IV'])
-        
-        if press == False:
-            fn.monitor = False
-            fn.retract_levers(lever_ID='food')
-        
-        fn.countdown_timer(time_interval = key_values['round_time'] - (time.time()-round_start),
-                           next_event='next round')
-        while time.time() - round_start < key_values['round_time']:
-            time.sleep(0.1)
-        
-    if fn.pellet_state:
-        fn.timestamp_queue.put('%i, final pellet not retrieved, %f'%(fn.round, time.time()-fn.start_time))
-    
+
+        time.sleep(0.25)
+
     fn.clean_up(wait = True)
     
     
@@ -174,7 +130,7 @@ if __name__ == '__main__':
                 no_vole = False
 
 
-        day = input('Which magazine training day is this? (starts at day 1)\n')
+        day = input('Which training day is this? (starts at day 1)\n')
         day = int(day)
         
         

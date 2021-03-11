@@ -18,16 +18,7 @@ parser.add_argument('--output_loc','-o', type = str,
                     help = 'where to save output files',
                     action = 'store')
 
-args = parser.parse_args()
-
-if args.csv_in:
-    csv_file = args.csv_in
- 
-else:
-    csv_file = 'DataBaseControl/Test_CSV.csv'
-print(f'path to csv experiment file: {csv_file}')
-if not os.path.isfile(csv_file):
-    print('not a valid csvfile. double check that filepath! see ya.')
+args = parser.parse_args()ythat filepath! see ya.')
     exit()
 
 if args.output_loc:
