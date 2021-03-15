@@ -137,6 +137,21 @@ class runtime_functions:
             or1.start()
             or2.start()
 
+    def check_key_value_dictionaries(self, key_values, key_values_def, key_val_names_order):
+        '''resolve issues if people add values to the key value dictionary and dont define them or put them in the name order list'''
+        missing_def = [val for val in key_values if not val in key_values_def]
+        if len(missing_def) > 0:
+            print(f'no definition given for: {missing_def}')
+        for val in missing_def:
+            key_values_def[val] = 'unknown'
+
+        missing_order = [val for val in key_values_def if not val in key_val_names_order]
+
+        for val in missing_order:
+            key_val_names_order += [val]
+
+        return key_values_def, key_val_names_order
+
     def generate_filename(self):
         
         #unpack dict, but just to make string assembly cleaner for the first

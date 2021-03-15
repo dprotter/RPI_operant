@@ -43,11 +43,17 @@ key_val_names_order = ['num_rounds', 'round_time', 'time_II', 'time_IV','pellet_
 
 def setup(setup_dict = None):
     global setup_dictionary
+    global key_val_names_order
     #run this to get the RPi.GPIO pins setup
     if setup_dict == None:
         setup_dict = default_setup_dict
     else:
         setup_dictionary = setup_dict
+
+    key_values_def, key_val_names_order = fn.check_key_value_dictionaries(key_values, 
+                                                                          key_values_def,
+                                                                          key_val_names_order)
+                                                                          
     fn.setup_pins()
     fn.setup_experiment(setup_dict)
     
@@ -73,7 +79,7 @@ def run_script():
                     'hz':key_values['door_close_tone_hz'],
                     'name':'door_close_tone'}
     
-
+    #start the thread that will print out errors from within threads
     fn.monitor_workers()
     
 
@@ -82,7 +88,7 @@ def run_script():
     
     ##### start timing this session ######
     fn.start_timing()
-    fn.pulse_sync_line(length = 0.1, event_name = 'experiment_start')
+    fn.pulse_sync_line(length = 0.5, event_name = 'experiment_start')
         
 
     ### master looper ###
@@ -90,15 +96,18 @@ def run_script():
     
     #start at round 1 instead of the pythonic default of 0 for readability
     for i in range(1, key_values['num_rounds']+1,1):
+        
         round_start = time.time()
         fn.round = i
+        fn.pulse_sync_line(length = 0.1, event_name = 'new_round')
+        
         print("#-#-#-#-#-# new round #%i!!!-#-#-#-#-#"%i)
         
         #round start buzz
         fn.timestamp_queue.put(f'{fn.round}, Starting new round, {time.time()-fn.start_time}') 
         fn.buzz(**round_buzz, wait = True)
         
-        
+        #extend and monitor for presses on food lever
         fn.extend_lever(lever_ID = 'food')
         fn.monitor_levers(lever_ID = 'food')
         
@@ -143,7 +152,7 @@ def run_script():
     if fn.pellet_state:
         fn.timestamp_queue.put('%i, final pellet not retrieved, %f'%(fn.round, time.time()-fn.start_time))
     
-    fn.clean_up(wait = True)
+    fn.clean_up()
     
     
     

@@ -17,7 +17,6 @@ setup_dictionary = None
 key_values = {'num_rounds': 15,
               'round_time':120, 
               'time_II':30,
-              'time_IV':0, 
               'pellet_tone_time':1, 
               'pellet_tone_hz':2500,
               'door_close_tone_time':1, 
@@ -63,6 +62,8 @@ def setup(setup_dict = None):
     else:
         print(f'dict given for setup ----- {setup_dict}')
         setup_dictionary = setup_dict
+
+    ############ vvvvv do we still need this? vvvv################
     print(setup_dictionary)
     
     
@@ -77,6 +78,8 @@ def setup(setup_dict = None):
 
     for val in missing_order:
         key_val_names_order += [val]
+
+     ############ ^^^^^^ do we still need this? ^^^^^^################
     
     fn.setup_pins()
     
@@ -88,21 +91,21 @@ def run_script():
     
     #buzz args passed as (time, hz, name), just to make
     #code a little cleaner
-    round_buzz = (key_values['round_start_tone_time'],
-                    key_values['round_start_tone_hz'],
-                    'round_start_tone')
+    round_buzz = {'buzz_length':key_values['round_start_tone_time'],
+                    'hz':key_values['round_start_tone_hz'],
+                    'name':'round_start_tone'}
 
-    pellet_buzz = (key_values['pellet_tone_time'],
-                    key_values['pellet_tone_hz'],
-                    'pellet_tone')
+    pellet_buzz = {'buzz_length':key_values['pellet_tone_time'],
+                    'hz':key_values['pellet_tone_hz'],
+                    'name':'pellet_tone'}
 
-    door_open_buzz = (key_values['door_open_tone_time'],
-                    key_values['door_open_tone_hz'],
-                    'door_open_tone')
+    door_open_buzz = {'buzz_length':key_values['door_open_tone_time'],
+                    'hz':key_values['door_open_tone_hz'],
+                    'name':'door_open_tone'}
 
-    door_close_buzz = (key_values['door_close_tone_time'],
-                    key_values['door_close_tone_hz'],
-                    'door_close_tone')
+    door_close_buzz = {'buzz_length':key_values['door_close_tone_time'],
+                    'hz':key_values['door_close_tone_hz'],
+                    'name':'door_close_tone'}
     
     day_num = int(setup_dictionary['day'])
     if day_num > len(key_values['delay by day']):
@@ -110,30 +113,17 @@ def run_script():
     else:
         delay = key_values['delay by day'][day_num-1]
     
-    #spin up a dedicated writer thread
-    wrt = threading.Thread(target = fn.flush_to_CSV, daemon = True)
-    wrt.start()
 
-    or1 = threading.Thread(target = fn.override_door_1, daemon = True)
-    or2 = threading.Thread(target = fn.override_door_2, daemon = True)
-    or1.start()
-    or2.start()
+    #start the thread that will print out errors from within threads
+    fn.monitor_workers()
+    
 
     #double check the doors are closed. close, if they arent
-    fn.reset_doors()
+    fn.reset_chamber()
     
     ##### start timing this session ######
     fn.start_timing()
-    fn.pulse_sync_line(0.1)
-    
-    for x in range(5):
-
-        #spin up threads for the thread distributor
-        t = threading.Thread(target = fn.thread_distributor)
-
-        #when main thread finishes, kill these threads
-        t.daemon = True
-        t.start()
+    fn.pulse_sync_line(length = 0.5, event_name = 'experiment_start')
         
         
     key_values['num_rounds'] = int(key_values['num_rounds'])
@@ -148,14 +138,11 @@ def run_script():
         
         #round start buzz
         fn.timestamp_queue.put(f'{fn.round}, Starting new round, {time.time()-fn.start_time}') 
-        fn.do_stuff_queue.put(('buzz',round_buzz))
-        fn.do_stuff_queue.join()
+        fn.buzz(**round_buzz, wait = True)
         
-        fn.do_stuff_queue.put(('extend lever',
-                            ('food')))
-        
-        fn.do_stuff_queue.put(('monitor lever',
-                           ('food')))
+        #extend and monitor for presses on food lever
+        fn.extend_lever(lever_ID = 'food')
+        fn.monitor_levers(lever_ID = 'food')
         
         
         time_II_start = time.time()
@@ -165,19 +152,16 @@ def run_script():
         while time.time() - time_II_start < key_values['time_II']:
             if not fn.lever_press_queue.empty() and not press:
                 
-                
-                fn.pulse_sync_line(0.025)
+                fn.pulse_sync_line(length = 0.025, event_name = 'lever_press')
                 
                 #retract lever
                 fn.monitor = False
-                fn.do_stuff_queue.put(('retract lever',
-                                    ('food')))
+                fn.retract_levers(lever_ID='food')
                 
                 #do not give reward until after delay
                 time.sleep(delay)
-                fn.do_stuff_queue.put(('buzz', pellet_buzz))
-                
-                fn.do_stuff_queue.put(('dispense pellet',))
+                fn.buzz(**pellet_buzz)
+                fn.dispense_pellet()
                 
                 #get the lever press tuple just to clear the queue
                 lever_press = fn.lever_press_queue.get()
@@ -187,25 +171,23 @@ def run_script():
             
         #if the vole didnt press:
         if press == False:
-            print('no lever press')
-            fn.do_stuff_queue.put(('buzz', pellet_buzz))
-            fn.do_stuff_queue.put(('dispense pellet',))
-        
-        time.sleep(key_values['time_IV'])
-        
-        if press == False:
             fn.monitor = False
-            fn.do_stuff_queue.put(('retract lever',
-                                    ('food')))
-        
+            fn.retract_levers(lever_ID='food')
+
+            print('no lever press')
+            fn.buzz(**pellet_buzz)
+            fn.dispense_pellet()
+            
+        approx_time = key_values['round_time'] - (time.time() - round_start)
+        fn.countdown_timer(time_interval=approx_time, next_event='next round')
+
         while time.time() - round_start < key_values['round_time']:
             time.sleep(0.1)
         
     if fn.pellet_state:
         fn.timestamp_queue.put('%i, final pellet not retrieved, %f'%(fn.round, time.time()-fn.start_time))
     
-    fn.do_stuff_queue.put(('clean up',))
-    fn.do_stuff_queue.join()
+    fn.clean_up()
     
     
 if __name__ == '__main__':
