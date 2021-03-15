@@ -53,7 +53,7 @@ def setup(setup_dict = None):
     key_values_def, key_val_names_order = fn.check_key_value_dictionaries(key_values, 
                                                                           key_values_def,
                                                                           key_val_names_order)
-                                                                          
+
     fn.setup_pins()
     fn.setup_experiment(setup_dict)
     
@@ -152,6 +152,7 @@ def run_script():
     if fn.pellet_state:
         fn.timestamp_queue.put('%i, final pellet not retrieved, %f'%(fn.round, time.time()-fn.start_time))
     
+    fn.analyze()
     fn.clean_up()
     
     

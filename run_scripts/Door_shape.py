@@ -241,9 +241,8 @@ def run_script():
             time.sleep(1)
         print('\nvole should be moved now')
     
-    fn.do_stuff_queue.put(('analyze',))
-    fn.do_stuff_queue.put(('clean up',))
-    fn.do_stuff_queue.join()
+    fn.analyze()
+    fn.clean_up()
     
     
 if __name__ == '__main__':
