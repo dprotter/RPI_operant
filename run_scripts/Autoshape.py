@@ -25,13 +25,12 @@ key_values = {'num_rounds': 15,
               'door_open_tone_hz':10000,
               'round_start_tone_time':1, 
               'round_start_tone_hz':5000,
-              'delay by day':[0,0,1,1,2,0,0,0,1,1,2],
+              'delay by day':[0,0,1,1,2],
               'delay default':2}
 
 key_values_def = {'num_rounds':'number of rounds', 
                   'round_time':'total round length',
                   'time_II':'time after levers out before pellet',
-                  'time_IV':'''time after pellet delivered before levers retracted''',
                   'pellet_tone_time':'in s', 
                   'pellet_tone_hz':'in hz',
                   'door_close_tone_time':'in s', 
@@ -44,7 +43,7 @@ key_values_def = {'num_rounds':'number of rounds',
                   'delay default':'delay between lever press and reward if beyond delay by day length'}
 
 #for display purposes. put values you think are most likely to be changed early
-key_val_names_order = ['num_rounds', 'round_time', 'time_II', 'time_IV','pellet_tone_time',
+key_val_names_order = ['num_rounds', 'round_time', 'time_II', 'pellet_tone_time',
                         'pellet_tone_hz','door_close_tone_time','door_close_tone_hz',
                         'door_open_tone_time','door_open_tone_hz', 'round_start_tone_time',
                         'round_start_tone_hz']
@@ -67,14 +66,9 @@ def setup(setup_dict = None):
     print(setup_dictionary)
     
     
-    #resolve issues if people add values to the key value dictionary and dont define them or put them in the name order list
-    missing_def = [val for val in key_values if not val in key_values_def]
-    if len(missing_def) > 0:
-        print(f'no definition given for: {missing_def}')
-    for val in missing_def:
-        key_values_def[val] = 'unknown'
-
-    missing_order = [val for val in key_values_def if not val in key_val_names_order]
+    key_values_def, key_val_names_order = fn.check_key_value_dictionaries(key_values, 
+                                                                          key_values_def,
+                                                                          key_val_names_order)
 
     for val in missing_order:
         key_val_names_order += [val]
@@ -149,6 +143,10 @@ def run_script():
         
         #reset our info about whether the animal has pressed
         press = False
+
+        approx_time = key_values['time_II'] - (time.time() - time_II_start)
+        fn.countdown_timer(time_interval=approx_time, next_event='next round')
+
         while time.time() - time_II_start < key_values['time_II']:
             if not fn.lever_press_queue.empty() and not press:
                 
@@ -187,6 +185,7 @@ def run_script():
     if fn.pellet_state:
         fn.timestamp_queue.put('%i, final pellet not retrieved, %f'%(fn.round, time.time()-fn.start_time))
     
+    fn.analyze()
     fn.clean_up()
     
     

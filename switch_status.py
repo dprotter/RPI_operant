@@ -19,24 +19,8 @@ or2.start()
 fn.setup_pins()
 num_pins = len(pins)
 
-for x in range(5):
 
-        #spin up threads for the thread distributor
-        t = threading.Thread(target = fn.thread_distributor)
-
-        #when main thread finishes, kill these threads
-        t.daemon = True
-        t.start()
-
-fn.do_stuff_queue.put(('extend lever',
-                            ('door_1')))
-
-fn.do_stuff_queue.put(('extend lever',
-                            ('door_2')))
-
-
-fn.do_stuff_queue.put(('extend lever',
-                            ('food')))
+fn.extend_lever(lever_ID = ['food', 'door_1', 'door_2'])
 
 def print_pin_status():
 
@@ -61,5 +45,4 @@ try:
 
 except KeyboardInterrupt:
     print('\n\ncleaning up')
-    fn.do_stuff_queue.put(('clean up', ))
-    fn.do_stuff_queue.join()
+    fn.clean_up()

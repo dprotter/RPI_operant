@@ -228,7 +228,10 @@ class Experiment:
         '''take values from the csv file and put them in the setup dict'''   
         update = {}
 
-        if not np.isnan(self.vals['var_changes']):
+        vc = self.vals['var_changes']
+
+        
+        if isinstance(vc,str) or not np.isnan(self.vals['var_changes']):
             self.convert_var_changes()
         else:
             self.vals['var_changes'] = {}

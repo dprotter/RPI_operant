@@ -44,6 +44,9 @@ key_val_names_order = ['num_rounds', 'round_time', 'time_II', 'time_IV','pellet_
 def setup(setup_dict = None):
     global setup_dictionary
     global key_val_names_order
+    global key_values
+    global key_values_def
+    
     #run this to get the RPi.GPIO pins setup
     if setup_dict == None:
         setup_dict = default_setup_dict
