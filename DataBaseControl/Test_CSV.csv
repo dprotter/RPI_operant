@@ -1,6 +1,6 @@
 date,run_time,vole,script,user,rounds,rounds_completed,var_changes,done,experiment_status,day
-5/6/20,3_16_2021__14_20,1.0,test_script,protter,5.0,10.0,num_rounds:10,True,,1.0
-5/6/20,3_16_2021__14_22,2.0,Magazine,protter,,2.0,num_rounds:2,True,,1.0
-5/7/20,,1.0,Autoshape,protter,,,num_rounds:10,False,,1.0
-,,,,,,,,,,
+5/6/20,3_24_2021__16_41,1.0,Magazine,protter,,4.0,num_rounds:4,True,,1.0
+5/6/20,,1.0,Autoshape,protter,,,num_rounds:2,,,1.0
+5/7/20,,1.0,Door_shape,protter,,,num_rounds:4,,,1.0
+,,1.0,Door_test,protter,,,num_rounds:4,,,1.0
 ,,,,,,,,,,
