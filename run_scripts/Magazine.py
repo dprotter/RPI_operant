@@ -70,7 +70,7 @@ def run_script():
                     'hz':key_values['round_start_tone_hz'],
                     'name':'round_start_tone'}
 
-    pellet_buzz = {'buzz_length':key_values['pellet_tone_time'],
+    pellet_buzz = {'buzz_length':key_values/['pellet_tone_time'],
                     'hz':key_values['pellet_tone_hz'],
                     'name':'pellet_tone'}
 
