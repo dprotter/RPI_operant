@@ -15,7 +15,7 @@ default_setup_dict = {'vole':'000','day':1, 'experiment':'Magazine',
 setup_dictionary = None
 
 key_values = {'num_rounds': 15, 
-              'round_time':120, 
+              'round_time':90, 
               'time_II':2,
               'time_IV':2, 
               'pellet_tone_time':1, 
@@ -70,7 +70,7 @@ def run_script():
                     'hz':key_values['round_start_tone_hz'],
                     'name':'round_start_tone'}
 
-    pellet_buzz = {'buzz_length':key_values/['pellet_tone_time'],
+    pellet_buzz = {'buzz_length':key_values['pellet_tone_time'],
                     'hz':key_values['pellet_tone_hz'],
                     'name':'pellet_tone'}
 

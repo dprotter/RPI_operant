@@ -550,12 +550,12 @@ class runtime_functions:
             print(f'waiting for one of the workers assigned to function "{func_name}"')
             while not any([w.done() for w in worker]):
                 '''waiting for threads to finish'''
-                time.sleep(0.25)
+                time.sleep(0.025)
 
         else:
             print(f'waiting for function "{func_name}"')
             while worker.running():
-                time.sleep(0.25)
+                time.sleep(0.025)
         print(f'"{func_name}" complete')
         
 
@@ -863,7 +863,7 @@ class runtime_functions:
 
             if read_retr > 5:
                 self.pulse_sync_line(length = 0.05, event_name = 'pellet retrieved')
-                self.timestamp_queue.put(f'{self.round}, pellet retrieved,{time.time()-self.start_time}')
+                self.timestamp_queue.put(f'{self.round}, pellet retrieved, {time.time()-self.start_time}')
                 print(f'\n\n\nPellet taken! {(time.time()-self.start_time)}\n\n\n')
                 #no pellet in trough
                 self.pellet_state = False
