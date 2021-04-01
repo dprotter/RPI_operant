@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/home/pi/RPI_operant/')
+sys.path.append('/home/pi/')
 
 import RPI_operant.home_base.functions as FN
 fn = FN.runtime_functions()
@@ -12,7 +12,7 @@ import time
 default_setup_dict = {'vole':'000','day':1, 'experiment':'Autoshape',
                     'user':'Test User', 'output_directory':'/home/pi/test_outputs/'}
 
-setup_dictionary = None
+
 
 key_values = {'num_rounds': 15,
               'round_time':120, 
@@ -49,39 +49,26 @@ key_val_names_order = ['num_rounds', 'round_time', 'time_II', 'pellet_tone_time'
                         'round_start_tone_hz']
 
 
-def setup(setup_dict = None):
-    global setup_dictionary
-    global key_val_names_order
-    #run this to get the RPi.GPIO pins setup
-    if setup_dict == None:
-        #set the module setup dictionary to default values so we can access vals, 
-        #like 'day' if necessary
-        print('no dict given for setup')
-        setup_dictionary = default_setup_dict
-    else:
-        print(f'dict given for setup ----- {setup_dict}')
-        setup_dictionary = setup_dict
+def setup(setup_dictionary = default_setup_dict, key_val_names_order = key_val_names_order,
+                             key_values = key_values,
+                             key_values_def = key_values_def):
 
-    ############ vvvvv do we still need this? vvvv################
-    print(setup_dictionary)
+
     
     
     key_values_def, key_val_names_order = fn.check_key_value_dictionaries(key_values, 
                                                                           key_values_def,
                                                                           key_val_names_order)
 
-    for val in missing_order:
-        key_val_names_order += [val]
 
-     ############ ^^^^^^ do we still need this? ^^^^^^################
     
     fn.setup_pins()
     
     fn.setup_experiment(setup_dictionary)
-    
+    return setup_dictionary
 
 
-def run_script():
+def run_script(setup_dictionary = None):
     
     #buzz args passed as (time, hz, name), just to make
     #code a little cleaner
@@ -228,6 +215,6 @@ if __name__ == '__main__':
         default_setup_dict['user'] = user
         default_setup_dict['output_directory'] = '/home/pi/Operant_Output/script_runs/'
 
-    setup(setup_dict=default_setup_dict)
+    setup_dict = setup()
     
-    run_script()
+    run_script(setup_dict)

@@ -12,7 +12,7 @@ fn = FN.runtime_functions()
 default_setup_dict = {'vole':'000','day':1, 'experiment':'Magazine',
                     'user':'Test User', 'output_directory':'/home/pi/test_outputs/'}
 
-setup_dictionary = None
+
 
 key_values = {'num_rounds': 15, 
               'round_time':90, 
@@ -41,28 +41,22 @@ key_val_names_order = ['num_rounds', 'round_time', 'time_II', 'time_IV','pellet_
                         'door_open_tone_time','door_open_tone_hz', 'round_start_tone_time',
                         'round_start_tone_hz']
 
-def setup(setup_dict = None):
-    global setup_dictionary
-    global key_val_names_order
-    global key_values
-    global key_values_def
-    
-    #run this to get the RPi.GPIO pins setup
-    if setup_dict == None:
-        setup_dict = default_setup_dict
-    else:
-        setup_dictionary = setup_dict
+def setup(setup_dictionary = default_setup_dict, key_val_names_order = key_val_names_order,
+                             key_values = key_values,
+                             key_values_def = key_values_def):
+
+
 
     key_values_def, key_val_names_order = fn.check_key_value_dictionaries(key_values, 
                                                                           key_values_def,
                                                                           key_val_names_order)
 
     fn.setup_pins()
-    fn.setup_experiment(setup_dict)
+    fn.setup_experiment(setup_dictionary)
     
 
 
-def run_script():
+def run_script(setup_dictionary = None):
     key_values['num_rounds'] = int(key_values['num_rounds'])
     #buzz args passed as (time, hz, name), just to make
     #code a little cleaner
@@ -166,8 +160,8 @@ if __name__ == '__main__':
     test_run = input('is this just a quick test run? if so, we will just do 1 round. (y/n)\n')
     if test_run.lower() in ['y', 'yes']:
         print('ok, test it is!')
-        key_values['num_rounds'] = 2
-        key_values['round_time'] = 20
+        key_values['num_rounds'] = 3
+        key_values['round_time'] = 6
         
     
     else:

@@ -159,12 +159,12 @@ class runtime_functions:
         vole = self.args_dict['vole']
         save_dir = self.args_dict['output_directory']
         exp = self.args_dict['experiment']
-        day = self.args_dict['day']
+        day = int(self.args_dict['day'])
         
         date = datetime.datetime.now()
         fdate = '%s_%s_%s__%s_%s_'%(date.month, date.day, date.year, date.hour, date.minute)
 
-        fname = fdate+f'_{exp}_vole_{vole}.csv'
+        fname = fdate+f'_{exp}_vole_{int(vole)}.csv'
         return fname, fdate
     
     def create_header_string(self):
@@ -545,7 +545,7 @@ class runtime_functions:
         print('halting monitoring of %s lever'%lever_ID)
     
     def wait(self, worker, func_name):
-        
+        start = time.time()
         if isinstance(worker, list):
             print(f'waiting for one of the workers assigned to function "{func_name}"')
             while not any([w.done() for w in worker]):
@@ -554,9 +554,10 @@ class runtime_functions:
 
         else:
             print(f'waiting for function "{func_name}"')
-            while worker.running():
+            while not worker.done():
                 time.sleep(0.025)
-        print(f'"{func_name}" complete')
+        done = time.time()
+        print(f'"{func_name}" complete at {done - self.start_time} in {done - start}')
         
 
     def test_threading(self, message, wait = False):
@@ -667,7 +668,7 @@ class runtime_functions:
     @thread_it
     def _buzz(self, **kwargs):
         '''take time (s), hz, and name as inputs'''
-        print('oh we buzzin')
+        
         buzz_len = kwargs['buzz_length']
         hz = kwargs['hz']
         name = kwargs['name']
@@ -685,7 +686,6 @@ class runtime_functions:
         #sound off
         self.pi.set_PWM_dutycycle(pins['speaker_tone'], 0)
 
-        print(f'{name} tone complete')
         self.timestamp_queue.put(f'{self.round}, {name} tone complete {hz}:hz {buzz_len}:seconds, {time.time()-self.start_time}')
 
 

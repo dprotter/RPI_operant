@@ -352,7 +352,7 @@ class Experiment:
     
     
     def run(self):
-        self.module.setup(self.current_setup_dictionary)
+        setup_dict = self.module.setup(self.current_setup_dictionary)
         csv_up = threading.Thread(target = self.track_script_progress, daemon = True)
         csv_up.start()
         
@@ -361,6 +361,6 @@ class Experiment:
         fdate = '%s_%s_%s__%s_%s'%(date.month, date.day, date.year, date.hour, date.minute)
         self.experiment_status.loc[self.experiment_status.index ==self.exp_index, 'run_time'] = fdate
         self.experiment_status.to_csv(self.file, index = False)
-        self.module.run_script()
+        self.module.run_script(setup_dict)
         self.experiment_finished()
         
