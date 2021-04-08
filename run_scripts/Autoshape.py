@@ -14,8 +14,8 @@ default_setup_dict = {'vole':'000','day':1, 'experiment':'Autoshape',
 
 
 
-key_values = {'num_rounds': 15,
-              'round_time':120, 
+key_values = {'num_rounds': 20,
+              'round_time':90, 
               'time_II':30,
               'pellet_tone_time':1, 
               'pellet_tone_hz':2500,
@@ -132,7 +132,7 @@ def run_script(setup_dictionary = None):
         press = False
 
         approx_time = key_values['time_II'] - (time.time() - time_II_start)
-        fn.countdown_timer(time_interval=approx_time, next_event='next round')
+        fn.countdown_timer(time_interval=approx_time, next_event='auto-reward')
 
         while time.time() - time_II_start < key_values['time_II']:
             if not fn.lever_press_queue.empty() and not press:
