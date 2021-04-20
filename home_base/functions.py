@@ -494,13 +494,13 @@ class runtime_functions:
 
         while self.monitor_beams:
             if not GPIO.input(pins['read_ir_1']) and not beam_1:
-                self.timestamp_queue.put(f'{self.round},{oes.beam_break_1_crossed}, {time.time()-self.start_time}')
+                self.timestamp_queue.put(f'{self.round},{oes.beam_break_1}, {time.time()-self.start_time}')
                 beam_1 = True
                 break
             
 
             if not GPIO.input(pins['read_ir_2']) and not beam_1:
-                self.timestamp_queue.put(f'{self.round},{oes.beam_break_2_crossed}, {time.time()-self.start_time}')
+                self.timestamp_queue.put(f'{self.round},{oes.beam_break_2}, {time.time()-self.start_time}')
                 beam_2 = True
                 break
         self.monitor_beams = False
