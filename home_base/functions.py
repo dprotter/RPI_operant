@@ -24,7 +24,7 @@ from RPI_operant.home_base.operant_cage_settings import (kit, pins,
 
 import RPI_operant.home_base.analysis.analysis_functions as af
 import RPI_operant.home_base.analysis.analyze as ana
-
+from RPI_operant.home_base.lookup_classes import Operant_event_strings as oes
 
 
 
@@ -213,9 +213,10 @@ class runtime_functions:
             name = inspect.currentframe().f_code.co_name
             self.wait(workers, name)
     
-    def _close_doors(self):
+    @thread_it
+    def _close_doors(self, **kwargs):
         print('resetting door states')
-        reset_doors()
+        self.reset_doors()
         open_doors = [id for id in ['door_1', 'door_2'] if not self.door_states[id]]
         if len(open_doors) > 0 :
             print(f'oh dip! theres a problem closing the doors: {open_doors}')
@@ -289,12 +290,21 @@ class runtime_functions:
         workers = []
         if isinstance(door_ID, list):
             for arg in door_ID:
-                workers+= [self._open_door(self, door_ID = arg)]
-                
+                workers+= [self._open_door(door_ID = arg)]
+        elif isinstance(door_ID, tuple):
+            
+            #tuples coming from press queue
+            if len(door_ID)>1:
+                print('too many door_IDs passed')
+                raise
+            else:
+                workers+= [self._open_door(door_ID = door_ID)]
+
         elif not door_ID:
             print('you must specify a door ID to open it.')
         else:
-            workers+= [self._open_door(self, door_ID = door_ID)]
+            print(f"this is the door ID arg:   #{door_ID}#")
+            workers+= [self._open_door(door_ID = door_ID)]
         
         if wait:
             name = inspect.currentframe().f_code.co_name
@@ -303,15 +313,6 @@ class runtime_functions:
     def _open_door(self, **kwargs):
         '''open a door!'''
         door_ID = kwargs['door_ID']
-
-        #double check the right number of args got passed
-        if type(door_ID) is tuple:
-            if len(door_ID) == 1:
-                door_ID = door_ID[0]
-            else:
-                print(f'yo! you passed close_door() too many arguments! should get 1 (the door_ID), got {len(door_ID)}')
-                raise
-
         self.timestamp_queue.put('%i, %s open begin, %f'%(self.round, door_ID, time.time()-self.start_time))
         servo_dict[door_ID].throttle = continuous_servo_speeds[door_ID]['open']
         open_time = continuous_servo_speeds[door_ID]['open time']
@@ -338,21 +339,34 @@ class runtime_functions:
         
 
 
-    def close_door(self, door_ID = ['door_1', 'door_2']):
+    def close_door(self, door_ID = ['door_1', 'door_2'], wait = True):
         '''can close doors'''
-
-
-    def _close_door(self, args):
-        
-        door_ID= args
-
-        #double check the right number of args got passed
-        if type(door_ID) is tuple:
-            if len(door_ID) == 1:
-                door_ID = door_ID[0]
-            else:
-                print(f'yo! you passed close_door() too many arguments! should get 1 (the door_ID), got {len(door_ID)}')
+        workers = []
+        if isinstance(door_ID, list):
+            for arg in door_ID:
+                workers+= [self._close_door(self, door_ID = arg)]
+        elif isinstance(door_ID, tuple):
+            
+            #tuples coming from press queue
+            if len(door_ID)>1:
+                print('too many door_IDs passed')
                 raise
+            else:
+                workers+= [self._close_door(self, door_ID = door_ID)]
+
+        elif not door_ID:
+            print('you must specify a door ID to open it.')
+        else:
+            print(f"this is the door ID arg:   #{door_ID}#")
+            workers+= [self._close_door(self, door_ID = door_ID)]
+        
+        if wait:
+            name = inspect.currentframe().f_code.co_name
+            self.wait(workers, name)
+
+    @thread_it
+    def _close_door(self, **kwargs):
+        door_ID = kwargs['door_ID']
 
         self.timestamp_queue.put('%i, %s close begin, %f'%(self.round, door_ID, time.time()-self.start_time))
 
@@ -468,7 +482,7 @@ class runtime_functions:
         
 
     def monitor_first_beam_breaks(self):
-        _ = self.monitor_first_beam_breaks()
+        _ = self._monitor_first_beam_breaks(self)
 
     @thread_it
     def _monitor_first_beam_breaks(self):
@@ -480,13 +494,13 @@ class runtime_functions:
 
         while self.monitor_beams:
             if not GPIO.input(pins['read_ir_1']) and not beam_1:
-                self.timestamp_queue.put(f'{self.round}, beam_break_1_crossed, {time.time()-self.start_time}')
+                self.timestamp_queue.put(f'{self.round},{oes.beam_break_1_crossed}, {time.time()-self.start_time}')
                 beam_1 = True
                 break
             
 
             if not GPIO.input(pins['read_ir_2']) and not beam_1:
-                self.timestamp_queue.put(f'{self.round}, beam_break_2_crossed, {time.time()-self.start_time}')
+                self.timestamp_queue.put(f'{self.round},{oes.beam_break_2_crossed}, {time.time()-self.start_time}')
                 beam_2 = True
                 break
         self.monitor_beams = False

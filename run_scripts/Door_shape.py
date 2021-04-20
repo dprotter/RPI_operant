@@ -13,7 +13,6 @@ import numpy as np
 default_setup_dict = {'vole':'000','day':1, 'experiment':'Door_shape',
                     'user':'Test User', 'output_directory':'/home/pi/test_outputs/', 'partner':'door_1', 'novel_num':'000'}
 
-setup_dictionary = None
 
 key_values = {'num_rounds': 0,
               'repetitions':5,
@@ -58,19 +57,10 @@ key_val_names_order = ['num_rounds', 'repetitions','round_time', 'time_II', 'mov
                         'round_start_tone_hz']
 
 
-def setup(setup_dict = None):
-    global setup_dictionary
-    global key_val_names_order
-    #run this to get the RPi.GPIO pins setup
-    if setup_dict == None:
-        #set the module setup dictionary to default values so we can access vals, 
-        #like 'day' if necessary
-        print('no dict given for setup')
-        setup_dictionary = default_setup_dict
-    else:
-        print(f'dict given for setup ----- {setup_dict}')
-        setup_dictionary = setup_dict
-    print(setup_dictionary)
+
+def setup(setup_dictionary = default_setup_dict, key_val_names_order = key_val_names_order,
+                             key_values = key_values,
+                             key_values_def = key_values_def):
     
     
     key_values_def, key_val_names_order = fn.check_key_value_dictionaries(key_values, 
@@ -80,10 +70,11 @@ def setup(setup_dict = None):
     fn.setup_pins()
     
     fn.setup_experiment(setup_dictionary)
+    return setup_dictionary
     
 
 
-def run_script():
+def run_script(setup_dictionary = None):
     
     #buzz args passed as (time, hz, name), just to make
     #code a little cleaner
@@ -123,14 +114,6 @@ def run_script():
     fn.start_timing()
     fn.pulse_sync_line(length = 0.5, event_name = 'experiment_start')
     
-    for x in range(5):
-
-        #spin up threads for the thread distributor
-        t = threading.Thread(target = fn.thread_distributor)
-
-        #when main thread finishes, kill these threads
-        t.daemon = True
-        t.start()
         
         
     key_values['num_rounds'] = int(key_values['num_rounds'])
@@ -210,7 +193,7 @@ def run_script():
             fn.buzz(**door_open_buzz, wait = True)
             fn.open_door(door_ID = this_door)
 
-        approx_time = key_values['round time'] - (time.time() - round_start)
+        approx_time = key_values['round_time'] - (time.time() - round_start)
         fn.countdown_timer(time_interval=approx_time, next_event='end of social interaction')
         
         #give the voles interaction time
@@ -234,7 +217,7 @@ def run_script():
         
         #time to move the animal
         move_ani_start = time.time()
-        approx_time_left = np.round(key_values['move_time'] - (time.time()-move_ani_start
+        approx_time_left = np.round(key_values['move_time'] - (time.time()-move_ani_start))
         fn.countdown_timer(time_interval=approx_time_left, next_event = 'next round')
 
         while time.time() - move_ani_start < key_values['move_time']:
@@ -287,6 +270,6 @@ if __name__ == '__main__':
         default_setup_dict['user'] = user
         default_setup_dict['output_directory'] = '/home/pi/Operant_Output/script_runs/'
 
-    setup(setup_dict=default_setup_dict)
+    setup_dict = setup()
     
-    run_script()
+    run_script(setup_dict)

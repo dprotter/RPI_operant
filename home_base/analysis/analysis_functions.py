@@ -188,7 +188,7 @@ def latency_by_round_expect_unequal(df, event_1, event_2,
 
 
         new_df = pd.merge(sli_1, sli_2, on = 'Round')
-        new_df[new_col] = new_df.event_2 - new_df.event_1
+        new_df[new_col] = new_df[event_2] - new_df[event_1]
 
         return new_col, new_df
 
