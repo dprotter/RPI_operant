@@ -25,26 +25,7 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     
     new_df = pd.DataFrame(data = new_df_blank, columns = ['Round',new_col])
     
-    new_df = new_df.astype({'Round':int})
-    new_df = af.roundwise_join(new_df, new_data, new_col)
-
-
-    event_1 = oes.lever_out
-    event_2 = oes.door2_leverpress_prod
-    col_name = 'door_2_lever_press_latency'
-    new_col, new_data = af.latency_by_round(data, event_1, event_2, new_col_name = col_name, selected_by = event_2)
-    round_df = af.roundwise_join(new_df, new_data, new_col)
-    
-    beam_breaks = af.latency_to_beam_break(data)
-    d1_by_round = beam_breaks['latency_beam_break_door1']
-    d2_by_round = beam_breaks['latency_beam_break_door2']
-
-    round_df = af.roundwise_join(round_df, d1_by_round, new_col_name='latency_beam_break_door1')
-    round_df = af.roundwise_join(round_df, d2_by_round, new_col_name='latency_beam_break_door2')
-
-    summary = []
-
-    total_rounds = data.Round.max()
+    new_df = new_df.astypRPI_operant.ound.max()
     summary += [['number of rounds in experiment', 'rounds', total_rounds]]
 
 ########## door leverpress section #############3
