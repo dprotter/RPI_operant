@@ -1,8 +1,8 @@
 import sys
-sys.path.append('/home/pi/')
 
-import RPI_operant.home_base.analysis.analysis_functions as af
-from RPI_operant.home_base.lookup_classes import Operant_event_strings as oes
+
+import home_base.analysis.analysis_functions as af
+from home_base.lookup_classes import Operant_event_strings as oes
 import pandas as pd
 import numpy as np
 
@@ -12,9 +12,9 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
 
     #get latency from levers out to door_2 lever presses
     event_1 = oes.lever_out
-    event_2 = oes.door2_leverpress_prod
+    event_2 = oes.door1_leverpress_prod
     
-    col_name = 'door_2_lever_press_latency'
+    col_name = 'door_1_lever_press_latency'
     
     
     new_col, new_data = af.latency_by_round(data, event_1, event_2, 
@@ -30,8 +30,8 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
 
 
     event_1 = oes.lever_out
-    event_2 = oes.door1_leverpress_prod
-    col_name = 'door_1_lever_press_latency'
+    event_2 = oes.door2_leverpress_prod
+    col_name = 'door_2_lever_press_latency'
     new_col, new_data = af.latency_by_round(data, event_1, event_2, new_col_name = col_name, selected_by = event_2)
     round_df = af.roundwise_join(new_df, new_data, new_col)
     

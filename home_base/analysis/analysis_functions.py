@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import sys
 import os
-sys.path.append('/home/pi/')
-from RPI_operant.home_base.lookup_classes import Operant_event_strings as oes
+
+from home_base.lookup_classes import Operant_event_strings as oes
 
 def latency_by_round(df, event_1, event_2,  
                     new_col_name = None, 
@@ -188,6 +188,7 @@ def latency_by_round_expect_unequal(df, event_1, event_2,
 
 
         new_df = pd.merge(sli_1, sli_2, on = 'Round')
+        print(new_df.head())
         new_df[new_col] = new_df[event_2] - new_df[event_1]
 
         return new_col, new_df
@@ -241,7 +242,7 @@ def latency_to_beam_break(df):
     d2_col_name, round_df_d2 = latency_by_round_expect_unequal(df, 
                                               event_1 = oes.door2_open_start, 
                                               event_2 = oes.beam_break_2,
-                                              selected_by = oes.door1_open_start, 
+                                              selected_by = oes.door2_open_start, 
                                               new_col_name = 'latency_beam_break_door2')
     
     return {d1_col_name:round_df_d1, d2_col_name:round_df_d2}

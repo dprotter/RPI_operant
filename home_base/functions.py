@@ -6,7 +6,7 @@ if os.system('sudo lsof -i TCP:8888'):
     os.system('sudo pigpiod')
 
 import sys
-sys.path.append('/home/pi/')
+
 from concurrent.futures import ThreadPoolExecutor
 import threading
 import socket
@@ -19,12 +19,12 @@ import random
 import pigpio
 import traceback
 import inspect
-from RPI_operant.home_base.operant_cage_settings import (kit, pins,
+from home_base.operant_cage_settings import (kit, pins,
     lever_angles, continuous_servo_speeds,servo_dict)
 
-import RPI_operant.home_base.analysis.analysis_functions as af
-import RPI_operant.home_base.analysis.analyze as ana
-from RPI_operant.home_base.lookup_classes import Operant_event_strings as oes
+import home_base.analysis.analysis_functions as af
+import home_base.analysis.analyze as ana
+from home_base.lookup_classes import Operant_event_strings as oes
 
 
 
