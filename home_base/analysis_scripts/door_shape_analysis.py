@@ -12,9 +12,9 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
 
     #get latency from levers out to door_2 lever presses
     event_1 = oes.lever_out
-    event_2 = oes.door2_leverpress_prod
+    event_2 = oes.door1_leverpress_prod
     
-    col_name = 'door_2_lever_press_latency'
+    col_name = 'door_1_lever_press_latency'
     
     
     new_col, new_data = af.latency_by_round(data, event_1, event_2, 
