@@ -52,30 +52,23 @@ key_val_names_order = ['num_rounds', 'time_II', 'move_time','pellet_tone_time',
                         'round_start_tone_hz']
 
 
-def setup(setup_dict = None):
-    global setup_dictionary
-    global key_val_names_order
-    #run this to get the RPi.GPIO pins setup
-    if setup_dict == None:
-        #set the module setup dictionary to default values so we can access vals, 
-        #like 'day' if necessary
-        print('no dict given for setup')
-        setup_dictionary = default_setup_dict
-    else:
-        print(f'dict given for setup ----- {setup_dict}')
-        setup_dictionary = setup_dict
-    print(setup_dictionary)
+def setup(setup_dictionary = default_setup_dict, 
+                            key_val_names_order = key_val_names_order,
+                             key_values = key_values,
+                             key_values_def = key_values_def):
+    
     
     key_values_def, key_val_names_order = fn.check_key_value_dictionaries(key_values, 
                                                                           key_values_def,
                                                                           key_val_names_order)
-                                                                          
+    
     fn.setup_pins()
     fn.setup_experiment(setup_dictionary)
+    return setup_dictionary
     
 
 
-def run_script():
+def run_script(setup_dictionary = None):
     key_values['num_rounds'] = int(key_values['num_rounds'])
     #buzz args passed as (time, hz, name), just to make
     #code a little cleaner
@@ -164,7 +157,7 @@ def run_script():
             
             fn.retract_levers(lever_ID = ['door_1', 'door_2'])
 
-            approx_time_left = np.round(key_values['round_time'] - (time.time()-round_start
+            approx_time_left = np.round(key_values['round_time'] - (time.time()-round_start) )
             fn.countdown_timer(time_interval = approx_time_left, next_event = 'move animal')
 
         while time.time() - round_start < key_values['round_time']:
@@ -183,7 +176,7 @@ def run_script():
         fn.timestamp_queue.put(f'{fn.round}, start of move animal time, {time.time()-fn.start_time}')
         
         move_ani_start = time.time()
-        approx_time_left = np.round(key_values['move_time'] - (time.time()-move_ani_start
+        approx_time_left = np.round(key_values['move_time'] - (time.time()-move_ani_start) )
         fn.countdown_timer(time_interval=approx_time_left, next_event = 'next round')
 
         while time.time() - move_ani_start < key_values['move_time']:
@@ -235,6 +228,6 @@ if __name__ == '__main__':
         default_setup_dict['user'] = user
         default_setup_dict['output_directory'] = '/home/pi/Operant_Output/script_runs/'
 
-    setup(setup_dict=default_setup_dict)
+    setup_dict = setup()
     
-    run_script()
+    run_script(setup_dict)
