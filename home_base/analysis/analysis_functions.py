@@ -192,6 +192,7 @@ def latency_by_round_expect_unequal(df, event_1, event_2,
 
         return new_col, new_df
 
+
 def latency_by_round_v2(df, event_1, event_2,  
                     new_col_name = None, 
                     include_missing_data_as_nan = False, 
