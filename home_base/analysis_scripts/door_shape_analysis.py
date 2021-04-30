@@ -125,22 +125,50 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
 
     d2_openings = af.count_event(data, oes.door2_open_start)
     summary+= [['proportion of door_2 opening on which the beam was subsequently broken',
-        'prop_d1_beambreak_by_open',
+        'prop_d2_beambreak_by_open',
             d2_beambreaks / d2_openings]]
 
 ####
-    
-    prop_d1_beambreak_by_press = d1_beambreaks / door_1_lever_press_count if door_1_lever_press_count else np.nan
-    
+    d1_leverpress_beambreaks= af.count_contingent_events(data, oes.door1_leverpress_prod, oes.beam_break_1)
+    if d1_leverpress_beambreaks[oes.door1_leverpress_prod] > 0:
+        prop_d1_beambreak_by_press = d1_leverpress_beambreaks[oes.beam_break_1] / d1_leverpress_beambreaks[oes.door1_leverpress_prod]
+    else:
+        prop_d1_beambreak_by_press = np.nan
 
     summary+= [['proportion of door_1 lever presses on which the beam was subsequently broken',
         'prop_d1_beambreak_by_press',
             prop_d1_beambreak_by_press]]
 
-    prop_d2_beambreak_by_press = d2_beambreaks / door_2_lever_press_count if door_2_lever_press_count else np.nan
+    d2_leverpress_beambreak_events = af.count_contingent_events(data, oes.door2_leverpress_prod, oes.beam_break_2)
+    
+    d2_leverpress_beambreaks= af.count_contingent_events(data, oes.door2_leverpress_prod, oes.beam_break_2)
+    if d2_leverpress_beambreaks[oes.door2_leverpress_prod] > 0:
+        prop_d2_beambreak_by_press = d2_leverpress_beambreaks[oes.beam_break_2] / d1_leverpress_beambreaks[oes.door2_leverpress_prod]
+    else:
+        prop_d2_beambreak_by_press = np.nan
+    
     summary+= [['proportion of door_2 lever presses on which the beam was subsequently broken',
         'prop_d2_beambreak_by_press',
             prop_d2_beambreak_by_press]]
+    
+    
+    # proportion beam break after door opened automatically (bb) / (door_open - lever_press)
+    auto_events1 =  af.count_event(data, oes.door1_open_start) - af.count_event(data, oes.door1_leverpress_prod) 
+           
+    prop_auto_d1_beambreak = af.count_event(data, oes.beam_break_1) / auto_events1 if auto_events1 > 0 else np.nan
+    
+    auto_events2 = af.count_event(data, oes.door2_open_start) - af.count_event(data, oes.door2_leverpress_prod) 
+    prop_auto_d2_beambreak = af.count_event(data, oes.beam_break_2) / auto_events2 if auto_events2 > 0 else np.nan
+    
+    
+    summary+= [['proportion auto-opening door_1 which the beam was subsequently broken',
+        'prop_d1_beambreak_auto_open',
+            prop_auto_d1_beambreak]]
+    
+    summary+= [['proportion auto-opening door_2 which the beam was subsequently broken',
+        'prop_d2_beambreak_auto_open',
+            prop_auto_d2_beambreak]]
+    
 
 ###
 
