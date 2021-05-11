@@ -298,18 +298,19 @@ class runtime_functions:
                 print('too many door_IDs passed')
                 raise
             else:
-                workers+= [self._open_door(door_ID = door_ID)]
+                workers+= [self._open_door(self, door_ID = door_ID)]
 
         elif not door_ID:
             print('you must specify a door ID to open it.')
         else:
             print(f"this is the door ID arg:   #{door_ID}#")
-            workers+= [self._open_door(door_ID = door_ID)]
+            workers+= [self._open_door(self, door_ID = door_ID)]
         
         if wait:
             name = inspect.currentframe().f_code.co_name
             self.wait(workers, name)
 
+    @thread_it
     def _open_door(self, **kwargs):
         '''open a door!'''
         door_ID = kwargs['door_ID']
