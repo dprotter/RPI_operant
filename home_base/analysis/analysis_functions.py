@@ -186,12 +186,13 @@ def latency_by_round_expect_unequal(df, event_1, event_2,
             return new_col, sli_2
     else:
 
+        sli_1.rename(columns = {"Time" : event_1})
+        sli_2.rename(columns = {"Time" : event_2})
 
         new_df = pd.merge(sli_1, sli_2, on = 'Round')
         new_df[new_col] = new_df[event_2] - new_df[event_1]
 
         return new_col, new_df
-
 
 def latency_by_round_v2(df, event_1, event_2,  
                     new_col_name = None, 

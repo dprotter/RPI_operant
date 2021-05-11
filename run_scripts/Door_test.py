@@ -99,13 +99,22 @@ def run_script(setup_dictionary = None):
         
         
     key_values['num_rounds'] = int(key_values['num_rounds'])
+
+
+    #set delay between lever_press and reward
+    day_num = int(setup_dictionary['day'])
+    if day_num > len(key_values['delay by day']):
+        delay = key_values['delay default']
+    else:
+        delay = key_values['delay by day'][day_num-1]
+
     ### master looper ###
     print(f"range for looping: {[i for i in range(1, key_values['num_rounds']+1,1)]}")
     
 
     #start at round 1 instead of the pythonic default of 0 for readability
     for i in range(1, key_values['num_rounds']+1,1):
-        
+        fn.monitor_first_beam_breaks()
 
         round_start = time.time()
         
@@ -126,14 +135,14 @@ def run_script(setup_dictionary = None):
         #reset our info about whether the animal has pressed
         press = False
         fn.countdown_timer(time_interval = key_values['time_II'], 
-                            next_event = '')
+                            next_event = 'levers retracted')
         while time.time() - time_II_start < key_values['time_II']:
             if not fn.lever_press_queue.empty() and not press:
 
                 #get which door was pressed    
                 lever_press = fn.lever_press_queue.get()
 
-                fn.pulse_sync_line(0.025)
+                fn.pulse_sync_line(length = 0.025, event_name = 'lever_press')
                 
                 #retract lever
                 fn.monitor = False
@@ -145,6 +154,9 @@ def run_script(setup_dictionary = None):
 
                 #open the door of the lever that was pressed 
                 fn.open_door(door_ID = lever_press)
+
+                approx_time_left = np.round(key_values['round_time'] - (time.time()-round_start) )
+                fn.countdown_timer(time_interval = approx_time_left, next_event = 'move animal')
 
                 press = True
                 
@@ -168,7 +180,7 @@ def run_script(setup_dictionary = None):
         if press:
             fn.buzz(**door_close_buzz, wait = True)
             time.sleep(0.5)
-            fn.close_doors(door_ID = lever_ID)
+            fn.close_doors(door_ID = lever_press)
         
         
         
