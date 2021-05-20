@@ -144,7 +144,7 @@ def run_script():
 
     #start at round 1 instead of the pythonic default of 0 for readability
     for i in range(1, key_values['num_rounds']+1,1):
-        
+        fn.do_stuff_queue.put(('monitor first beam breaks',))
 
         round_start = time.time()
         
@@ -225,7 +225,10 @@ def run_script():
             fn.do_stuff_queue.put(('close door', 
                                   (lever_press)))
         
-        
+        #must stop monitoring beams so we dont trip them when moving the animal
+        #(doesnt really matter when only using monitor_first_beam_breaks(), but if continuously monitoring
+        # this would be important)
+        fn.monitor_beams = False
         
         print('\n\ntime to move that vole over!')
         fn.timestamp_queue.put(f'{fn.round}, start of move animal time, {time.time()-fn.start_time}')
@@ -237,7 +240,7 @@ def run_script():
             sys.stdout.flush()
         print('\nvole should be moved now')
     
-    
+    fn.do_stuff_queue.put(('analyze',))
     fn.do_stuff_queue.put(('clean up',))
     fn.do_stuff_queue.join()
     
