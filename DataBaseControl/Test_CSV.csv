@@ -1,6 +1,6 @@
-﻿date,run_time,vole,script,user,rounds,rounds_completed,var_changes,done,experiment_status,day
-5/6/20,,1,Auto_test,protter,5,,'num_rounds:10',FALSE,,1
-5/6/20,,2,Basic_test_script,protter,5,,,FALSE,,1
-5/7/20,,1,Basic_test_script,protter,5,,,FALSE,,1
-"","","","","","","","","","",""
-"","","","","","","","","","",""
+date,run_time,vole,script,user,rounds,rounds_completed,var_changes,done,experiment_status,day
+5/6/20,3_24_2021__16_41,1.0,Magazine,protter,,4.0,num_rounds:4,True,,1.0
+5/6/20,3_31_2021__17_25,1.0,Autoshape,protter,,1.0,num_rounds:2,True,,1.0
+5/7/20,4_2_2021__13_32,1.0,Autoshape,protter,,0.0,num_rounds:4,True,,1.0
+,4_27_2021__16_42,1.0,Door_test,protter,,3.0,num_rounds:4,False,,1.0
+,,,,,,,,,,

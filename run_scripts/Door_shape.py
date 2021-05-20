@@ -13,7 +13,6 @@ import numpy as np
 default_setup_dict = {'vole':'000','day':1, 'experiment':'Door_shape',
                     'user':'Test User', 'output_directory':'/home/pi/test_outputs/', 'partner':'door_1', 'novel_num':'000'}
 
-setup_dictionary = None
 
 key_values = {'num_rounds': 0,
               'repetitions':5,
@@ -29,7 +28,7 @@ key_values = {'num_rounds': 0,
               'door_open_tone_hz':10000,
               'round_start_tone_time':1, 
               'round_start_tone_hz':5000,
-              'delay by day':[0,0,1,1,1],
+              'delay by day':[0,0,1,1,2],
               'delay default':1}
 
 key_values['num_rounds'] = 2 * key_values['repetitions'] * key_values['sets']
@@ -58,58 +57,45 @@ key_val_names_order = ['num_rounds', 'repetitions','round_time', 'time_II', 'mov
                         'round_start_tone_hz']
 
 
-def setup(setup_dict = None):
-    global setup_dictionary
-    global key_val_names_order
-    #run this to get the RPi.GPIO pins setup
-    if setup_dict == None:
-        #set the module setup dictionary to default values so we can access vals, 
-        #like 'day' if necessary
-        print('no dict given for setup')
-        setup_dictionary = default_setup_dict
-    else:
-        print(f'dict given for setup ----- {setup_dict}')
-        setup_dictionary = setup_dict
-    print(setup_dictionary)
+
+def setup(setup_dictionary = default_setup_dict, key_val_names_order = key_val_names_order,
+                             key_values = key_values,
+                             key_values_def = key_values_def):
     
     
-    #resolve issues if people add values to the key value dictionary and dont define them or put them in the name order list
-    missing_def = [val for val in key_values if not val in key_values_def]
-    if len(missing_def) > 0:
-        print(f'no definition given for: {missing_def}')
-    for val in missing_def:
-        key_values_def[val] = 'unknown'
-
-    missing_order = [val for val in key_values_def if not val in key_val_names_order]
-
-    for val in missing_order:
-        key_val_names_order += [val]
+    key_values_def, key_val_names_order = fn.check_key_value_dictionaries(key_values, 
+                                                                          key_values_def,
+                                                                          key_val_names_order)
     
     fn.setup_pins()
     
     fn.setup_experiment(setup_dictionary)
+    return setup_dictionary
     
 
 
-def run_script():
+def run_script(setup_dictionary = None):
     
     #buzz args passed as (time, hz, name), just to make
     #code a little cleaner
-    round_buzz = (key_values['round_start_tone_time'],
-                    key_values['round_start_tone_hz'],
-                    'round_start_tone')
+    key_values['num_rounds'] = int(key_values['num_rounds'])
+    #buzz args passed as (time, hz, name), just to make
+    #code a little cleaner
+    round_buzz = {'buzz_length':key_values['round_start_tone_time'],
+                    'hz':key_values['round_start_tone_hz'],
+                    'name':'round_start_tone'}
 
-    pellet_buzz = (key_values['pellet_tone_time'],
-                    key_values['pellet_tone_hz'],
-                    'pellet_tone')
+    pellet_buzz = {'buzz_length':key_values['pellet_tone_time'],
+                    'hz':key_values['pellet_tone_hz'],
+                    'name':'pellet_tone'}
 
-    door_open_buzz = (key_values['door_open_tone_time'],
-                    key_values['door_open_tone_hz'],
-                    'door_open_tone')
+    door_open_buzz = {'buzz_length':key_values['door_open_tone_time'],
+                    'hz':key_values['door_open_tone_hz'],
+                    'name':'door_open_tone'}
 
-    door_close_buzz = (key_values['door_close_tone_time'],
-                    key_values['door_close_tone_hz'],
-                    'door_close_tone')
+    door_close_buzz = {'buzz_length':key_values['door_close_tone_time'],
+                    'hz':key_values['door_close_tone_hz'],
+                    'name':'door_close_tone'}
     
     day_num = int(setup_dictionary['day'])
     if day_num > len(key_values['delay by day']):
@@ -117,30 +103,17 @@ def run_script():
     else:
         delay = key_values['delay by day'][day_num-1]
     
-    #spin up a dedicated writer thread
-    wrt = threading.Thread(target = fn.flush_to_CSV, daemon = True)
-    wrt.start()
-
-    or1 = threading.Thread(target = fn.override_door_1, daemon = True)
-    or2 = threading.Thread(target = fn.override_door_2, daemon = True)
-    or1.start()
-    or2.start()
+    #start the thread that will print out errors from within threads
+    fn.monitor_workers()
+    
 
     #double check the doors are closed. close, if they arent
-    fn.reset_doors()
+    fn.reset_chamber()
     
     ##### start timing this session ######
     fn.start_timing()
-    fn.pulse_sync_line(0.1)
+    fn.pulse_sync_line(length = 0.5, event_name = 'experiment_start')
     
-    for x in range(5):
-
-        #spin up threads for the thread distributor
-        t = threading.Thread(target = fn.thread_distributor)
-
-        #when main thread finishes, kill these threads
-        t.daemon = True
-        t.start()
         
         
     key_values['num_rounds'] = int(key_values['num_rounds'])
@@ -156,7 +129,7 @@ def run_script():
     
     #start at round 1 instead of the pythonic default of 0 for readability
     for i in range(1, key_values['num_rounds']+1,1):
-        fn.do_stuff_queue.put(('monitor first beam breaks',))
+        fn.monitor_first_beam_breaks()
         
         if rep_count == key_values['repetitions']:
             'swap doors if we have reach the rep count'
@@ -170,45 +143,43 @@ def run_script():
         round_start = time.time()
         
         fn.round = i
-        fn.pulse_sync_line(0.1)
+        fn.pulse_sync_line(length = 0.1, event_name = 'new_round')
         print(f"\n\n\n#-#-#-#-#-# new round #{i}, rep {rep_count} {this_door}!!!-#-#-#-#-#\n\n\n")
         
         #round start buzz
         fn.timestamp_queue.put(f'{fn.round}, Starting new round, {time.time()-fn.start_time}') 
-        fn.do_stuff_queue.put(('buzz',round_buzz))
-        fn.do_stuff_queue.join()
+        fn.buzz(**round_buzz, wait = True)
         
-        fn.do_stuff_queue.put(('extend lever',
-                            (this_door)))
-        
-        fn.do_stuff_queue.put(('monitor lever',
-                           (this_door)))
+        #extend and monitor for presses on whichever door lever we are using on this round
+        fn.extend_lever(lever_ID = this_door)
+        fn.monitor_levers(lever_ID = this_door)
         
         
         time_II_start = time.time()
         
         #reset our info about whether the animal has pressed
         press = False
+
+        approx_time = key_values['time_II'] - (time.time() - time_II_start)
+        fn.countdown_timer(time_interval=approx_time, next_event='auto open door')
+
         while time.time() - time_II_start < key_values['time_II']:
             if not fn.lever_press_queue.empty() and not press:
                 
-                
-                fn.pulse_sync_line(0.025)
-                
                 #retract lever
                 fn.monitor = False
-                fn.do_stuff_queue.put(('retract lever',
-                                    (this_door)))
                 
+                fn.pulse_sync_line(length = 0.025, event_name = 'lever_press')
+                fn.retract_levers(lever_ID=this_door)
                 #do not give reward until after delay
                 time.sleep(delay)
-                fn.do_stuff_queue.put(('buzz', door_open_buzz))
-                fn.do_stuff_queue.join()
-                fn.do_stuff_queue.put(('open door', 
-                                       (this_door)))
+                fn.buzz(**door_open_buzz, wait = True)
                 
                 #get the lever press tuple just to clear the queue
                 lever_press = fn.lever_press_queue.get()
+
+                fn.open_door(door_ID = lever_press)
+                
                 press = True
                 
             time.sleep(0.05)
@@ -218,44 +189,43 @@ def run_script():
             print('no lever press')
             fn.monitor = False
             
-            fn.do_stuff_queue.put(('retract lever',
-                                    (this_door)))
-            fn.do_stuff_queue.put(('buzz', door_open_buzz))
-            fn.do_stuff_queue.join()
-            fn.do_stuff_queue.put(('open door', 
-                                  (this_door)))
+            fn.retract_levers(lever_ID = this_door)
+            fn.buzz(**door_open_buzz, wait = True)
+            fn.open_door(door_ID = this_door)
 
+        approx_time = key_values['round_time'] - (time.time() - round_start)
+        fn.countdown_timer(time_interval=approx_time, next_event='end of social interaction')
+        
+        #give the voles interaction time
         while time.time() - round_start < key_values['round_time']:
-            sys.stdout.write(f"\r{np.round(key_values['round_time'] - (time.time()-round_start))} seconds left before moving")
-            time.sleep(1)
-            sys.stdout.flush()
-            time.sleep(1)
+            time.sleep(0.5)
 
         #must stop monitoring beams so we dont trip them when moving the animal
         #(doesnt really matter when only using monitor_first_beam_breaks(), but if continuously monitoring
         # this would be important)
         fn.monitor_beams = False
 
-        fn.do_stuff_queue.put(('close door', 
-                                  (this_door)))
-        fn.do_stuff_queue.join()
+        fn.buzz(**door_close_buzz)
+        fn.close_door(door_ID = this_door, wait = True)
+        
         time.sleep(0.5)
         
-        fn.do_stuff_queue.put(('buzz',door_close_buzz))
+        
         
         print('\n\ntime to move that vole over!')
         fn.timestamp_queue.put(f'{fn.round}, start of move animal time, {time.time()-fn.start_time}')
         
+        #time to move the animal
         move_ani_start = time.time()
+        approx_time_left = np.round(key_values['move_time'] - (time.time()-move_ani_start))
+        fn.countdown_timer(time_interval=approx_time_left, next_event = 'next round')
+
         while time.time() - move_ani_start < key_values['move_time']:
-            sys.stdout.write(f"\r{np.round(key_values['move_time'] - (time.time()-move_ani_start))} seconds left before next round")
             time.sleep(1)
-            sys.stdout.flush()
         print('\nvole should be moved now')
     
-    fn.do_stuff_queue.put(('analyze',))
-    fn.do_stuff_queue.put(('clean up',))
-    fn.do_stuff_queue.join()
+    fn.analyze()
+    fn.clean_up()
     
     
 if __name__ == '__main__':
@@ -300,6 +270,6 @@ if __name__ == '__main__':
         default_setup_dict['user'] = user
         default_setup_dict['output_directory'] = '/home/pi/Operant_Output/script_runs/'
 
-    setup(setup_dict=default_setup_dict)
+    setup_dict = setup()
     
-    run_script()
+    run_script(setup_dict)

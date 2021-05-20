@@ -25,6 +25,7 @@ if args.csv_in:
  
 else:
     csv_file = 'DataBaseControl/Test_CSV.csv'
+    
 print(f'path to csv experiment file: {csv_file}')
 if not os.path.isfile(csv_file):
     print('not a valid csvfile. double check that filepath! see ya.')
