@@ -507,8 +507,6 @@ class runtime_functions:
         self.monitor_beams = False
         time.sleep(0.05)
 
-<<<<<<< Updated upstream
-=======
     @thread_it
     def click(self):
 
@@ -523,9 +521,6 @@ class runtime_functions:
         time.sleep(0.02)
 
         pi.set_PWM_dutycycle(pin, 0)
-
-    def monitor_lever(self, args):
->>>>>>> Stashed changes
 
     def monitor_levers(self, lever_ID):
         '''monitor a lever. lever_IDs can be "food", "door_1", "door_2", or a list containing a combination (ie ["food", "door_1"]'''
