@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/home/pi/RPI_operant/')
+sys.path.append('/home/pi/')
 
 import RPI_operant.home_base.functions as FN
 
