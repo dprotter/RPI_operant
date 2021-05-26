@@ -39,7 +39,7 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     summary += [['rounds without a press', 'non_press_rounds', non_presses]]
     
     prop_non_presses = non_presses/total_rounds
-    summary += [['proportion of rounds without a lever press', 'prop_non_presses_by_rounds', non_presses]]
+    summary += [['proportion of rounds without a lever press', 'prop_non_presses_by_rounds', prop_non_presses]]
 
 
     food_lever_press_prop_of_rounds = total_presses / total_rounds
