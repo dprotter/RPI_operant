@@ -65,7 +65,7 @@ class Experiment:
     def next_experiment(self):
         
         self.unfinished_loc += 1
-        if self.unfinished_loc not in self.unfinished.index.values:
+        if self.unfinished_loc not in list(self.unfinished.index.values):
             print('wow, think we are out of experiments to run! you must be all done.')
             return False
         self.cur_row = self.unfinished.iloc[[self.unfinished_loc]]
@@ -106,6 +106,7 @@ class Experiment:
         mods = self.vals['var_changes']
     
         print(f'vals are {self.vals}')
+
         for mod in mods.keys():
             try:
                 self.current_setup_dictionary[mod] = mods[mod]
@@ -117,7 +118,9 @@ class Experiment:
         vals_to_mod = [key for key in self.current_setup_dictionary.keys() 
                        if key in self.module.key_values.keys()]
         
+        
         for key in vals_to_mod:
+            
             self.module.key_values[key] = float(self.current_setup_dictionary[key])
     
     def user_modify_module_key_values(self):
@@ -209,6 +212,7 @@ class Experiment:
                 if key in self.experiment_status.columns:
                     self.experiment_status.loc[self.experiment_status.index ==self.exp_index, key] = track_changes[key]
                 self.experiment_status.to_csv(self.file, index = False)
+    
     def modify_vars(self, var_dict):
         '''to manually update variables. these will get put in the var_change column, as well'''
         
@@ -223,19 +227,49 @@ class Experiment:
     def instantiate_experiment(self):
         '''take values from the csv file and put them in the setup dict'''   
         update = {}
-        self.convert_var_changes()
+
+        vc = self.vals['var_changes']
+
+        
+        if isinstance(vc,str) or not np.isnan(self.vals['var_changes']):
+            self.convert_var_changes()
+        else:
+            self.vals['var_changes'] = {}
+
+        
+        
         for key in self.vals.keys():
             if key != 'var_changes':
                 update[key] = self.vals[key]
             
-            
-            for key in self.vals['var_changes'].keys():
-                update[key] = self.vals['var_changes'][key]
+        for key in self.vals['var_changes'].keys():
+            update[key] = self.vals['var_changes'][key]
+
         self.current_setup_dictionary.update(update)
     
     def convert_var_changes(self):
         '''check if self.vals['var_changes'] is a dict. if not, make it one'''
         current_vals = self.vals['var_changes']
+        print(f'var_changes = {current_vals}')
+        converted = {}
+        if not isinstance(current_vals, dict):
+            if not isinstance(current_vals, str):
+                try:
+                    current_vals = str(current_vals)
+                    
+                except:
+                    print('couldnt convert var_changes to str')
+            else:
+                current_vals = current_vals.strip()
+
+            'if we have a string of key:value pairs, split on "," and iterate over them.'
+            for pair in current_vals.split(','):
+                        key, value = pair.split(':')
+                        print(f'var_change pair {key} : {value}')
+                        converted[key] = value
+            self.vals['var_changes'] = converted
+
+
         if not type(current_vals) == dict:
             if not type(current_vals) == np.float64:
                 self.vals['var_changes'] = {kv.split(':')[0]:kv.split(':')[1] for kv in current_vals.split(',')}
@@ -302,23 +336,23 @@ class Experiment:
     
     def track_script_progress(self):
         
-        round = 0
+        current_round = 0
         while not self.module.fn.done:
-            if self.module.fn.round != round:
-                self.update_rounds(round)
-                round = self.module.fn.round
+            if self.module.fn.round != current_round:
+                self.update_rounds(current_round)
+                current_round = self.module.fn.round
             time.sleep(0.1)
         self.update_rounds(self.module.fn.round)
         self.experiment_finished()
     
     def experiment_finished(self):
         
-        self.experiment_status.loc[self.experiment_status.index ==self.exp_index, 'done'] = True
+        self.experiment_status.loc[self.experiment_status.index == self.exp_index, 'done'] = True
         self.experiment_status.to_csv(self.file, index = False)
     
     
     def run(self):
-        self.module.setup(self.current_setup_dictionary)
+        setup_dict = self.module.setup(self.current_setup_dictionary)
         csv_up = threading.Thread(target = self.track_script_progress, daemon = True)
         csv_up.start()
         
@@ -327,95 +361,6 @@ class Experiment:
         fdate = '%s_%s_%s__%s_%s'%(date.month, date.day, date.year, date.hour, date.minute)
         self.experiment_status.loc[self.experiment_status.index ==self.exp_index, 'run_time'] = fdate
         self.experiment_status.to_csv(self.file, index = False)
-        self.module.run_script()
+        self.module.run_script(setup_dict)
         self.experiment_finished()
         
-    #####-------------------undone--------------#####
-    """def choose_unfinished(self):
-        
-        print(f'''script {self.vals['script']} for vole {self.vars['vole']} may have previously been run.
-        only {self.cur_row['rounds_completed']} of
-        {self.cur_row['rounds']} were completed. \n\n''')
-
-        rounds_left = (experiment_status.iloc[next_exp_index].rounds -
-                        experiment_status.iloc[next_exp_index].completed_rounds)
-        valid = False
-        while valid == False:
-            rr = input(f'''Should I: run {next_script} for {rounds_left} more rounds (<y>) \n
-                            restart from round 0 (<r>)\n
-                            skip to next vole (<s>)\n''')
-            if rr not in ['y','r','s']:
-                print('Ooops, that wasnt a valid entry. use only: [y,r,s]')
-            else:
-                valid = True
-
-        if rr == 'y':
-            self.module.key_values['num_rounds'] = rounds_left
-        elif rr == 's':
-            skip_vole()
-
-        elif rr == 'r':
-            #we need to make a copy of the current row.
-            experiment_status = insert_row(experiment_status, next_exp_index+1, row_values = {})
-
-            #copy the old row to the new row, reset soem values
-            experiment_status.iloc[next_exp_index+1] = experiment_status.iloc[next_exp_index]
-            experiment_status.iloc[next_exp_index+1].completed_rounds = 0
-            experiment_status.iloc[next_exp_index+1].file = ''
-            experiment_status.iloc[next_exp_index+1].done = ''
-
-            experiment_status.to_csv(csv_path, index = False)
-
-            next_vole = experiment_status.iloc[next_exp_index+1].vole
-            next_script = experiment_status.iloc[next_exp_index+1].script
-            next_day = experiment_status.iloc[next_exp_index+1].day
-            next_exp_index = next_exp_index + 1
-
-    def modify_varsxxx(self):
-        '''give the user the opportunity to update the module values before running'''
-
-        defs = [[i, val, self.module.key_values_def[val], self.module.key_values[val]] for i, val in enumerate(self.module.key_val_names_order)]
-        defs += [[-1, 'done','','']]
-        print(defs)
-        print(tabulate(defs, headers = ['select','var name', 'var def', 'var value'], tablefmt = 'grid'))
-
-        choice = int(input('which will you modify?\n'))
-
-
-        while choice != -1:
-            '''!!!implement a check on input here'''
-            key = self.module.key_val_names_order[choice]
-
-            val = int(input(f'new value for {key}?\n'))
-            '''!!!implement a check on input here'''
-            self.module.key_values[key] = val
-
-            print('\n\n******************\n\n')
-
-            defs = [[i, val, self.module.key_values_def[val],self.module.key_values[val]] for i, val in enumerate(self.module.key_val_names_order)]
-            defs += [[-1, 'done','']]
-            print(tabulate(defs, headers = ['select','var name', 'var def', 'var value'], tablefmt = 'grid'))
-
-            choice = int(input('which will you modify?\n'))
-
-    
-
-    
-    def insert_row(df, row_number,  row_values):
-        df_top_copy = df.loc[df.index<=row_number].copy()
-        df_bottom_copy = df.loc[df.index>=row_number].copy()
-        df_bottom_copy.index = df_bottom_copy.index + 1
-        if row_values!=None:
-            new_row_cols = row_values.keys()
-
-        for col in df.columns:
-            if col in new_row_cols:
-                df_top_copy.loc[df_top_copy.experiment_status.index ==row_number, col] = row_values[col]
-            else:
-                df_top_copy.loc[df_top_copy.experiment_status.index ==row_number, col]=''
-
-        # return the dataframe
-        return df_top_copy.append(df_bottom_copy)
-
-    
-        """
