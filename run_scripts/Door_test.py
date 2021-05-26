@@ -183,7 +183,7 @@ def run_script():
         fn.timestamp_queue.put(f'{fn.round}, start of move animal time, {time.time()-fn.start_time}')
         
         move_ani_start = time.time()
-        approx_time_left = np.round(key_values['move_time'] - (time.time()-move_ani_start
+        approx_time_left = np.round(key_values['move_time'] - (time.time()-move_ani_start))
         fn.countdown_timer(time_interval=approx_time_left, next_event = 'next round')
 
         while time.time() - move_ani_start < key_values['move_time']:

@@ -271,7 +271,7 @@ def roundwise_join(df1, df2, new_col_name):
     new_df = df1.copy()
     new_df[new_col_name] = np.nan
     if len(df2.Round.unique()) != len(df2):
-        raise IndexError('impossible to match on Round, as there are duplicate rounds.')
+        raise IndexError(f'impossible to match on Round, as there are duplicate rounds. \n{df2.Round.value_counts()}')
     for index, row in df2.iterrows():
         r = int(row.Round)
         val = row[new_col_name]
