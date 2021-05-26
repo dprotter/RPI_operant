@@ -34,6 +34,13 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     #calculate number of presses
     total_presses = len(data.loc[data.Event == oes.food_leverpress_prod])
     summary += [['total number of lever presses', 'total_lever_press', total_presses]]
+    
+    non_presses = total_rounds - total_presses
+    summary += [['rounds without a press', 'non_press_rounds', non_presses]]
+    
+    prop_non_presses = non_presses/total_rounds
+    summary += [['proportion of rounds without a lever press', 'prop_non_presses_by_rounds', non_presses]]
+
 
     food_lever_press_prop_of_rounds = total_presses / total_rounds
     summary += [['proportion of rounds on which food lever was pressed', 

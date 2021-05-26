@@ -54,13 +54,23 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     total_presses = len(data.loc[data.Event == oes.door1_leverpress_prod]) + len(data.loc[data.Event == oes.door2_leverpress_prod])
     summary += [['total number of lever presses', 'total_lever_press', total_presses]]
 
+    non_presses = total_rounds - total_presses
+    summary += [['rounds without a press', 'non_press_rounds', non_presses]]
+    
+    prop_non_presses = non_presses/total_rounds
+    summary += [['proportion of rounds without a lever press', 'prop_non_presses_by_rounds', non_presses]]
+
 ###
 
     door_1_lever_press_count = af.count_event(data, oes.door1_leverpress_prod)
     summary += [['number of presses for door 1', 'door_1_lever_press_count', door_1_lever_press_count]]
+    
 
     door_2_lever_press_count = af.count_event(data, oes.door2_leverpress_prod)
     summary += [['number of presses for door 2', 'door_2_lever_press_count', door_2_lever_press_count]]
+    
+   
+     
 
  ###   
     door_1_lever_press_prop_of_rounds = door_1_lever_press_count / total_rounds
