@@ -47,10 +47,11 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     total_rounds = data.Round.max()
     summary += [['number of rounds in experiment', 'rounds', total_rounds]]
 
-########## door leverpress section #############3
+########## door leverpress section #############
 
     '''calculate the values for the days summary'''
     #calculate number of presses
+    print('using newest door test')
     total_presses = len(data.loc[data.Event == oes.door1_leverpress_prod]) + len(data.loc[data.Event == oes.door2_leverpress_prod])
     summary += [['total number of lever presses', 'total_lever_press', total_presses]]
 

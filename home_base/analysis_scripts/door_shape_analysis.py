@@ -31,7 +31,7 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
 
     event_1 = oes.lever_out
     event_2 = oes.door1_leverpress_prod
-    col_name = 'door_1_lever_press_latency'
+    col_name = 'door_2_lever_press_latency'
     new_col, new_data = af.latency_by_round(data, event_1, event_2, new_col_name = col_name, selected_by = event_2)
     round_df = af.roundwise_join(new_df, new_data, new_col)
     
@@ -66,16 +66,16 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     door_1_lever_press_count = af.count_event(data, oes.door1_leverpress_prod)
     summary += [['number of presses for door 1', 'door_1_lever_press_count', door_1_lever_press_count]]
     
-    door_1_non_press = int(total_rounds / 2) - door_1_lever_press_count
+    door_1_non_press_count = int(total_rounds / 2) - door_1_lever_press_count
     summary += [['opportunities for door_1 where there was no press', 
-                 'door_1_non_press_count', door_1_non_press]]
+                 'door_1_non_press_count', door_1_non_press_count]]
 
     door_2_lever_press_count = af.count_event(data, oes.door2_leverpress_prod)
     summary += [['number of presses for door 2', 'door_2_lever_press_count', door_2_lever_press_count]]
     
-    door_2_non_press = int(total_rounds / 2) - door_2_lever_press_count
+    door_2_non_press_count = int(total_rounds / 2) - door_2_lever_press_count
     summary += [['opportunities for door_2 where there was no press', 
-                 'door_2_non_press_count', door_2_non_press]]
+                 'door_2_non_press_count', door_2_non_press_count]]
 
  ###   
     door_1_lever_press_prop_of_rounds = door_1_lever_press_count / (total_rounds / 2)
@@ -86,7 +86,7 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     door_1_non_press_prop_of_rounds = door_1_non_press_count / (total_rounds / 2)
     summary += [['proportion of rounds on which door 1 was not pressed', 
                 'door_1_non_press_round_proportion', 
-                door_1_lever_non_press_prop_of_rounds]]
+                door_1_non_press_prop_of_rounds]]
 
 
     door_2_lever_press_prop_of_rounds = door_2_lever_press_count / (total_rounds / 2)
@@ -97,7 +97,7 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     door_2_non_press_prop_of_rounds = door_2_non_press_count / (total_rounds / 2)
     summary += [['proportion of rounds on which door 2 was pressed', 
                 'door_2_non_press_round_proportion', 
-                door_2_lever_non_press_prop_of_rounds]]
+                door_2_non_press_prop_of_rounds]]
 
 ###    
 
