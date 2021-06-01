@@ -65,6 +65,10 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
             'mean_pellet_latency',
                 round_df.pellet_latency.mean()]]
     
+    summary+= [['median pellet retrieval latency (excludes NaN)',
+            'mean_pellet_latency',
+                round_df.pellet_latency.median()]]
+    
     pel_retrievals = af.count_event(data, oes.retr)
     summary+= [['number of times a pellet was retrieved',
             'num_pellet_retrieved',
@@ -73,6 +77,11 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     summary+= [['proportion of rounds when a pellet was retrieved',
             'proportion_round_pellet_retrieved',
                 pel_retrievals / total_rounds]]
+    
+    dispensed = af.count_event(data, oes.disp)
+    summary+= [['proportion of pellets retrieved',
+            'proportion_pellet_retrieved',
+                pel_retrievals / dispensed]]
     
     
     summary+= [['animal ID',

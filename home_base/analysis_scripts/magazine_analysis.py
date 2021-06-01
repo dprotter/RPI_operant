@@ -61,6 +61,12 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
             'proportion_round_pellet_retrieved',
                 pel_retrievals / total_rounds]]
     
+    dispensed = af.count_event(data, oes.disp)
+    summary+= [['proportion of pellets retrieved',
+            'proportion_pellet_retrieved',
+                pel_retrievals / dispensed]]
+    
+    
     summary+= [['animal ID',
             'animal_ID',
                 head['vole']]]

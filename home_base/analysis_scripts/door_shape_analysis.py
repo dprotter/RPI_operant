@@ -128,6 +128,14 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     summary+= [['mean door_2 lever press latency (excludes NaN)',
             'mean_door_2_lever_press_latency',
                 round_df.door_2_lever_press_latency.mean()]]
+    
+    summary+= [['median door_1 lever press latency (excludes NaN)',
+            'median_door_1_lever_press_latency',
+                round_df.door_1_lever_press_latency.median()]]
+
+    summary+= [['median door_2 lever press latency (excludes NaN)',
+            'median_door_2_lever_press_latency',
+                round_df.door_2_lever_press_latency.median()]]
 
     #####beambreak section######
 

@@ -113,6 +113,14 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     summary+= [['mean door_2 lever press latency (excludes NaN)',
             'mean_door_2_lever_press_latency',
                 round_df.door_2_lever_press_latency.mean()]]
+    
+    summary+= [['median door_1 lever press latency (excludes NaN)',
+            'median_door_1_lever_press_latency',
+                round_df.door_1_lever_press_latency.median()]]
+
+    summary+= [['median door_2 lever press latency (excludes NaN)',
+            'median_door_2_lever_press_latency',
+                round_df.door_2_lever_press_latency.median()]]
 
     #####beambreak section######
 
@@ -162,9 +170,18 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     summary+= [['mean door_2 beambreak latency (max 1/round) (proxy for crossing, but could also be doorway investigation)',
         'mean_door_2_beam_break_latency',
             round_df.latency_beam_break_door2.mean()]]
+    
+    summary+= [['median door_1 beambreak latency (max 1/round) (proxy for crossing, but could also be doorway investigation)',
+        'median_door_1_beam_break_latency',
+            round_df.latency_beam_break_door1.median()]]
+
+    summary+= [['median door_2 beambreak latency (max 1/round) (proxy for crossing, but could also be doorway investigation)',
+        'median_door_2_beam_break_latency',
+            round_df.latency_beam_break_door2.median()]]
 
 
-    ##### general info section #####
+
+##### general info section #####
 
 
     summary+= [['animal ID',
