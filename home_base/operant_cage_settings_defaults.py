@@ -26,8 +26,7 @@ pins = {'lever_food':27,
 
 
 #values Levers [extended, retracted]
-lever_angles = {'food':[100, 70], 'door_1':[100,55], 'door_2':[90,35]}
-
+lever_angles = {'food':[50, 50], 'door_1':[35,35], 'door_2':[35,35]}
 
 continuous_servo_speeds = {
                         'dispense_pellet':{'stop':0.15, 'fwd':0.12},

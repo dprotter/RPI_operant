@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/home/pi/')
+sys.path.append('/home/pi/Desktop')
 
 import RPI_operant.home_base.functions as FN
 fn = FN.runtime_functions()

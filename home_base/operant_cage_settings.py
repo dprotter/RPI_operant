@@ -7,7 +7,7 @@ if not os.path.isfile('/etc/RPI_operant/operant_cage_settings_local.py'):
     print('no local operant cage settings, reverting to defaults')
 
     from home_base.operant_cage_settings_defaults import pins, lever_angles, continuous_servo_speeds, servo_dict
-
+    print(lever_angles)
 else:
     print('importing local operant cage settings')
     import importlib.util
@@ -18,5 +18,6 @@ else:
 
     pins = foo.pins
     lever_angles = foo.lever_angles
+    print(lever_angles)
     continuous_servo_speeds = foo.continuous_servo_speeds
     servo_dict = foo.servo_dict
