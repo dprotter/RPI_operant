@@ -60,6 +60,10 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     summary+= [['mean food lever press latency (excludes NaN)',
             'mean_food_lever_press_latency',
                 round_df.food_lever_press_latency.mean()]]
+    
+    summary+= [['median food lever press latency (excludes NaN)',
+            'median_food_lever_press_latency',
+                round_df.food_lever_press_latency.median()]]
 
     summary+= [['mean pellet retrieval latency (excludes NaN)',
             'mean_pellet_latency',

@@ -24,6 +24,12 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     new_df = new_df.astype({'Round':int})
     round_df = af.roundwise_join(new_df, new_data, new_col)
     
+    col_name = 'food_lever_press_latency'
+    new_col, new_data = af.latency_by_round(data, event_1, event_2, 
+                                             new_col_name = col_name, 
+                                             selected_by = event_2)
+    round_df = af.roundwise_join(round_df, new_data, new_col)
+    
 
     summary = []
 
