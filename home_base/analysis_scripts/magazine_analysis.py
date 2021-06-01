@@ -46,10 +46,22 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     summary += [['proportion of rounds on which food lever was pressed', 
                 'percent_food_presses', 
                 food_lever_press_prop_of_rounds]]
+    
+    summary+= [['mean food lever press latency (excludes NaN)',
+            'mean_food_lever_press_latency',
+                round_df.food_lever_press_latency.mean()]]
+    
+    summary+= [['median food lever press latency (excludes NaN)',
+            'median_food_lever_press_latency',
+                round_df.food_lever_press_latency.median()]]
 
     summary+= [['mean pellet retrieval latency (excludes NaN)',
             'mean_pellet_latency',
                 round_df.pellet_latency.mean()]]
+    
+    summary+= [['median pellet retrieval latency (excludes NaN)',
+            'mean_pellet_latency',
+                round_df.pellet_latency.median()]]
     
     
     pel_retrievals = af.count_event(data, oes.retr)
