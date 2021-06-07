@@ -636,7 +636,7 @@ class runtime_functions:
         extend = lever_angles[lever_ID][0]
         retract = lever_angles[lever_ID][1]
 
-        print(f'\n\n**** extending lever {lever_ID}: extend[ {extend} ], retract[ {retract} ]**** (using updated)')
+        print(f'\n\n**** extending lever {lever_ID}: extend[ {extend} ], retract[ {retract} ]**** (using updated!)')
         self.timestamp_queue.put('%i, Levers out, %f'%(self.round, time.time()-self.start_time))
         
         servo_dict[f'lever_{lever_ID}'].angle = extend
