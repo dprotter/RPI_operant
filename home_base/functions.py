@@ -634,11 +634,11 @@ class runtime_functions:
 
         #get extention and retraction angles from the operant_cage_settings
         extend = lever_angles[lever_ID][0]
-        retract = lever_angles[lever_ID][1]r
+        retract = lever_angles[lever_ID][1]
 
-        print(f'\n\n**** extending lever {lever_ID}: extend[ {extend} ], retract[ {retract} ]****')
+        print(f'\n\n**** extending lever {lever_ID}: extend[ {extend} ], retract[ {retract} ]**** (using updated)')
         self.timestamp_queue.put('%i, Levers out, %f'%(self.round, time.time()-self.start_time))
-        time.sleep(0.1)
+        
         servo_dict[f'lever_{lever_ID}'].angle = extend
 
     def retract_levers(self, lever_ID = ['food', 'door_1', 'door_2'], wait = False):
@@ -659,7 +659,7 @@ class runtime_functions:
     def _retract_lever(self, *args, **kwargs):
 
         lever_ID = kwargs['lever_ID']
-        timeout = 5
+        timeout = 2
 
 
         #get extention and retraction angles from the operant_cage_settings
