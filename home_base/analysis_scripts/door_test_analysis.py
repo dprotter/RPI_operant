@@ -47,20 +47,31 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     total_rounds = data.Round.max()
     summary += [['number of rounds in experiment', 'rounds', total_rounds]]
 
-########## door leverpress section #############3
+########## door leverpress section #############
 
     '''calculate the values for the days summary'''
     #calculate number of presses
+    print('using newest door test')
     total_presses = len(data.loc[data.Event == oes.door1_leverpress_prod]) + len(data.loc[data.Event == oes.door2_leverpress_prod])
     summary += [['total number of lever presses', 'total_lever_press', total_presses]]
+
+    non_presses = total_rounds - total_presses
+    summary += [['rounds without a press', 'non_press_rounds', non_presses]]
+    
+    prop_non_presses = non_presses/total_rounds
+    summary += [['proportion of rounds without a lever press', 'prop_non_presses_by_rounds', prop_non_presses]]
 
 ###
 
     door_1_lever_press_count = af.count_event(data, oes.door1_leverpress_prod)
     summary += [['number of presses for door 1', 'door_1_lever_press_count', door_1_lever_press_count]]
+    
 
     door_2_lever_press_count = af.count_event(data, oes.door2_leverpress_prod)
     summary += [['number of presses for door 2', 'door_2_lever_press_count', door_2_lever_press_count]]
+    
+   
+     
 
  ###   
     door_1_lever_press_prop_of_rounds = door_1_lever_press_count / total_rounds
@@ -102,6 +113,14 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     summary+= [['mean door_2 lever press latency (excludes NaN)',
             'mean_door_2_lever_press_latency',
                 round_df.door_2_lever_press_latency.mean()]]
+    
+    summary+= [['median door_1 lever press latency (excludes NaN)',
+            'median_door_1_lever_press_latency',
+                round_df.door_1_lever_press_latency.median()]]
+
+    summary+= [['median door_2 lever press latency (excludes NaN)',
+            'median_door_2_lever_press_latency',
+                round_df.door_2_lever_press_latency.median()]]
 
     #####beambreak section######
 
@@ -151,9 +170,18 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     summary+= [['mean door_2 beambreak latency (max 1/round) (proxy for crossing, but could also be doorway investigation)',
         'mean_door_2_beam_break_latency',
             round_df.latency_beam_break_door2.mean()]]
+    
+    summary+= [['median door_1 beambreak latency (max 1/round) (proxy for crossing, but could also be doorway investigation)',
+        'median_door_1_beam_break_latency',
+            round_df.latency_beam_break_door1.median()]]
+
+    summary+= [['median door_2 beambreak latency (max 1/round) (proxy for crossing, but could also be doorway investigation)',
+        'median_door_2_beam_break_latency',
+            round_df.latency_beam_break_door2.median()]]
 
 
-    ##### general info section #####
+
+##### general info section #####
 
 
     summary+= [['animal ID',

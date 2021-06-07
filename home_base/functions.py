@@ -636,18 +636,7 @@ class runtime_functions:
         extend = lever_angles[lever_ID][0]
         retract = lever_angles[lever_ID][1]
 
-        #we will wiggle the lever a bit to try and reduce binding and buzzing
-        modifier = 15
-        
-        if extend > retract:
-            retract_start = retract - modifier
-            extend_start = extend + modifier
-        else:
-            retract_start = retract + modifier
-            extend_start = extend - modifier
-
         print(f'\n\n**** extending lever {lever_ID}: extend[ {extend} ], retract[ {retract} ]****')
-        servo_dict[f'lever_{lever_ID}'].angle = extend_start
         self.timestamp_queue.put('%i, Levers out, %f'%(self.round, time.time()-self.start_time))
         time.sleep(0.1)
         servo_dict[f'lever_{lever_ID}'].angle = extend
