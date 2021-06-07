@@ -634,7 +634,7 @@ class runtime_functions:
 
         #get extention and retraction angles from the operant_cage_settings
         extend = lever_angles[lever_ID][0]
-        retract = lever_angles[lever_ID][1]
+        retract = lever_angles[lever_ID][1]r
 
         print(f'\n\n**** extending lever {lever_ID}: extend[ {extend} ], retract[ {retract} ]****')
         self.timestamp_queue.put('%i, Levers out, %f'%(self.round, time.time()-self.start_time))
