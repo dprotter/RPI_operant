@@ -635,10 +635,14 @@ class runtime_functions:
         #get extention and retraction angles from the operant_cage_settings
         extend = lever_angles[lever_ID][0]
         retract = lever_angles[lever_ID][1]
+        
+        wiggle = 5
+        extend_start = max(0, extend-wiggle)
 
         print(f'\n\n**** extending lever {lever_ID}: extend[ {extend} ], retract[ {retract} ]**** ')
         self.timestamp_queue.put('%i, Levers out, %f'%(self.round, time.time()-self.start_time))
-        
+        servo_dict[f'lever_{lever_ID}'].angle = extend_start
+        time.sleep(0.05)
         servo_dict[f'lever_{lever_ID}'].angle = extend
 
     def retract_levers(self, lever_ID = ['food', 'door_1', 'door_2'], wait = False):
@@ -665,12 +669,17 @@ class runtime_functions:
         #get extention and retraction angles from the operant_cage_settings
         extend = lever_angles[lever_ID][0]
         retract = lever_angles[lever_ID][1]
-            
+        
+        #slightly wiggle the servo to try and relieve any binding
+        wiggle = 5
+        retract_start = max(180, retract + 5)
+        
         start = time.time()
         while not GPIO.input(pins[f'lever_{lever_ID}']) and time.time()-start < timeout:
             'hanging till lever not pressed'
             time.sleep(0.05)
-            
+        servo_dict[f'lever_{lever_ID}'].angle = retract_start
+        time.sleep(0.05)
         servo_dict[f'lever_{lever_ID}'].angle = retract
         self.timestamp_queue.put(f'{self.round}, Lever retracted|{lever_ID}, {time.time()-self.start_time}')
         
@@ -912,7 +921,7 @@ class runtime_functions:
                             print('writing ###### %s'%line)
                             csv_writer.writerow(line)
                             time.sleep(0.005)
-                print('\n\n')
+                    print('\n\n')
                 time.sleep(0.01)
 
 
