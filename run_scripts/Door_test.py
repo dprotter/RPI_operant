@@ -202,14 +202,10 @@ def run_script(setup_dictionary = None):
             time.sleep(1)
         print('\nvole should be moved now')
     
-#<<<<<<< HEAD
-    
+    fn.analyze()
     fn.clean_up(wait = True)
-#=======
-#    fn.do_stuff_queue.put(('analyze',))
-#    fn.do_stuff_queue.put(('clean up',))
-#    fn.do_stuff_queue.join()
-#>>>>>>> master
+    
+
     
     
 if __name__ == '__main__':

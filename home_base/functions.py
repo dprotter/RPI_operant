@@ -500,27 +500,26 @@ class runtime_functions:
                 break
             
 
-            if not GPIO.input(pins['read_ir_2']) and not beam_1:
+            if not GPIO.input(pins['read_ir_2']) and not beam_2:
                 self.timestamp_queue.put(f'{self.round},{oes.beam_break_2}, {time.time()-self.start_time}')
                 beam_2 = True
                 break
         self.monitor_beams = False
         time.sleep(0.05)
 
-    @thread_it
     def click(self):
 
         hz = 900
-        self.pi.set_PWM_dutycycle(pin, 255/2)
-        self.pi.set_PWM_frequency(pin, int(8000))
+        self.pi.set_PWM_dutycycle(pins['speaker_tone'], 255/2)
+        self.pi.set_PWM_frequency(pins['speaker_tone'], int(8000))
 
         time.sleep(0.02)
-        self.pi.set_PWM_frequency(pin, int(hz))
+        self.pi.set_PWM_frequency(pins['speaker_tone'], int(hz))
         time.sleep(0.02)
-        self.pi.set_PWM_frequency(pin, int(hz/3))
+        self.pi.set_PWM_frequency(pins['speaker_tone'], int(hz/3))
         time.sleep(0.02)
 
-        pi.set_PWM_dutycycle(pin, 0)
+        self.pi.set_PWM_dutycycle(pins['speaker_tone'], 0)
 
     def monitor_levers(self, lever_ID):
         '''monitor a lever. lever_IDs can be "food", "door_1", "door_2", or a list containing a combination (ie ["food", "door_1"]'''
@@ -552,7 +551,7 @@ class runtime_functions:
                 if not self.interrupt:
                     #send the lever_ID to the lever_q to trigger a  do_stuff.put in
                     #the main thread/loop
-
+                    self.click()
                     self.lever_press_queue.put(lever_ID)
 
                     self.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.round, lever_ID, time.time()-self.start_time))
