@@ -6,7 +6,7 @@ if os.system('sudo lsof -i TCP:8888'):
     os.system('sudo pigpiod')
 
 import sys
-sys.path.append('/home/pi/Desktop')
+sys.path.append('/home/pi')
 from concurrent.futures import ThreadPoolExecutor
 import threading
 import socket
