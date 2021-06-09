@@ -148,7 +148,7 @@ def run_script(setup_dictionary = None):
         
     if fn.pellet_state:
         fn.timestamp_queue.put('%i, final pellet not retrieved, %f'%(fn.round, time.time()-fn.start_time))
-    
+        fn.pellet_state = False
     fn.analyze()
     fn.clean_up()
     
