@@ -161,7 +161,7 @@ if __name__ == '__main__':
     if test_run.lower() in ['y', 'yes']:
         print('ok, test it is!')
         key_values['num_rounds'] = 3
-        key_values['round_time'] = 6
+        key_values['round_time'] = 8
         
     
     else:
