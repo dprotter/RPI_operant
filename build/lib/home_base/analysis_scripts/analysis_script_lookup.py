@@ -5,16 +5,15 @@ import traceback
 import importlib
 
 def script_lookup(experiment):
-    table = {'Door_test':door_test,
-             'Autoshape':autoshape,
-             'Door_shape':door_shape,
-             'Magazine':magazine}
+    table = {'Door_test':door_test(),
+             'Autoshape':autoshape(),
+             'Door_shape':door_shape(),
+             'Magazine':magazine()}
 
-    return table[experiment]()
+    return table[experiment]
 
 def magazine():
     try:
-        print('importing magazine analysis module')
         import RPI_operant.home_base.analysis_scripts.magazine_analysis as magazine
     except:
         traceback.print_exc()
@@ -37,7 +36,7 @@ def door_shape():
         import RPI_operant.home_base.analysis_scripts.door_shape_analysis as door_shape
     except:
         traceback.print_exc()
-        print('couldnt import door_shape analysis script')
+        print('couldnt import Autoshape analysis script')
         raise
     return door_shape
     

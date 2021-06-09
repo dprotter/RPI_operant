@@ -637,7 +637,7 @@ class runtime_functions:
         
         wiggle = 5
         extend_start = max(0, extend-wiggle)
-
+ 
         print(f'\n\n**** extending lever {lever_ID}: extend[ {extend} ], retract[ {retract} ]**** ')
         self.timestamp_queue.put('%i, Levers out, %f'%(self.round, time.time()-self.start_time))
         servo_dict[f'lever_{lever_ID}'].angle = extend_start
