@@ -670,7 +670,7 @@ class runtime_functions:
         retract = lever_angles[lever_ID][1]
         
         #slightly wiggle the servo to try and relieve any binding
-        wiggle = 5
+        wiggle = 10
         retract_start = max(180, retract + 5)
         
         start = time.time()
