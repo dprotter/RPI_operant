@@ -671,7 +671,7 @@ class runtime_functions:
         
         #slightly wiggle the servo to try and relieve any binding
         wiggle = 10
-        retract_start = max(180, retract + 5)
+        retract_start = max(180, retract + wiggle)
         
         start = time.time()
         while not GPIO.input(pins[f'lever_{lever_ID}']) and time.time()-start < timeout:
