@@ -70,7 +70,7 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
                 round_df.pellet_latency.mean()]]
     
     summary+= [['median pellet retrieval latency (excludes NaN)',
-            'mean_pellet_latency',
+            'median_pellet_latency',
                 round_df.pellet_latency.median()]]
     
     pel_retrievals = af.count_event(data, oes.retr)
