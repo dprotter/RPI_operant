@@ -807,6 +807,7 @@ class runtime_functions:
         servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['stop']
         servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['stop']
         servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
+        self.monitor = False
         time.sleep(2)
         self.done = True
 
