@@ -65,7 +65,7 @@ def run_script(setup_dictionary = None):
                     'name':'round_start_tone'}
 
     pellet_buzz = {'buzz_length':key_values['pellet_tone_time'],
-                    'hz':key_values['pellet_tone_hz'],read_pellet
+                    'hz':key_values['pellet_tone_hz'],
                     'name':'pellet_tone'}
 
     door_open_buzz = {'buzz_length':key_values['door_open_tone_time'],
