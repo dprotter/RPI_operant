@@ -82,7 +82,7 @@ def run_script(setup_dictionary = None):
 
     #double check the doors are closed. close, if they arent
     fn.reset_chamber()
-    read_pellet
+    
     ##### start timing this session ######
     fn.start_timing()
     fn.pulse_sync_line(length = 0.5, event_name = 'experiment_start')
