@@ -15,7 +15,7 @@ default_setup_dict = {'vole':'000','day':1, 'experiment':'Magazine',
 
 
 key_values = {'num_rounds': 15, 
-              'round_time':90, 
+              'round_time':6, #90
               'time_II':2,
               'time_IV':2, 
               'pellet_tone_time':1, 
@@ -93,7 +93,9 @@ def run_script(setup_dictionary = None):
     
     #start at round 1 instead of the pythonic default of 0 for readability
     for i in range(1, key_values['num_rounds']+1,1):
-        
+        #reset our info about whether the animal has pressed
+        press = False
+
         round_start = time.time()
         fn.round = i
         fn.pulse_sync_line(length = 0.1, event_name = 'new_round')
@@ -111,15 +113,13 @@ def run_script(setup_dictionary = None):
         
         time_II_start = time.time()
         
-        #reset our info about whether the animal has pressed
-        press = False
+        
         while time.time() - time_II_start < key_values['time_II']:
             
             if not fn.lever_press_queue.empty() and not press:
                 fn.pulse_sync_line(length = 0.025, event_name = 'lever_press')
                 fn.buzz(**pellet_buzz)
                 fn.monitor = False
-                
                 fn.retract_levers(lever_ID='food')
                 fn.dispense_pellet()
                 
@@ -132,6 +132,7 @@ def run_script(setup_dictionary = None):
             
         #if the vole didnt press:
         if press == False:
+            fn.monitor = False
             print('no lever press')
             fn.buzz(**pellet_buzz)
             fn.dispense_pellet()
@@ -139,11 +140,7 @@ def run_script(setup_dictionary = None):
         time.sleep(key_values['time_IV'])
         
         if press == False:
-            fn.monitor = False
             fn.retract_levers(lever_ID='food')
-        else:
-            #reset press state
-            press = False
         
         fn.countdown_timer(time_interval = key_values['round_time'] - (time.time()-round_start),
                            next_event='next round')

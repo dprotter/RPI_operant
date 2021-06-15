@@ -783,7 +783,7 @@ class runtime_functions:
     def _pulse_sync_line(self, length, event_name):
         '''not terribly accurate, but good enough. For now, this is called on every
         lever press or pellet retrieval. Takes length in seconds'''
-        self.timestamp_queue.put(f'{self.round}, pulse sync line|{length}, {time.time()-self.start_time}')
+        self.timestamp_queue.put(f'{self.round}, pulse sync line|{length}|{event_name}, {time.time()-self.start_time}')
         GPIO.output(pins['gpio_sync'], 1)
         time.sleep(length)
         GPIO.output(pins['gpio_sync'], 0)
@@ -888,7 +888,7 @@ class runtime_functions:
             else:
                 read_disp += 1
 
-            if read_retr > 5:
+            if read_retr > 5 and self.pellet_state:
                 self.pulse_sync_line(length = 0.05, event_name = 'pellet retrieved')
                 self.timestamp_queue.put(f'{self.round}, pellet retrieved, {time.time()-self.start_time}')
                 print(f'\n\n\nPellet taken! {(time.time()-self.start_time)}\n\n\n')
