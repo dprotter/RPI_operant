@@ -114,6 +114,7 @@ def run_script(setup_dictionary = None):
         #reset our info about whether the animal has pressed
         press = False
         while time.time() - time_II_start < key_values['time_II']:
+            
             if not fn.lever_press_queue.empty() and not press:
                 fn.pulse_sync_line(length = 0.025, event_name = 'lever_press')
                 fn.buzz(**pellet_buzz)
@@ -140,6 +141,9 @@ def run_script(setup_dictionary = None):
         if press == False:
             fn.monitor = False
             fn.retract_levers(lever_ID='food')
+        else:
+            #reset press state
+            press = False
         
         fn.countdown_timer(time_interval = key_values['round_time'] - (time.time()-round_start),
                            next_event='next round')
