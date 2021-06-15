@@ -15,7 +15,7 @@ default_setup_dict = {'vole':'000','day':1, 'experiment':'Magazine',
 
 
 key_values = {'num_rounds': 15, 
-              'round_time':6, #90
+              'round_time':90,
               'time_II':2,
               'time_IV':2, 
               'pellet_tone_time':1, 
@@ -65,7 +65,7 @@ def run_script(setup_dictionary = None):
                     'name':'round_start_tone'}
 
     pellet_buzz = {'buzz_length':key_values['pellet_tone_time'],
-                    'hz':key_values['pellet_tone_hz'],
+                    'hz':key_values['pellet_tone_hz'],read_pellet
                     'name':'pellet_tone'}
 
     door_open_buzz = {'buzz_length':key_values['door_open_tone_time'],
@@ -82,7 +82,7 @@ def run_script(setup_dictionary = None):
 
     #double check the doors are closed. close, if they arent
     fn.reset_chamber()
-    
+    read_pellet
     ##### start timing this session ######
     fn.start_timing()
     fn.pulse_sync_line(length = 0.5, event_name = 'experiment_start')
