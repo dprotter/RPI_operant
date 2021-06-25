@@ -524,7 +524,6 @@ class runtime_functions:
     def monitor_levers(self, lever_ID):
         '''monitor a lever. lever_IDs can be "food", "door_1", "door_2", or a list containing a combination (ie ["food", "door_1"]'''
 
-
         workers = []
         if isinstance(lever_ID, list):
             for arg in lever_ID:
@@ -555,7 +554,7 @@ class runtime_functions:
                     self.lever_press_queue.put(lever_ID)
 
                     self.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.round, lever_ID, time.time()-self.start_time))
-                    while not GPIO.input(pins["lever_%s"%lever_ID]):
+                    while not GPIO.input(pins["lever_%s"%lever_ID]) and self.monitor:
                         'hanging till lever not pressed'
                         time.sleep(0.05)
                     lever = 0
@@ -564,7 +563,7 @@ class runtime_functions:
                     #off. note that this wont place anything in the lever_press queue,
                     #as that is just to tell the main thread the vole did something
                     self.timestamp_queue.put('%i, %s lever pressed, %f'%(self.round, lever_ID, time.time()-self.start_time))
-                    while not GPIO.input(pins["lever_%s"%lever_ID]):
+                    while not GPIO.input(pins["lever_%s"%lever_ID]) and self.monitor:
                         'hanging till lever not pressed'
                         time.sleep(0.05)
                     lever = 0
