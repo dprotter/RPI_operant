@@ -192,6 +192,8 @@ def run_script(setup_dictionary = None):
             fn.retract_levers(lever_ID = this_door)
             fn.buzz(**door_open_buzz, wait = True)
             fn.open_door(door_ID = this_door)
+            
+        fn.monitor = False
 
         approx_time = key_values['round_time'] - (time.time() - round_start)
         fn.countdown_timer(time_interval=approx_time, next_event='end of social interaction')
@@ -209,7 +211,6 @@ def run_script(setup_dictionary = None):
         fn.close_door(door_ID = this_door, wait = True)
         
         time.sleep(0.5)
-        
         
         
         print('\n\ntime to move that vole over!')
