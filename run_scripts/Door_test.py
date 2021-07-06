@@ -114,11 +114,6 @@ def run_script(setup_dictionary = None):
 
     #start at round 1 instead of the pythonic default of 0 for readability
     for i in range(1, key_values['num_rounds']+1,1):
-#<<<<<<< HEAD
-        fn.monitor_first_beam_breaks()
-#=======
-#        fn.do_stuff_queue.put(('monitor first beam breaks',))
-#>>>>>>> master
 
         round_start = time.time()
         
@@ -129,7 +124,7 @@ def run_script(setup_dictionary = None):
         #round start buzz
         fn.timestamp_queue.put(f'{fn.round}, Starting new round, {time.time()-fn.start_time}') 
         fn.buzz(**round_buzz, wait = True)
-        
+        fn.monitor_first_beam_breaks()
         
         fn.extend_lever(lever_ID = ['door_1', 'door_2'])
         fn.monitor_levers(lever_ID = ['door_1', 'door_2'])
