@@ -19,9 +19,9 @@ default_setup_dict = {'vole':'000','day':1, 'experiment':'Door_test',
 setup_dictionary = None
 
 key_values = {'num_rounds': 30,
-              'round_time':90, 
-              'time_II':30,
-              'move_time':20,
+              'round_time':15, 
+              'time_II':10,
+              'move_time':3,
               'pellet_tone_time':1, 
               'pellet_tone_hz':2500,
               'door_close_tone_time':1, 

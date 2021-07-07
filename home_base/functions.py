@@ -147,9 +147,7 @@ class lever:
                             
                             target_functions()
                         else:
-                            
-                            
-                        
+                            pass
                     time.sleep(0.025)
                             
             time.sleep(0.025)
