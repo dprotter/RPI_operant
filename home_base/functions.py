@@ -30,10 +30,11 @@ from RPI_operant.home_base.lookup_classes import Operant_event_strings as oes
 
 class lever:
     def __init__(self, lever_ID, rtf_object, inter_press_timeout = 0.5):
-        self.pin = GPIO.input(pins["lever_%s"%lever_ID])
+        self.name = lever_ID
+        self.pin = pins["lever_%s"%lever_ID]
         self.end_monitor = True
         self.lever_presses = queue.Queue()
-        self.threads = ThreadPoolExecutor(max_workers=4)
+        self.threads = ThreadPoolExecutor(max_workers=6)
         self.inter_press_timeout = inter_press_timeout
         self.rtf = rtf_object
         self.current_futures = []
@@ -107,17 +108,22 @@ class lever:
         
         self.current_futures.append(self.threads.submit(self.watch_lever_pin))
         
-        while not self.end_monitor:
-            if not self.lever_presses.empty():
-                while not self.lever_presses.empty() and not self.end_monitor:
+        while self.end_monitor == False:
+
+            if self.lever_presses.empty() == False:
+                while  self.lever_presses.empty() == False and self.end_monitor == False:
+
                     presses+=1
                     print(f'{self.name} lever at {presses} of {number_presses}')
-                    self.rtf.timestamp_queue.put('%i, %s lever pressed, %f'%(self.rtf.round, self.name, time.time()-self.rtf.start_time))
-                    self.rtf.pulse_sync_line(length = 0.025, event_name = f'{self.name}_lever_pressed')
-                    _ = self.lever_presses.get()
                     
-                    if presses == number_presses:
-                        
+                    if presses < number_presses:
+
+                        self.rtf.timestamp_queue.put('%i, %s lever pressed, %f'%(self.rtf.round, self.name, time.time()-self.rtf.start_time))
+                        self.rtf.pulse_sync_line(length = 0.025, event_name = f'{self.name}_lever_pressed')
+                        _ = self.lever_presses.get()
+                    
+                    else:
+                        print('presses reached')
                         self.rtf.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.rtf.round, self.name, time.time()-self.rtf.start_time))
                         self.rtf.pulse_sync_line(length = 0.025, event_name = f'{self.name}_lever_pressed_productive')
                         self.presses_reached = True
@@ -128,9 +134,9 @@ class lever:
                         self.end_monitor = True
                         if isinstance(target_functions, list):
                             for func in target_functions:
-                                (lambda: func)()
+                                func()
                         elif target_functions:
-                            (lambda: target_functions)()
+                            target_functions()
                         else:
                             pass
                         
@@ -149,11 +155,14 @@ class lever:
             
             
     def watch_lever_pin(self):
-            while not self.end_monitor:
-                if not GPIO.input(self.pin):
-                    self.lever_presses.put('pressed')
-                    time.sleep(self.inter_press_timeout)
-                time.sleep(0.025)
+        print(f'!!!!!watching a pin for {self.name}!!!!!')
+        while not self.end_monitor:
+            if not GPIO.input(self.pin):
+                print(f'{self.name}pressed!')
+                self.lever_presses.put('pressed')
+                time.sleep(self.inter_press_timeout)
+            time.sleep(0.025)
+        print(f'!!!!! done watching a pin for {self.name}!!!!!!')
                 
     
 class runtime_functions:

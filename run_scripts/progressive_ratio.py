@@ -146,26 +146,26 @@ def run_script(setup_dictionary = None):
         lever_d1.extend()
         lever_d2.extend()
         
-        d1_presses = 1+ d1_access * key_values['progressive_ratio_d1']
-        d2_presses = 1+ d2_access * key_values['progressive_ratio_d2']
+        d1_presses = 1 + d1_access * key_values['progressive_ratio_d1']
+        d2_presses = 1 + d2_access * key_values['progressive_ratio_d2']
         
         lever_d1.wait_for_n_presses(number_presses = d1_presses,
                                     target_functions=[
-                                    lever_d1.delay(delay),
-                                    fn.buzz(**door_open_buzz, wait = True),
-                                    fn.open_door(door_ID = 'door_1'),
-                                    lever_d1.retract(),
-                                    lever_d2.retract(),
+                                    lambda:lever_d1.delay(delay),
+                                    lambda:fn.buzz(**door_open_buzz, wait = True),
+                                    lambda:fn.open_door(door_ID = 'door_1'),
+                                    lambda:lever_d1.retract(),
+                                    lambda:lever_d2.retract(),
                                     ],
                                     other_levers = lever_d2)
         
         lever_d2.wait_for_n_presses(number_presses = d2_presses,
                                     target_functions=[
-                                    lever_d2.delay(delay),
-                                    fn.buzz(**door_open_buzz, wait = True),
-                                    fn.open_door(door_ID = 'door_2'),
-                                    lever_d1.retract(),
-                                    lever_d2.retract(),
+                                    lambda:lever_d2.delay(delay),
+                                    lambda:fn.buzz(**door_open_buzz, wait = True),
+                                    lambda:fn.open_door(door_ID = 'door_2'),
+                                    lambda:lever_d1.retract(),
+                                    lambda:lever_d2.retract(),
                                     ],
                                     other_levers = lever_d1)
         
@@ -182,9 +182,12 @@ def run_script(setup_dictionary = None):
                     press = True
             time.sleep(0.05)
         
-        #if the vole didnt press, stop watching
-        lever_d1.end_monitor = True
-        lever_d2.end_monitor = True
+        if press == False:
+            #if the vole didnt press, stop watching
+            lever_d1.end_monitor = True
+            lever_d2.end_monitor = True
+            lever_d1.retract()
+            lever_d2.retract()
         
         if lever_d1.presses_reached and lever_d2.presses_reached:
             print('error: both levers reached number of presses required?')

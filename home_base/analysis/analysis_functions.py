@@ -6,7 +6,7 @@ import numpy as np
 import sys
 import os
 
-from RPI_operant.home_base.analysis.lookup_classes import Operant_event_strings as oes
+from RPI_operant.home_base.lookup_classes import Operant_event_strings as oes
 
 def assemble_names(directory):
     '''return a list of paths to files to parse'''
