@@ -149,7 +149,7 @@ def run_script(setup_dictionary = None):
         d1_presses = 1 + d1_access * key_values['progressive_ratio_d1']
         d2_presses = 1 + d2_access * key_values['progressive_ratio_d2']
         
-        lever_d1.wait_for_n_presses(number_presses = d1_presses,
+        f1 = lever_d1.wait_for_n_presses(number_presses = d1_presses,
                                     target_functions=[
                                     lambda:lever_d1.delay(delay),
                                     lambda:fn.buzz(**door_open_buzz, wait = True),
@@ -159,7 +159,7 @@ def run_script(setup_dictionary = None):
                                     ],
                                     other_levers = lever_d2)
         
-        lever_d2.wait_for_n_presses(number_presses = d2_presses,
+        f2 = lever_d2.wait_for_n_presses(number_presses = d2_presses,
                                     target_functions=[
                                     lambda:lever_d2.delay(delay),
                                     lambda:fn.buzz(**door_open_buzz, wait = True),
@@ -197,7 +197,11 @@ def run_script(setup_dictionary = None):
         elif lever_d2.presses_reached:
             door = 'door_2'
             d2_access += 1
-            
+        
+        if f2.exception():
+            print(f'\nwait_n d2 exception:\n----------------')
+            print(f2.exception())
+            print('---------------\n')
         
         while time.time() - round_start < key_values['round_time']:
 

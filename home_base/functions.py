@@ -94,10 +94,11 @@ class lever:
                            other_levers = None):
         fut = self._wait_for_n_presses(self, number_presses=number_presses, target_functions = target_functions,
                            other_levers = other_levers)
-    
+        return fut
+
     @lever_thread_it
     def _wait_for_n_presses(self, number_presses, target_functions,
-                           other_levers = None):
+                           other_levers):
         
         '''target functions and args can be lists. 
         functions = list of functions  and arguments, passed with same syntax as if you were running the func itself.
@@ -114,7 +115,7 @@ class lever:
                 while  self.lever_presses.empty() == False and self.end_monitor == False:
 
                     presses+=1
-                    print(f'{self.name} lever at {presses} of {number_presses}')
+                    print(f'\n^^^^{self.name} lever at {presses} of {number_presses}\n^^^^^^')
                     
                     if presses < number_presses:
 
@@ -123,22 +124,31 @@ class lever:
                         _ = self.lever_presses.get()
                     
                     else:
-                        print('presses reached')
+                        print('\n^^^^^^^^^^^^^^^presses reached^^^^^^^^^^^^^^^^^^')
+                        self.end_monitor = True
                         self.rtf.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.rtf.round, self.name, time.time()-self.rtf.start_time))
                         self.rtf.pulse_sync_line(length = 0.025, event_name = f'{self.name}_lever_pressed_productive')
                         self.presses_reached = True
+                        
                         if other_levers:
-                            for lever in other_levers:
-                                lever.end_monitor = True
-                                
-                        self.end_monitor = True
+                            if isinstance(other_levers, list):
+                                for lever in other_levers:
+                                    lever.end_monitor = True
+                            else:
+                                other_levers.end_monitor = True
+
                         if isinstance(target_functions, list):
+                           
                             for func in target_functions:
+                                
+                                print(f'\nrunning target function {func}')
                                 func()
                         elif target_functions:
+                            
                             target_functions()
                         else:
-                            pass
+                            
+                            
                         
                     time.sleep(0.025)
                             
@@ -155,14 +165,16 @@ class lever:
             
             
     def watch_lever_pin(self):
-        print(f'!!!!!watching a pin for {self.name}!!!!!')
-        while not self.end_monitor:
+        print(f'\n!!!!!watching a pin for {self.name}!!!!!')
+        while self.end_monitor == False:
             if not GPIO.input(self.pin):
                 print(f'{self.name}pressed!')
+                self.rtf.click()
                 self.lever_presses.put('pressed')
+
                 time.sleep(self.inter_press_timeout)
             time.sleep(0.025)
-        print(f'!!!!! done watching a pin for {self.name}!!!!!!')
+        print(f'\n:::::: done watching a pin for {self.name}:::::')
                 
     
 class runtime_functions:
