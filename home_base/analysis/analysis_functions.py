@@ -1,9 +1,28 @@
+import sys
+sys.path.append('/home/pi/')
+
 import pandas as pd
 import numpy as np
 import sys
 import os
-sys.path.append('/home/pi/')
-from RPI_operant.home_base.lookup_classes import Operant_event_strings as oes
+
+from RPI_operant.home_base.analysis.lookup_classes import Operant_event_strings as oes
+
+def assemble_names(directory):
+    '''return a list of paths to files to parse'''
+    os.chdir(directory)
+
+    #create an empty 2d list
+    out_names = []
+
+    #this will assemble a list of ALL filenames for images, sorted by timestamp of acquisition
+
+
+    for root, dirs, files in os.walk(directory):
+        out = [os.path.join(root, f) for f in sorted(files) if
+            f.endswith('.csv') if not f.startswith('.')]
+        out_names += out
+    return out_names
 
 def latency_by_round(df, event_1, event_2,  
                     new_col_name = None, 
@@ -188,9 +207,9 @@ def latency_by_round_expect_unequal(df, event_1, event_2,
         
         sli_1.rename(columns = {"Time":event_1}, inplace = True)
         sli_2.rename(columns = {"Time":event_2}, inplace = True)
-        #print(sli_1.head())
+        print(sli_1.head())
         new_df = pd.merge(sli_1, sli_2, on = 'Round')
-        #print(new_df.head())
+        print(new_df.head())
         new_df[new_col] = new_df[event_2] - new_df[event_1]
 
         return new_col, new_df
@@ -238,25 +257,40 @@ def latency_to_beam_break(df):
     d1_col_name, round_df_d1 = latency_by_round_expect_unequal(df, 
                                               event_1 = oes.door1_open_start, 
                                               event_2 = oes.beam_break_1,
-                                              selected_by = oes.door1_open_start, 
+                                              selected_by = oes.beam_break_1, 
                                               new_col_name = 'latency_beam_break_door1')
 
     d2_col_name, round_df_d2 = latency_by_round_expect_unequal(df, 
                                               event_1 = oes.door2_open_start, 
                                               event_2 = oes.beam_break_2,
-                                              selected_by = oes.door1_open_start, 
+                                              selected_by = oes.beam_break_2, 
                                               new_col_name = 'latency_beam_break_door2')
     
     return {d1_col_name:round_df_d1, d2_col_name:round_df_d2}
 
 def count_event(df, event):
     return len(df.loc[df.Event == event])
+
+def count_contingent_events(df, event_1, event_2):
+    '''counttimes event_2 occured after event_1 within the same round. 
+    eg # of rounds in which beam break occured after lever press'''
     
+    rounds = df.loc[df.Event == event_1, 'Round'].unique()
+    e1_count = 0
+    e2_count = 0
+    
+    for r in rounds:
+        e1_count += len(df.loc[(df.Event == event_1) & ('Round'==r)])
+        e2_count += len(df.loc[(df.Event == event_2) & ('Round'==r)])
+        
+    return {event_1:e1_count, event_2:e2_count}
+
+
 def roundwise_join(df1, df2, new_col_name):
     new_df = df1.copy()
     new_df[new_col_name] = np.nan
     if len(df2.Round.unique()) != len(df2):
-        raise IndexError('impossible to match on Round, as there are duplicate rounds.')
+        raise IndexError(f'impossible to match on Round, as there are duplicate rounds. \n{df2.Round.value_counts()}')
     for index, row in df2.iterrows():
         r = int(row.Round)
         val = row[new_col_name]
