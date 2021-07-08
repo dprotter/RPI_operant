@@ -18,7 +18,7 @@ default_setup_dict = {'vole':'000','day':1, 'experiment':'Door_test',
 
 setup_dictionary = None
 
-key_values = {'num_rounds': 30,
+key_values = {'num_rounds': 10,
               'round_time':15, 
               'time_II':10,
               'move_time':3,
