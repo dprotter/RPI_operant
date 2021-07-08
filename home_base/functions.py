@@ -101,7 +101,7 @@ class lever:
                            other_levers):
         
         '''target functions and args can be lists. 
-        functions = list of functions  and arguments, passed with same syntax as if you were running the func itself.
+        functions = list of functions  and arguments, passed with same syntax as if you were running the func itself, preceeded by lambda. ex: [ lambda:fn.buzz(**door_buzz) ]   .
         other levers = list of other lever objects to shut down if this one reaches n presses'''
         
         presses = 0
