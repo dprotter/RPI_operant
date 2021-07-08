@@ -155,6 +155,8 @@ class lever:
         while not self.lever_presses.empty():
             _ = self.lever_presses.get()
         
+        time.sleep(0.25)
+        
         for fut in self.current_futures:
             if fut.done():
                 self.current_futures.remove(fut)
@@ -163,16 +165,19 @@ class lever:
             
             
     def watch_lever_pin(self):
-        print(f'\n!!!!!watching a pin for {self.name}!!!!!')
+        print(f'\n()()()() watching a pin for {self.name} ()()()()\n')
         while self.end_monitor == False:
             if not GPIO.input(self.pin):
                 print(f'{self.name}pressed!')
                 self.rtf.click()
                 self.lever_presses.put('pressed')
+                while not GPIO.input(self.pin) and self.end_monitor == False:
+                    '''waiting for vole to get off lever'''
+                    time.sleep(0.025)
 
                 time.sleep(self.inter_press_timeout)
             time.sleep(0.025)
-        print(f'\n:::::: done watching a pin for {self.name}:::::')
+        print(f'\n:::::: done watching a pin for {self.name}:::::\n')
                 
     
 class runtime_functions:
