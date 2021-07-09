@@ -30,8 +30,13 @@ class Operant_event_strings:
     round_end_tone = ' round_start_tone tone complete 3000:hz 1:seconds' 
     lever_out = ' Levers out'
     lever_retracted = ' Levers retracted'
+    
     door1_leverpress_prod = ' door_1 lever pressed productive'
     door2_leverpress_prod = ' door_2 lever pressed productive'
+    
+    door1_leverpress = ' door_1 lever pressed'
+    door2_leverpress = ' door_2 lever pressed'
+    
     pulse_sync_line_025 = ' pulse sync line|0.025' 
     door_open_tone_start = ' door_open_tone tone start 10000:hz 1:seconds'
     door_open_tone_end = ' door_open_tone tone complete 10000:hz 1:seconds'

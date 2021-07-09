@@ -2,7 +2,10 @@ import sys
 sys.path.append('/home/pi/')
 
 import RPI_operant.home_base.functions as FN
+
 fn = FN.runtime_functions()
+lever_d1 = FN.lever(lever_ID = 'door_1', rtf_object = fn)
+lever_d2 = FN.lever(lever_ID = 'door_2', rtf_object = fn)
 
 import threading
 import time
@@ -10,15 +13,15 @@ import numpy as np
 
 
 
-default_setup_dict = {'vole':'000','day':1, 'experiment':'Door_test',
+default_setup_dict = {'vole':'000','day':1, 'experiment':'progressive_ratio',
                     'user':'Test User', 'output_directory':'/home/pi/test_outputs/', 'partner':'door_1', 'novel_num':'000'}
 
 setup_dictionary = None
 
-key_values = {'num_rounds': 30,
-              'round_time':90, 
-              'time_II':30,
-              'move_time':20,
+key_values = {'num_rounds': 20,
+              'round_time':120, 
+              'time_II':60,
+              'move_time':25,
               'pellet_tone_time':1, 
               'pellet_tone_hz':2500,
               'door_close_tone_time':1, 
@@ -28,7 +31,9 @@ key_values = {'num_rounds': 30,
               'round_start_tone_time':1, 
               'round_start_tone_hz':5000,
               'delay by day':[],
-              'delay default':1}
+              'delay default':1,
+              'progressive_ratio_d1':2,
+              'progressive_ratio_d2':2}
 
 key_values_def = {'num_rounds':'number of rounds',
                   'round_time':'total round length',
@@ -43,13 +48,16 @@ key_values_def = {'num_rounds':'number of rounds',
                   'round_start_tone_time':'in s', 
                   'round_start_tone_hz':'in hz',
                   'delay by day':'delay between lever press and reward',
-                  'delay default':'delay between lever press and reward if beyond delay by day length'}
+                  'delay default':'delay between lever press and reward if beyond delay by day length',
+                  'progressive_ratio_d1':'number of presses increases by this value for d1 after every reward',
+                  'progressive_ratio_d2':'number of presses increases by this value for d2 after every reward'
+                  }
 
 #for display purposes. put values you think are most likely to be changed early
 key_val_names_order = ['num_rounds', 'time_II', 'move_time','pellet_tone_time',
                         'pellet_tone_hz','door_close_tone_time','door_close_tone_hz',
                         'door_open_tone_time','door_open_tone_hz', 'round_start_tone_time',
-                        'round_start_tone_hz']
+                        'round_start_tone_hz', 'progressive_ratio_d1', 'progressive_ratio_d2']
 
 
 def setup(setup_dictionary = default_setup_dict, 
@@ -88,6 +96,7 @@ def run_script(setup_dictionary = None):
                     'hz':key_values['door_close_tone_hz'],
                     'name':'door_close_tone'}
     
+    
 
 
     #double check the doors are closed. close, if they arent
@@ -111,10 +120,16 @@ def run_script(setup_dictionary = None):
     ### master looper ###
     print(f"range for looping: {[i for i in range(1, key_values['num_rounds']+1,1)]}")
     
+    d1_access = 0
+    d2_access = 0
+    
 
     #start at round 1 instead of the pythonic default of 0 for readability
     for i in range(1, key_values['num_rounds']+1,1):
-
+        lever_d1.presses_reached = False
+        lever_d2.presses_reached = False
+        press = False
+        
         round_start = time.time()
         
         fn.round = i
@@ -125,52 +140,69 @@ def run_script(setup_dictionary = None):
         fn.timestamp_queue.put(f'{fn.round}, Starting new round, {time.time()-fn.start_time}') 
         fn.buzz(**round_buzz, wait = True)
         fn.monitor_first_beam_breaks()
-        
-        fn.extend_lever(lever_ID = ['door_1', 'door_2'])
-        fn.monitor_levers(lever_ID = ['door_1', 'door_2'])
 
         time_II_start = time.time()
         
-        #reset our info about whether the animal has pressed
-        press = False
+        lever_d1.extend()
+        lever_d2.extend()
+        
+        d1_presses = 1 + d1_access * key_values['progressive_ratio_d1']
+        d2_presses = 1 + d2_access * key_values['progressive_ratio_d2']
+        
+        f1 = lever_d1.wait_for_n_presses(number_presses = d1_presses,
+                                    target_functions=[
+                                    lambda:lever_d1.delay(delay),
+                                    lambda:fn.buzz(**door_open_buzz, wait = True),
+                                    lambda:fn.open_door(door_ID = 'door_1'),
+                                    lambda:lever_d1.retract(),
+                                    lambda:lever_d2.retract(),
+                                    ],
+                                    other_levers = lever_d2)
+        
+        f2 = lever_d2.wait_for_n_presses(number_presses = d2_presses,
+                                    target_functions=[
+                                    lambda:lever_d2.delay(delay),
+                                    lambda:fn.buzz(**door_open_buzz, wait = True),
+                                    lambda:fn.open_door(door_ID = 'door_2'),
+                                    lambda:lever_d1.retract(),
+                                    lambda:lever_d2.retract(),
+                                    ],
+                                    other_levers = lever_d1)
+        
+        
+
+        
         fn.countdown_timer(time_interval = key_values['time_II'], 
                             next_event = 'levers retracted')
         while time.time() - time_II_start < key_values['time_II']:
-            if not fn.lever_press_queue.empty() and not press:
-
-                #get which door was pressed    
-                lever_press = fn.lever_press_queue.get()
-
-                fn.pulse_sync_line(length = 0.025, event_name = 'lever_press')
-                
-                #retract lever
-                fn.monitor = False
-                fn.retract_levers(lever_ID = ['door_1', 'door_2'])
-                
-                #do not give reward until after delay
-                time.sleep(delay)
-                fn.buzz(**door_open_buzz, wait = True)
-
-                #open the door of the lever that was pressed 
-                fn.open_door(door_ID = lever_press)
-
-                approx_time_left = np.round(key_values['round_time'] - (time.time()-round_start) )
-                fn.countdown_timer(time_interval = approx_time_left, next_event = 'move animal')
-
-                press = True
-                
+            if lever_d1.presses_reached or lever_d2.presses_reached:
+                if not press:
+                    approx_time_left = np.round(key_values['round_time'] - (time.time()-round_start) )
+                    fn.countdown_timer(time_interval = approx_time_left, next_event = 'move animal')
+                    press = True
             time.sleep(0.05)
-            
-        #if the vole didnt press:
+        
         if press == False:
-            print('no lever press')
-            fn.monitor = False
-            
-            fn.retract_levers(lever_ID = ['door_1', 'door_2'])
-
-            approx_time_left = np.round(key_values['round_time'] - (time.time()-round_start) )
-            fn.countdown_timer(time_interval = approx_time_left, next_event = 'move animal')
-
+            #if the vole didnt press, stop watching
+            lever_d1.end_monitor = True
+            lever_d2.end_monitor = True
+            lever_d1.retract()
+            lever_d2.retract()
+        
+        if lever_d1.presses_reached and lever_d2.presses_reached:
+            print('error: both levers reached number of presses required?')
+        elif lever_d1.presses_reached:
+            door = 'door_1'
+            d1_access += 1
+        elif lever_d2.presses_reached:
+            door = 'door_2'
+            d2_access += 1
+        
+        if f2.exception():
+            print(f'\nwait_n d2 exception:\n----------------')
+            print(f2.exception())
+            print('---------------\n')
+        
         while time.time() - round_start < key_values['round_time']:
 
             time.sleep(0.5)
@@ -179,7 +211,7 @@ def run_script(setup_dictionary = None):
         if press:
             fn.buzz(**door_close_buzz, wait = True)
             time.sleep(0.5)
-            fn.close_doors(door_ID = lever_press)
+            fn.close_doors(door_ID = door)
         
         #must stop monitoring beams so we dont trip them when moving the animal
         #(doesnt really matter when only using monitor_first_beam_breaks(), but if continuously monitoring

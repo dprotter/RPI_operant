@@ -131,11 +131,13 @@ def run_script(setup_dictionary = None):
             time.sleep(0.05)
             
         #if the vole didnt press:
+        fn.monitor = False
         if press == False:
             fn.monitor = False
             print('no lever press')
             fn.buzz(**pellet_buzz)
             fn.dispense_pellet()
+
         
         time.sleep(key_values['time_IV'])
         

@@ -129,7 +129,7 @@ def run_script(setup_dictionary = None):
     
     #start at round 1 instead of the pythonic default of 0 for readability
     for i in range(1, key_values['num_rounds']+1,1):
-        fn.monitor_first_beam_breaks()
+        
         
         if rep_count == key_values['repetitions']:
             'swap doors if we have reach the rep count'
@@ -149,6 +149,7 @@ def run_script(setup_dictionary = None):
         #round start buzz
         fn.timestamp_queue.put(f'{fn.round}, Starting new round, {time.time()-fn.start_time}') 
         fn.buzz(**round_buzz, wait = True)
+        fn.monitor_first_beam_breaks()
         
         #extend and monitor for presses on whichever door lever we are using on this round
         fn.extend_lever(lever_ID = this_door)

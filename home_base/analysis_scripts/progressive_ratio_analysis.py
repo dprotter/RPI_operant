@@ -14,7 +14,7 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     event_1 = oes.lever_out
     event_2 = oes.door2_leverpress_prod
     
-    col_name = 'door_2_lever_press_latency'
+    col_name = 'door_2_pr_presses_reached_latency'
     
     
     new_col, new_data = af.latency_by_round(data, event_1, event_2, 
@@ -31,7 +31,7 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
 
     event_1 = oes.lever_out
     event_2 = oes.door1_leverpress_prod
-    col_name = 'door_1_lever_press_latency'
+    col_name = 'door_1_pr_presses_reached_latency'
     new_col, new_data = af.latency_by_round(data, event_1, event_2, new_col_name = col_name, selected_by = event_2)
     round_df = af.roundwise_join(new_df, new_data, new_col)
     
@@ -53,35 +53,42 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     #calculate number of presses
     print('using newest door test')
     total_presses = len(data.loc[data.Event == oes.door1_leverpress_prod]) + len(data.loc[data.Event == oes.door2_leverpress_prod])
-    summary += [['total number of lever presses', 'total_lever_press', total_presses]]
+    summary += [['total number of rewards received', 'total_rewards', total_presses]]
 
     non_presses = total_rounds - total_presses
-    summary += [['rounds without a press', 'non_press_rounds', non_presses]]
+    summary += [['rounds without a reward', 'non_reward_rounds', non_presses]]
     
     prop_non_presses = non_presses/total_rounds
-    summary += [['proportion of rounds without a lever press', 'prop_non_presses_by_rounds', prop_non_presses]]
+    summary += [['proportion of rounds without a reward', 'prop_non_reward_by_rounds', prop_non_presses]]
 
 ###
 
-    door_1_lever_press_count = af.count_event(data, oes.door1_leverpress_prod)
+    door_1_lever_press_count = af.count_event(data, oes.door1_leverpress_prod) + af.count_event(data, oes.door1_leverpress)
     summary += [['number of presses for door 1', 'door_1_lever_press_count', door_1_lever_press_count]]
     
 
-    door_2_lever_press_count = af.count_event(data, oes.door2_leverpress_prod)
+    door_2_lever_press_count = af.count_event(data, oes.door2_leverpress_prod) + af.count_event(data, oes.door2_leverpress)
     summary += [['number of presses for door 2', 'door_2_lever_press_count', door_2_lever_press_count]]
     
-   
+    
+    door_1_reward_press_count = af.count_event(data, oes.door1_leverpress_prod) 
+    summary += [['number of rewards for door 1', 'door_1_reward_count', door_1_reward_press_count]]
+    
+
+    door_2_reward_press_count = af.count_event(data, oes.door2_leverpress_prod)
+    summary += [['number of reawrds for door 2', 'door_2_reward_count', door_2_reward_press_count]]
+    
      
 
  ###   
-    door_1_lever_press_prop_of_rounds = door_1_lever_press_count / total_rounds
-    summary += [['proportion of rounds on which door 1 was pressed', 
-                'door_1_lever_press_round_proportion', 
+    door_1_lever_press_prop_of_rounds = door_1_reward_press_count / total_rounds
+    summary += [['proportion of rounds on which door 1 reward given', 
+                'door_1_reward_round_proportion', 
                 door_1_lever_press_prop_of_rounds]]
 
-    door_2_lever_press_prop_of_rounds = door_2_lever_press_count / total_rounds
-    summary += [['proportion of rounds on which door 2 was pressed', 
-                'door_2_lever_press_round_proportion', 
+    door_2_lever_press_prop_of_rounds = door_2_reward_press_count / total_rounds
+    summary += [['proportion of rounds on which door 2 reward given', 
+                'door_2_reward_round_proportion', 
                 door_2_lever_press_prop_of_rounds]]
 
 ###    
@@ -106,21 +113,6 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
 
 ###
 
-    summary+= [['mean door_1 lever press latency (excludes NaN)',
-            'mean_door_1_lever_press_latency',
-                round_df.door_1_lever_press_latency.mean()]]
-
-    summary+= [['mean door_2 lever press latency (excludes NaN)',
-            'mean_door_2_lever_press_latency',
-                round_df.door_2_lever_press_latency.mean()]]
-    
-    summary+= [['median door_1 lever press latency (excludes NaN)',
-            'median_door_1_lever_press_latency',
-                round_df.door_1_lever_press_latency.median()]]
-
-    summary+= [['median door_2 lever press latency (excludes NaN)',
-            'median_door_2_lever_press_latency',
-                round_df.door_2_lever_press_latency.median()]]
 
     #####beambreak section######
 
@@ -180,7 +172,6 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
     summary+= [['median door_2 beambreak latency (max 1/round) (proxy for crossing, but could also be doorway investigation)',
         'median_door_2_beam_break_latency',
             round_df.latency_beam_break_door2.median()]]
-
 
 
 ##### general info section #####

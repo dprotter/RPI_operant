@@ -19,6 +19,7 @@ import random
 import pigpio
 import traceback
 import inspect
+
 from RPI_operant.home_base.operant_cage_settings import (kit, pins,
     lever_angles, continuous_servo_speeds,servo_dict)
 
@@ -27,8 +28,161 @@ import RPI_operant.home_base.analysis.analyze as ana
 from RPI_operant.home_base.lookup_classes import Operant_event_strings as oes
 
 
+class lever:
+    def __init__(self, lever_ID, rtf_object, inter_press_timeout = 0.5):
+        self.name = lever_ID
+        self.pin = pins["lever_%s"%lever_ID]
+        self.end_monitor = True
+        self.lever_presses = queue.Queue()
+        self.threads = ThreadPoolExecutor(max_workers=6)
+        self.inter_press_timeout = inter_press_timeout
+        self.rtf = rtf_object
+        self.current_futures = []
+        self.presses_reached = False
+    
+    def delay(self, value):
+        time.sleep(value)
+        
+    def lever_thread_it(func, *args, **kwargs):
+        '''simple decorator to pass function to our thread distributor via a queue. 
+        these 4 lines took about 4 hours of googling and trial and error.
+        the returned 'future' object has some useful features, such as its own task-done monitor. '''
+        def pass_to_thread(self, *args, **kwargs):
+            future = self.threads.submit(func, *args, **kwargs)
+            return future
+        return pass_to_thread
+    
+    def extend(self):
+        lever_ID = self.name
+        
+        #get extention and retraction angles from the operant_cage_settings
+        extend = lever_angles[lever_ID][0]
+        retract = lever_angles[lever_ID][1]
+        
+        wiggle = 5
+        extend_start = max(0, extend-wiggle)
+ 
+        print(f'\n\n**** extending lever {lever_ID}: extend[ {extend} ], retract[ {retract} ]**** ')
+        self.rtf.timestamp_queue.put('%i, Levers out, %f'%(self.rtf.round, time.time()-self.rtf.start_time))
+        servo_dict[f'lever_{lever_ID}'].angle = extend_start
+        time.sleep(0.05)
+        servo_dict[f'lever_{lever_ID}'].angle = extend
+        
+    def retract(self):
+        lever_ID = self.name
+        timeout = 2
 
 
+        #get extention and retraction angles from the operant_cage_settings
+        extend = lever_angles[lever_ID][0]
+        retract = lever_angles[lever_ID][1]
+        
+        #slightly wiggle the servo to try and relieve any binding
+        wiggle = 10
+        retract_start = max(180, retract + wiggle)
+        
+        start = time.time()
+        while not GPIO.input(pins[f'lever_{lever_ID}']) and time.time()-start < timeout:
+            'hanging till lever not pressed'
+            time.sleep(0.05)
+        servo_dict[f'lever_{lever_ID}'].angle = retract_start
+        time.sleep(0.05)
+        servo_dict[f'lever_{lever_ID}'].angle = retract
+        self.rtf.timestamp_queue.put(f'{self.rtf.round}, Lever retracted|{lever_ID}, {time.time()-self.rtf.start_time}')
+    
+    def wait_for_n_presses(self, number_presses=1, target_functions = None,
+                           other_levers = None):
+        fut = self._wait_for_n_presses(self, number_presses=number_presses, target_functions = target_functions,
+                           other_levers = other_levers)
+        return fut
+
+    @lever_thread_it
+    def _wait_for_n_presses(self, number_presses, target_functions,
+                           other_levers):
+        
+        '''target functions and args can be lists. 
+        functions = list of functions  and arguments, passed with same syntax as if you were running the func itself, preceeded by lambda. ex: [ lambda:fn.buzz(**door_buzz) ]   .
+        other levers = list of other lever objects to shut down if this one reaches n presses'''
+        
+        presses = 0
+        self.end_monitor = False
+        
+        self.current_futures.append(self.threads.submit(self.watch_lever_pin))
+        
+        while self.end_monitor == False:
+
+            if self.lever_presses.empty() == False:
+                while  self.lever_presses.empty() == False and self.end_monitor == False:
+
+                    presses+=1
+                    print(f'\n^^^^{self.name} lever at {presses} of {number_presses}\n^^^^^^')
+                    
+                    if presses < number_presses:
+
+                        self.rtf.timestamp_queue.put('%i, %s lever pressed, %f'%(self.rtf.round, self.name, time.time()-self.rtf.start_time))
+                        self.rtf.pulse_sync_line(length = 0.025, event_name = f'{self.name}_lever_pressed')
+                        _ = self.lever_presses.get()
+                    
+                    else:
+                        print('\n^^^^^^^^^^^^^^^presses reached^^^^^^^^^^^^^^^^^^')
+                        self.end_monitor = True
+                        
+                        self.rtf.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.rtf.round, self.name, time.time()-self.rtf.start_time))
+                        self.rtf.timestamp_queue.put('%i, %s lever presses reached|%i, %f'%(self.rtf.round, self.name, presses, time.time()-self.rtf.start_time))
+                        self.rtf.pulse_sync_line(length = 0.025, event_name = f'{self.name}_lever_pressed_productive')
+                        
+                        self.presses_reached = True
+                        
+                        if other_levers:
+                            if isinstance(other_levers, list):
+                                for lever in other_levers:
+                                    lever.end_monitor = True
+                            else:
+                                other_levers.end_monitor = True
+
+                        if isinstance(target_functions, list):
+                           
+                            for func in target_functions:
+                                
+                                print(f'\nrunning target function {func}')
+                                func()
+                        elif target_functions:
+                            
+                            target_functions()
+                        else:
+                            pass
+                    time.sleep(0.025)
+                            
+            time.sleep(0.025)
+        #clear out the queue to shutdown
+        while not self.lever_presses.empty():
+            _ = self.lever_presses.get()
+        
+        time.sleep(0.25)
+        
+        for fut in self.current_futures:
+            if fut.done():
+                self.current_futures.remove(fut)
+            else:
+                print(f'uhoh, a {self.name} lever future is not done when it should be.')
+            
+            
+    def watch_lever_pin(self):
+        print(f'\n()()()() watching a pin for {self.name} ()()()()\n')
+        while self.end_monitor == False:
+            if not GPIO.input(self.pin):
+                print(f'{self.name}pressed!')
+                self.rtf.click()
+                self.lever_presses.put('pressed')
+                while not GPIO.input(self.pin) and self.end_monitor == False:
+                    '''waiting for vole to get off lever'''
+                    time.sleep(0.025)
+
+                time.sleep(self.inter_press_timeout)
+            time.sleep(0.025)
+        print(f'\n:::::: done watching a pin for {self.name}:::::\n')
+                
+    
 class runtime_functions:
     
     def __init__(self):
