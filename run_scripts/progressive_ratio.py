@@ -13,15 +13,15 @@ import numpy as np
 
 
 
-default_setup_dict = {'vole':'000','day':1, 'experiment':'Door_test',
+default_setup_dict = {'vole':'000','day':1, 'experiment':'progressive_ratio',
                     'user':'Test User', 'output_directory':'/home/pi/test_outputs/', 'partner':'door_1', 'novel_num':'000'}
 
 setup_dictionary = None
 
-key_values = {'num_rounds': 10,
-              'round_time':15, 
-              'time_II':10,
-              'move_time':3,
+key_values = {'num_rounds': 20,
+              'round_time':120, 
+              'time_II':60,
+              'move_time':25,
               'pellet_tone_time':1, 
               'pellet_tone_hz':2500,
               'door_close_tone_time':1, 

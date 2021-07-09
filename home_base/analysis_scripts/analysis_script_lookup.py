@@ -50,6 +50,15 @@ def door_test():
         raise
     return door_test
 
+def progressive_ratio():
+    try:
+        import RPI_operant.home_base.analysis_scripts.progressive_ratio_analysis as progressive_ratio
+    except:
+        traceback.print_exc()
+        print('couldnt import door_test analysis script')
+        raise
+    return progressive_ratio
+
 def load_custom_script(fpath):
     '''this will directly load a module from an fpath for using custom analysis scripts
     outside of the RPi_Operant package.'''
