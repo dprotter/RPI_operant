@@ -34,8 +34,8 @@ class Operant_event_strings:
     door1_leverpress_prod = ' door_1 lever pressed productive'
     door2_leverpress_prod = ' door_2 lever pressed productive'
     
-    door1_leverpress_prod = ' door_1 lever pressed'
-    door2_leverpress_prod = ' door_2 lever pressed'
+    door1_leverpress = ' door_1 lever pressed'
+    door2_leverpress = ' door_2 lever pressed'
     
     pulse_sync_line_025 = ' pulse sync line|0.025' 
     door_open_tone_start = ' door_open_tone tone start 10000:hz 1:seconds'
