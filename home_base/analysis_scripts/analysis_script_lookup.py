@@ -8,7 +8,8 @@ def script_lookup(experiment):
     table = {'Door_test':door_test,
              'Autoshape':autoshape,
              'Door_shape':door_shape,
-             'Magazine':magazine}
+             'Magazine':magazine,
+             'progressive_ratio':progressive_ratio}
 
     return table[experiment]()
 

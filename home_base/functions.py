@@ -126,8 +126,11 @@ class lever:
                     else:
                         print('\n^^^^^^^^^^^^^^^presses reached^^^^^^^^^^^^^^^^^^')
                         self.end_monitor = True
+                        
                         self.rtf.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.rtf.round, self.name, time.time()-self.rtf.start_time))
+                        self.rtf.timestamp_queue.put('%i, %s lever presses reached|%i, %f'%(self.rtf.round, self.name, presses, time.time()-self.rtf.start_time))
                         self.rtf.pulse_sync_line(length = 0.025, event_name = f'{self.name}_lever_pressed_productive')
+                        
                         self.presses_reached = True
                         
                         if other_levers:
