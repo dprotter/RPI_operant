@@ -44,7 +44,7 @@ class switch:
     # SWITCH is the class that controls a switch object
     def __init__(self, pin = None, parent = None):
         self.pin = pin
-        self.parent = set_parent(self, parent)
+        self.parent = self.set_parent(self, parent)
         self.presses = queue.Queue()
 
 # Servo
@@ -55,40 +55,57 @@ class servo:
         self.parent = parent
         self.angle = None
 
-    def move(self, angle, ID):
+    def move(self, angle):
         # MOVE moves the servo to the specified angle
-        servo_dict[f'lever_{ID}'].angle = angle
+        self.pin.angle = angle
         self.angle = angle
 
     def set_parent(self, parent):
         # SET_PARENT sets the parent object of this servo and connects the two objects to automatically update when something changes with the other.
         return parent
 
+# IR
+class irbeam:
+    # IRBEAM is the object that houses the IR beams that can be put into the dispenser as well as the other places on the floor of the cage
+    def __init__(self, pin = None, command = None, parent = None):
+        self.pin = pin
+        self.command = command
+        self.parent = self.set_parent(self, parent)
+
+    def set_parent(self, parent):
+        # SET_PARENT sets and connets the parent object to this object in order to have the references in place.
+        return parent 
+
 # Levers
 class lever:
     # LEVER is a class that contains all the info that the levers need to operate in the simulation. This includes the options that the levers have, the extend and retract methods, and signals about whether the vole pressed the lever or not. 
-    def __init__(self, lever_ID = None, command = None):
+    def __init__(self, lever_ID = None, command = None, sender = None):
         self.lever_ID = lever_ID
         self.pressed = False # if true, the lever was just pressed
         self.extended = False
         self.commandTag = command # Tag for the command to send when events occur
         self.pin = pins["lever_%s"%lever_ID]
-        self.children = {None}
+        self.sender = sender
+        self.children = {'switch': switch(pin=self.pin,parent=self), 'servo': servo(pin=servo_dict[f'lever_{lever_ID}'],parent=self)}
         # 
 
     def extend(self):
         # EXTEND extends the lever to the angle specified in the settings file
         extended = lever_angles[self.lever_ID][0]
-
         # Extend the lever
-        servo_dict[f'lever_{self.lever_ID}'].angle = extended
+        self.children['servo'].move(extended)
+        self.send()
 
     def retract(self):
         # RETRACT retracts the lever to the angle specified in the settings file
         retracted = lever_angles[self.lever_ID][1]
-
         # Retract the lever
-        servo_dict[f'lever_{self.lever_ID}'].angle = retracted
+        self.children['servo'].move(retracted)
+
+    def send(self):
+        # SEND is a backend function that sends the command to the arduino whenever a specified event is processed. 
+        self.sender.data = self.commandTag
+        self.sender.send_data()
 
 # Food Dispenser
 class dispenser:
@@ -96,6 +113,7 @@ class dispenser:
 
     def __init__(self, command = None):
         self.command = command
+        self.children
 
 # Doors
 
