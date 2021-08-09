@@ -9,7 +9,7 @@ import queue
 class sender:
     # SENDER is the object that sends information to Bonsai which includes timestamps and information on what event has occured. The arduino will take the serial commands and turn them into the correct signals for Bonsai.
 
-    def __init__(self, port = None, baud = 9600, commandFile = 'Software/commands.csv'):
+    def __init__(self, port = '/dev/serial0', baud = 9600, commandFile = 'Software/commands.csv'):
         self.port = port
         self.baudRate = baud
         self.data = None
@@ -24,6 +24,10 @@ class sender:
         formatted = self.data + "\r"
         formatted = formatted.encode('ascii')
         self.ser.write(formatted)
+
+        # Add the command to the queue
+        self.history.put(self.data)
+        self.history.task_done()
 
     def get_data(self, command):
         # GET_DATA gets the data needed from the associated software, in form of a command string. The command must match one of the possible command sequences outlined in the commands.csv file
@@ -43,8 +47,17 @@ class sender:
         commDict = pd.read_csv(fileName, index_col=0, header = None, squeeze=True).to_dict()
         return commDict
 
-# Test some stuff
-obj = sender()
-obj.get_data('leverOutFood')
-print(obj.commands)
+    def print_history(self):
+        # PRINT_HISTORY prints all the items in the queue with their timestamps to a log file just for reference
+        return []
+
+if __name__ == "main":
+    # # TESTS, comment out if just using this for the class
+    # obj = sender()
+    # obj.get_data('leverOutFood')
+    # print(obj.commands)
+
+    obj = sender()
+    obj.data = "leverOutFood"
+    obj.send_data()
 

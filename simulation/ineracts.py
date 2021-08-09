@@ -111,9 +111,10 @@ class lever:
 class dispenser:
     # DISPENSER is the object that dispenses the food pellets. It includes an IR sensor that says when the pellet has been dispensed and then taken as well. This also controls the servo for the food dispenser.
 
-    def __init__(self, command = None):
+    def __init__(self, command = None, sender = None):
         self.command = command
-        self.children
+        self.children = {'servo': servo(pin=servo_dict['dispense_pellet'],parent=self), 'ir': }
+        self.sender = sender
 
 # Doors
 
