@@ -1,0 +1,14 @@
+command,description,send to bonsai,pulse length (ms)
+leverOutFood,food lever extended,TRUE,0
+leverOutPartner,partner lever extended,TRUE,0
+leverOutNovel,novel lever extended,TRUE,0
+leverPressFood,food lever pressed,TRUE,25
+leverPressPartner,partner lever pressed,TRUE,25
+leverPressNovel,novel lever pressed,TRUE,25
+enterPartner,test animal has entered the partner chamber,TRUE,0
+enterNovel,test animal has entered the novel chamber,TRUE,0
+new_round,start of new round,TRUE,100
+roundTone,round tone start,TRUE,0
+pelletTone,pellet tone start,TRUE,0
+doorOpenTone,door open tone start,TRUE,0
+doorCloseTone,door close tone start,TRUE,0
