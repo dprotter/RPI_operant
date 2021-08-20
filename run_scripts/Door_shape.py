@@ -143,7 +143,7 @@ def run_script(setup_dictionary = None):
         round_start = time.time()
         
         fn.round = i
-        fn.pulse_sync_line(length = 0.1, event_name = 'new_round')
+        fn.pulse_sync_line(event_name = 'new_round')
         print(f"\n\n\n#-#-#-#-#-# new round #{i}, rep {rep_count} {this_door}!!!-#-#-#-#-#\n\n\n")
         
         #round start buzz
