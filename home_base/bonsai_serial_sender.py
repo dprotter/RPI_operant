@@ -31,7 +31,7 @@ class sender(threading.Thread):
     
     def busy(self):
         return self.sending
-        
+
     def finish(self):
         self.finished = True
 
@@ -43,12 +43,12 @@ class sender(threading.Thread):
             
             if not self.command_stack.empty():
                 command = self.command_stack.get()
-                print(f'got a command {command}')
+                
                 self._send_data(command)
                 time.sleep(0.05)
 
         while not self.command_stack.empty():
-            print('whoops, something in the stack')
+            
             command = self.command_stack.get()
             self._send_data(command)
         self.active = False
@@ -71,9 +71,9 @@ class sender(threading.Thread):
         else:
             formatted = command + '\r'
             formatted = formatted.encode('ascii')
-            print('formatted and ready to send')
+            
             self.ser.write(formatted)
-            print(f'sent {formatted}')
+            
         self.sending = False
     
     def get_commands(self):

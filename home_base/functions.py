@@ -26,6 +26,7 @@ from RPI_operant.home_base.operant_cage_settings import (kit, pins,
 import RPI_operant.home_base.analysis.analysis_functions as af
 import RPI_operant.home_base.analysis.analyze as ana
 from RPI_operant.home_base.lookup_classes import Operant_event_strings as oes
+from RPI_operant.home_base.bonsai_serial_sender import sender
 
 
 class lever:
@@ -172,12 +173,13 @@ class lever:
         while self.end_monitor == False:
             if not GPIO.input(self.pin):
                 print(f'{self.name}pressed!')
-                self.rtf.click()
-                self.lever_presses.put('pressed')
+                self.rtf.click_on()
+                
                 while not GPIO.input(self.pin) and self.end_monitor == False:
                     '''waiting for vole to get off lever'''
                     time.sleep(0.025)
-
+                self.rtf.click_off()
+                self.lever_presses.put('pressed')
                 time.sleep(self.inter_press_timeout)
             time.sleep(0.025)
         print(f'\n:::::: done watching a pin for {self.name}:::::\n')
@@ -187,7 +189,8 @@ class runtime_functions:
     
     def __init__(self):
         self.pi = pigpio.pi()
-        
+        self.serial_sender = sender()
+        self.serial_sender.start()
         #our queues for doign stuff and saving stuff
         
         self.timestamp_queue = queue.Queue()
@@ -610,6 +613,7 @@ class runtime_functions:
             #if led blocked (1 -> 0) and last state was unblocked, write timestamp
             if not GPIO.input(pins['read_ir_1']) and not beam_1:
                 self.timestamp_queue.put(f'{self.round}, beam_break_1_crossed, {time.time()-self.start_time}')
+                self.serial_sender.send_data('cross_door_1' + '\r')
                 beam_1 = True
             
             #led no longer blocked
@@ -623,6 +627,7 @@ class runtime_functions:
             #if led blocked (1 -> 0) and last state was unblocked, write timestamp
             if not GPIO.input(pins['read_ir_2']) and not beam_2:
                 self.timestamp_queue.put(f'{self.round}, beam_break_2_crossed, {time.time()-self.start_time}')
+                self.serial_sender.send_data('cross_door_2' + '\r')
                 beam_2 = True
             
             #led no longer blocked
@@ -650,24 +655,34 @@ class runtime_functions:
         while self.monitor_beams:
             if not GPIO.input(pins['read_ir_1']) and not beam_1:
                 self.timestamp_queue.put(f'{self.round},{oes.beam_break_1}, {time.time()-self.start_time}')
+                self.serial_sender.send_data('cross_door_1' + '\r')
                 beam_1 = True
                 break
             
 
             if not GPIO.input(pins['read_ir_2']) and not beam_2:
                 self.timestamp_queue.put(f'{self.round},{oes.beam_break_2}, {time.time()-self.start_time}')
+                self.serial_sender.send_data('cross_door_2' + '\r')
                 beam_2 = True
                 break
         self.monitor_beams = False
         time.sleep(0.05)
 
-    def click(self):
+    def click_on(self):
 
         hz = 900
         self.pi.set_PWM_dutycycle(pins['speaker_tone'], 255/2)
         self.pi.set_PWM_frequency(pins['speaker_tone'], int(8000))
 
         time.sleep(0.02)
+        self.pi.set_PWM_frequency(pins['speaker_tone'], int(hz))
+        time.sleep(0.02)
+
+        self.pi.set_PWM_dutycycle(pins['speaker_tone'], 0)
+    
+    def click_off(self):
+        hz = 900
+        self.pi.set_PWM_dutycycle(pins['speaker_tone'], 255/2)
         self.pi.set_PWM_frequency(pins['speaker_tone'], int(hz))
         time.sleep(0.02)
         self.pi.set_PWM_frequency(pins['speaker_tone'], int(hz/3))
@@ -704,14 +719,17 @@ class runtime_functions:
                 if not self.interrupt:
                     #send the lever_ID to the lever_q to trigger a  do_stuff.put in
                     #the main thread/loop
-                    self.click()
-                    self.lever_press_queue.put(lever_ID)
-
-                    self.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.round, lever_ID, time.time()-self.start_time))
+                    self.click_on()
                     while not GPIO.input(pins["lever_%s"%lever_ID]) and self.monitor:
                         'hanging till lever not pressed'
                         time.sleep(0.05)
+                    self.click_off()
                     lever = 0
+                    self.lever_press_queue.put(lever_ID)
+
+                    self.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.round, lever_ID, time.time()-self.start_time))
+                    self.serial_sender.send_data('lever_press_' + lever_ID + '\r')
+
                 else:
                     #we can still record from the lever until monitoring is turned
                     #off. note that this wont place anything in the lever_press queue,
@@ -793,6 +811,8 @@ class runtime_functions:
  
         print(f'\n\n**** extending lever {lever_ID}: extend[ {extend} ], retract[ {retract} ]**** ')
         self.timestamp_queue.put('%i, Levers out, %f'%(self.round, time.time()-self.start_time))
+        self.serial_sender.send_data('lever_out_' + lever_ID + '\r')
+        
         servo_dict[f'lever_{lever_ID}'].angle = extend_start
         time.sleep(0.05)
         servo_dict[f'lever_{lever_ID}'].angle = extend
@@ -981,9 +1001,7 @@ class runtime_functions:
         else:
             workers+= [self._breakpoint_monitor_lever(self, lever_ID = lever_ID)]
         
-        if wait:
-            name = inspect.currentframe().f_code.co_name
-            self.wait(workers, name)
+
 
     @thread_it
     def _breakpoint_monitor_lever(self, *args, **kwargs):
@@ -1044,6 +1062,7 @@ class runtime_functions:
             if read_retr > 5 and self.pellet_state:
                 self.pulse_sync_line(length = 0.05, event_name = 'pellet retrieved')
                 self.timestamp_queue.put(f'{self.round}, pellet retrieved, {time.time()-self.start_time}')
+                self.serial_sender.send_data('pellet_retrieved' + '\r')
                 print(f'\n\n\nPellet taken! {(time.time()-self.start_time)}\n\n\n')
                 #no pellet in trough
                 self.pellet_state = False
