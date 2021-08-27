@@ -18,6 +18,7 @@ class sender(threading.Thread):
         print('initializing sender')
         super().__init__()
         self.finished = False
+        self.sending = False
         self.active = True
         self.port        = port
         self.baudRate    = baud
@@ -27,7 +28,10 @@ class sender(threading.Thread):
         # Initialize the port
         self.ser = ser.Serial(self.port, self.baudRate)
         self.command_dict = self.get_commands() # Assign the commands property
-
+    
+    def busy(self):
+        return self.sending
+        
     def finish(self):
         self.finished = True
 
@@ -56,6 +60,7 @@ class sender(threading.Thread):
 
     def _send_data(self, command):
         # SEND_DATA sends the data through the associated serial port, and then logs all the commands that have been send to the self.history queue object.
+        self.sending = True
         if not command in self.command_dict.keys():
             print(f'WARNING: "{command}" is not a valid command being sent, will not be read by the Arduino and Bonsai')
             print(self.command_dict.keys())
@@ -69,7 +74,7 @@ class sender(threading.Thread):
             print('formatted and ready to send')
             self.ser.write(formatted)
             print(f'sent {formatted}')
-
+        self.sending = False
     
     def get_commands(self):
         # GET_COMMANDS gets the list of possible command names from a previously defined file in csv format. 

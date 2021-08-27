@@ -8,7 +8,13 @@ coms.start()
 
 if __name__ == '__main__':
     coms.send_data('leverOutFood')
-    coms.finish()
-    while coms.running():
+    
+    while coms.busy():
         print('holding for coms')
         time.sleep(0.25)
+    coms.send_data('leverPressNovel')
+    
+    while coms.busy():
+        print('holding for coms')
+        time.sleep(0.25)
+    coms.finish()
