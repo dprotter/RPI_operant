@@ -9,11 +9,6 @@ import time
 
 
 
-from RPI_operant.home_base.sender
-
-
-coms = sender()
-
 default_setup_dict = {'vole':'000','day':1, 'experiment':'Autoshape',
                     'user':'Test User', 'output_directory':'/home/pi/test_outputs/'}
 
