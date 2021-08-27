@@ -13,7 +13,7 @@ class sender(threading.Thread):
     #         baud (int) - Baud rate that the serial port runs on (default 9600 to match arduino)
     #         commandFile (str) - path of the commands.csv file where the commands are located
 
-    def __init__(self, port = '/dev/serial1', baud = 9600, commandFile = '~/RPI_operant/home_base/bonsai_commands.csv'):
+    def __init__(self, port = '/dev/serial0', baud = 9600, commandFile = '~/RPI_operant/home_base/bonsai_commands.csv'):
         # Set the initial properties
         print('initializing sender')
         super().__init__()
@@ -64,7 +64,7 @@ class sender(threading.Thread):
             print(f'WARNING: command {command} was passed to the serial encoder, but attribute "send to bonsai" is FALSE. This will not be sent off the pi.') 
             return
         else:
-            formatted = command + "\r"
+            formatted = command + '\r'
             formatted = formatted.encode('ascii')
             print('formatted and ready to send')
             self.ser.write(formatted)
