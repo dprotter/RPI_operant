@@ -15,7 +15,7 @@ if __name__ == '__main__':
     # while coms.busy():
     #     print('holding for coms')
     #     time.sleep(0.25)
-    time.sleep(2500)
+    time.sleep(2.5)
     messData = 'lever_press_door_1'
     coms.send_data(messData)
     print('Sent: ' + messData)
@@ -23,5 +23,5 @@ if __name__ == '__main__':
     # while coms.busy():
     #     print('holding for coms')
     #     time.sleep(0.25)
-    time.sleep(2500)
+    time.sleep(2.5)
     coms.finish()
