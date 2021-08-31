@@ -103,8 +103,8 @@ if __name__ == "__main__":
 
     # Endlessly send the same command to test
     while True:
-        obj.data = "lever_out_door_1"
-        obj.send_data()
+        data = "lever_out_door_1"
+        obj.send_data(data)
         print('Sent Command: ' + obj.data)
         time.sleep(4) # Pause for ease of reading and to test the log
 
