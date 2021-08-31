@@ -82,3 +82,30 @@ class sender(threading.Thread):
         commDict = pd.read_csv(self.commandFile, index_col=0).to_dict('index')
         return commDict
 
+#---------------------------------------------------------------------------------------------------
+# FOR TESTING THE SCRIPT:
+""" 
+This test simply runs this file on a raspberry pi computer using the /dev/serial0 serial port as a
+default. The pi is then connected to the arduino through the GPIO serial pins TX and RX, so that 
+the arduino reads commands through the serial port of the pi. The arduino is set up to process the
+commands listed in the commands.csv file ONLY so any commands issued other than those will not do
+anything. 
+"""
+#---------------------------------------------------------------------------------------------------
+if __name__ == "__main__":
+
+    # Initialize the object
+    obj = sender()
+    atexit.register(obj.print_history)
+
+    # Print info to terminal
+    print('Starting Flash...')
+    print('Port: ' + obj.port)
+
+    # Endlessly send the same command to test
+    while True:
+        obj.data = "lever_out_door_1"
+        obj.send_data()
+        print('Sent Command: ' + obj.data)
+        time.sleep(4) # Pause for ease of reading and to test the log
+
