@@ -96,7 +96,6 @@ if __name__ == "__main__":
 
     # Initialize the object
     obj = sender()
-    atexit.register(obj.print_history)
 
     # Print info to terminal
     print('Starting Flash...')
