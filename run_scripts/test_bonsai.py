@@ -7,14 +7,21 @@ coms = sender()
 coms.start()
 
 if __name__ == '__main__':
-    coms.send_data('lever_out_food')
+    print('Sending...')
+    messData = 'lever_out_food'
+    coms.send_data(messData)
+    print('Sent: ' + messData)
     
-    while coms.busy():
-        print('holding for coms')
-        time.sleep(0.25)
-    coms.send_data('lever_press_door_1')
+    # while coms.busy():
+    #     print('holding for coms')
+    #     time.sleep(0.25)
+    time.sleep(2500)
+    messData = 'lever_press_door_1'
+    coms.send_data(messData)
+    print('Sent: ' + messData)
     
-    while coms.busy():
-        print('holding for coms')
-        time.sleep(0.25)
+    # while coms.busy():
+    #     print('holding for coms')
+    #     time.sleep(0.25)
+    time.sleep(2500)
     coms.finish()
