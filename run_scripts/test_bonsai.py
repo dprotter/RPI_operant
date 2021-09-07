@@ -12,9 +12,9 @@ if __name__ == '__main__':
     coms.send_data(messData)
     print('Sent: ' + messData)
     
-    # while coms.busy():
-    #     print('holding for coms')
-    #     time.sleep(0.25)
+    while coms.busy():
+        print('holding for coms')
+        time.sleep(0.25)
     time.sleep(2.5)
     messData = 'lever_press_door_1'
     coms.send_data(messData)
