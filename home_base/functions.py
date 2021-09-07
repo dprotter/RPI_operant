@@ -613,7 +613,7 @@ class runtime_functions:
             #if led blocked (1 -> 0) and last state was unblocked, write timestamp
             if not GPIO.input(pins['read_ir_1']) and not beam_1:
                 self.timestamp_queue.put(f'{self.round}, beam_break_1_crossed, {time.time()-self.start_time}')
-                self.serial_sender.send_data('cross_door_1' + '\r')
+                self.serial_sender.send_data('cross_door_1')
                 beam_1 = True
             
             #led no longer blocked
@@ -627,7 +627,7 @@ class runtime_functions:
             #if led blocked (1 -> 0) and last state was unblocked, write timestamp
             if not GPIO.input(pins['read_ir_2']) and not beam_2:
                 self.timestamp_queue.put(f'{self.round}, beam_break_2_crossed, {time.time()-self.start_time}')
-                self.serial_sender.send_data('cross_door_2' + '\r')
+                self.serial_sender.send_data('cross_door_2')
                 beam_2 = True
             
             #led no longer blocked
@@ -655,14 +655,14 @@ class runtime_functions:
         while self.monitor_beams:
             if not GPIO.input(pins['read_ir_1']) and not beam_1:
                 self.timestamp_queue.put(f'{self.round},{oes.beam_break_1}, {time.time()-self.start_time}')
-                self.serial_sender.send_data('cross_door_1' + '\r')
+                self.serial_sender.send_data('cross_door_1')
                 beam_1 = True
                 break
             
 
             if not GPIO.input(pins['read_ir_2']) and not beam_2:
                 self.timestamp_queue.put(f'{self.round},{oes.beam_break_2}, {time.time()-self.start_time}')
-                self.serial_sender.send_data('cross_door_2' + '\r')
+                self.serial_sender.send_data('cross_door_2')
                 beam_2 = True
                 break
         self.monitor_beams = False
@@ -728,7 +728,7 @@ class runtime_functions:
                     self.lever_press_queue.put(lever_ID)
 
                     self.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.round, lever_ID, time.time()-self.start_time))
-                    self.serial_sender.send_data('lever_press_' + lever_ID + '\r')
+                    self.serial_sender.send_data('lever_press_' + lever_ID)
 
                 else:
                     #we can still record from the lever until monitoring is turned
@@ -811,7 +811,7 @@ class runtime_functions:
  
         print(f'\n\n**** extending lever {lever_ID}: extend[ {extend} ], retract[ {retract} ]**** ')
         self.timestamp_queue.put('%i, Levers out, %f'%(self.round, time.time()-self.start_time))
-        self.serial_sender.send_data('lever_out_' + lever_ID + '\r')
+        self.serial_sender.send_data('lever_out_' + lever_ID)
         
         servo_dict[f'lever_{lever_ID}'].angle = extend_start
         time.sleep(0.05)
@@ -1062,7 +1062,7 @@ class runtime_functions:
             if read_retr > 5 and self.pellet_state:
                 self.pulse_sync_line(length = 0.05, event_name = 'pellet retrieved')
                 self.timestamp_queue.put(f'{self.round}, pellet retrieved, {time.time()-self.start_time}')
-                self.serial_sender.send_data('pellet_retrieved' + '\r')
+                self.serial_sender.send_data('pellet_retrieved')
                 print(f'\n\n\nPellet taken! {(time.time()-self.start_time)}\n\n\n')
                 #no pellet in trough
                 self.pellet_state = False
