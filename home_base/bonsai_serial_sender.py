@@ -25,10 +25,26 @@ class sender(threading.Thread):
         self.history     = queue.Queue()
         self.commandFile = commandFile
         self.command_stack = queue.Queue()
+        self.timeout = 2
         # Initialize the port
-        self.ser = ser.Serial(self.port, self.baudRate)
-        self.command_dict = self.get_commands() # Assign the commands property
-    
+        try:
+            self.ser = ser.Serial(self.port, self.baudRate)
+            self.command_dict = self.get_commands() # Assign the commands property
+                
+            self.send_data('startup test')
+            self.sending = True
+            
+            start = time.time()
+            while self.sending and time.time() - start < self.timeout:
+                time.sleep(0.05)
+            finished = time.time()
+            if finished - start > self.timeout:
+                print('serial sender failed to send test message ')
+        except:
+            print('serial sender failed setup. If not sending serial data for Bonsai integration, ignore this warning.')
+        
+
+
     def busy(self):
         return self.sending
 

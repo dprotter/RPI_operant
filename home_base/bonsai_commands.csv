@@ -8,3 +8,4 @@ lever_press_door_2,novel lever pressed,TRUE,25
 cross_door_1,test animal has entered the partner chamber,TRUE,0
 cross_door_2,test animal has entered the novel chamber,TRUE,0
 pellet_retrieved,test animal has taken a pellet,TRUE,0
+startup test,setup serial sender test,TRUE,0

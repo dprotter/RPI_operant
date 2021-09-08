@@ -8,7 +8,7 @@ coms.start()
 
 if __name__ == '__main__':
     print('Sending...')
-    messData = 'lever_out_door_1'
+    messData = 'lever_out_food'
     coms.send_data(messData)
     print('Sent: ' + messData)
     
@@ -16,7 +16,7 @@ if __name__ == '__main__':
         print('holding for coms')
         time.sleep(0.25)
     time.sleep(2.5)
-    messData = 'lever_press_door_1'
+    messData = 'lever_press_door_2'
     coms.send_data(messData)
     print('Sent: ' + messData)
     

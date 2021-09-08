@@ -111,6 +111,13 @@ void commands (String command) {
       // Animal entered the partner chamber
       digitalWrite(cross_door_2_pin, HIGH);
     }
+    else if (command == "startup test") {
+      // Animal entered the partner chamber
+      for (i = 0; i<5;, i++):
+        digitalWrite(13, HIGH);
+        delay(0.25)
+        digitalWrite(13, LOW);
+    }
     else {
       //do nothing
     }
