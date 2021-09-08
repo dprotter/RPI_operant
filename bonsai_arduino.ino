@@ -40,10 +40,10 @@ void setup () {
 
     for(int i = 0; i<4; i++){
       digitalWrite(lever_out_food_pin, HIGH);
-      digitalWrite(lever_out_door_1_pin, HIGH);
+      digitalWrite(lever_press_door_2_pin, HIGH);
       delay(500);
       digitalWrite(lever_out_food_pin, LOW);
-      digitalWrite(lever_out_door_1_pin, LOW);
+      digitalWrite(lever_press_door_2_pin, LOW);
       delay(500);
     }
     
