@@ -39,11 +39,11 @@ void setup () {
     myserial.begin(9600);
 
     for(int i = 0; i<4; i++){
-      digitalWrite(leverOutFoodPin, HIGH);
-      digitalWrite(leverPressNovelPin, HIGH);
+      digitalWrite(lever_out_food_pin, HIGH);
+      digitalWrite(lever_out_door_1_pin, HIGH);
       delay(500);
-      digitalWrite(leverOutFoodPin, LOW);
-      digitalWrite(leverPressNovelPin, LOW);
+      digitalWrite(lever_out_food_pin, LOW);
+      digitalWrite(lever_out_door_1_pin, LOW);
       delay(500);
     }
     
@@ -113,10 +113,11 @@ void commands (String command) {
     }
     else if (command == "startup test") {
       // Animal entered the partner chamber
-      for (i = 0; i<5;, i++):
+      for (int i = 0; i<5; i++){
         digitalWrite(13, HIGH);
-        delay(0.25)
+        delay(0.25);
         digitalWrite(13, LOW);
+      }
     }
     else {
       //do nothing
