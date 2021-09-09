@@ -139,7 +139,14 @@ void commands (String command) {
       // Animal entered the partner chamber
       Firmata.sendAnalog(messagePin, vals[8]);
       digitalWrite(cross_door_2_pin, HIGH);
-      //delay(50);
+    }
+    else if (command == "startup_test") {
+      // Animal entered the partner chamber
+      for (int i = 0; i<5; i++){
+        digitalWrite(lever_out_food_pin, HIGH);
+        delay(250);
+        digitalWrite(lever_out_food_pin, LOW);
+      }
     }
     else {
       // Send a 0 value

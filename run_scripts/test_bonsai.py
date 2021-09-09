@@ -5,6 +5,11 @@ from RPI_operant.home_base.bonsai_serial_sender import sender
 
 coms = sender()
 coms.start()
+while not coms.active:
+    print('waiting for coms startup')
+    time.sleep(0.1)
+print('succesful startup')
+time.sleep(1)
 
 if __name__ == '__main__':
     print('Sending...')
