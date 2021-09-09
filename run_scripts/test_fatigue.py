@@ -40,6 +40,8 @@ class fatigue:
 # Test run
 if __name__ == "__main__":
     # If this is the file that is being run directly, run the test code
+    # Setup
+    fn.setup_pins()
     run = True
     # While loop to make sure the user enters the correct info
     while run:
