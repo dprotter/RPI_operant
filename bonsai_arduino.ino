@@ -111,12 +111,12 @@ void commands (String command) {
       // Animal entered the partner chamber
       digitalWrite(cross_door_2_pin, HIGH);
     }
-    else if (command == "startup test") {
+    else if (command == "startup_test") {
       // Animal entered the partner chamber
       for (int i = 0; i<5; i++){
-        digitalWrite(13, HIGH);
-        delay(0.25);
-        digitalWrite(13, LOW);
+        digitalWrite(lever_out_food_pin, HIGH);
+        delay(250);
+        digitalWrite(lever_out_food_pin, LOW);
       }
     }
     else {

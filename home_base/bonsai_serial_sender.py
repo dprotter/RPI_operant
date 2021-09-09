@@ -19,7 +19,7 @@ class sender(threading.Thread):
         super().__init__()
         self.finished = False
         self.sending = False
-        self.active = True
+        
         self.port        = port
         self.baudRate    = baud
         self.history     = queue.Queue()
@@ -30,11 +30,10 @@ class sender(threading.Thread):
         try:
             self.ser = ser.Serial(self.port, self.baudRate)
             self.command_dict = self.get_commands() # Assign the commands property
-                
-            self.send_data('startup test')
-            self.sending = True
+
+            start = time.time() 
+            self.send_data('startup_test')
             
-            start = time.time()
             while self.sending and time.time() - start < self.timeout:
                 time.sleep(0.05)
             finished = time.time()
@@ -43,12 +42,13 @@ class sender(threading.Thread):
         except:
             print('serial sender failed setup. If not sending serial data for Bonsai integration, ignore this warning.')
         
+        self.active = True
 
 
     def busy(self):
         return self.sending
 
-    def finish(self):
+    def shutdown(self):
         self.finished = True
 
     def running(self):
@@ -61,7 +61,7 @@ class sender(threading.Thread):
                 command = self.command_stack.get()
                 
                 self._send_data(command)
-                time.sleep(0.05)
+                time.sleep(0.1)
 
         while not self.command_stack.empty():
             
@@ -89,7 +89,7 @@ class sender(threading.Thread):
             formatted = formatted.encode('ascii')
             
             self.ser.write(formatted)
-            
+        print(f'message sent: {command}')
         self.sending = False
     
     def get_commands(self):
