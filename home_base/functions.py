@@ -571,7 +571,7 @@ class runtime_functions:
             self.door_override['door_1'] = False
 
 
-            time.sleep(0.1)
+            time.sleep(0.25)
 
     #### run in a dedicated thread so we can open the doors whenever necessary
     def override_door_2(self):
@@ -593,7 +593,7 @@ class runtime_functions:
             self.door_override['door_2'] = False
 
 
-            time.sleep(0.1)
+            time.sleep(0.25)
 
 
     def monitor_beam_breaks(self):
@@ -721,7 +721,7 @@ class runtime_functions:
                     #the main thread/loop
                     self.click_on()
                     while not GPIO.input(pins["lever_%s"%lever_ID]) and self.monitor:
-                        'hanging till lever not pressed'
+                        print('hanging till lever not pressed')
                         time.sleep(0.05)
                     self.click_off()
                     lever = 0
@@ -740,7 +740,7 @@ class runtime_functions:
                         time.sleep(0.05)
                     lever = 0
 
-            time.sleep(25/1000.0)
+            time.sleep(0.01)
         print('halting monitoring of %s lever'%lever_ID)
     
     def wait(self, worker, func_name):
@@ -1165,6 +1165,7 @@ class runtime_functions:
                    pass
                 else:
                     workers += [worker_and_info]
+                    print(f'currently {len(workers)} threads running via pool executor')
 
             for element in workers:
                 worker, name, init_round = element
@@ -1185,6 +1186,8 @@ class runtime_functions:
                         workers.remove(element)
                     else:
                         pass
+                    #print(f'$$$$$$$$$$$$ currently {len(workers)} threads running via pool executor $$$$$$$$$$$$')
+                
             time.sleep(0.025)
         
         time.sleep(1)
