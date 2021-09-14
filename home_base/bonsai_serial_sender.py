@@ -61,7 +61,7 @@ class sender(threading.Thread):
                 command = self.command_stack.get()
                 
                 self._send_data(command)
-                time.sleep(0.1)
+                time.sleep(0.05)
 
         while not self.command_stack.empty():
             
@@ -89,7 +89,7 @@ class sender(threading.Thread):
             formatted = formatted.encode('ascii')
             
             self.ser.write(formatted)
-        print(f'message sent: {command}')
+        print(f'\n\nserial message sent: {command}\n\n')
         self.sending = False
     
     def get_commands(self):
