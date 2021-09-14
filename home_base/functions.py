@@ -719,17 +719,16 @@ class runtime_functions:
                 if not self.interrupt:
                     #send the lever_ID to the lever_q to trigger a  do_stuff.put in
                     #the main thread/loop
-                    #self.click_on()
-                    self.lever_press_queue.put(lever_ID)
-
-                    self.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.round, lever_ID, time.time()-self.start_time))
+                    self.click_on()
                     while not GPIO.input(pins["lever_%s"%lever_ID]) and self.monitor:
                         print('hanging till lever not pressed')
                         time.sleep(0.05)
-                    #self.click_off()
+                    self.click_off()
                     lever = 0
-                    
-                    #self.serial_sender.send_data('lever_press_' + lever_ID)
+                    self.lever_press_queue.put(lever_ID)
+
+                    self.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.round, lever_ID, time.time()-self.start_time))
+                    self.serial_sender.send_data('lever_press_' + lever_ID)
 
                 else:
                     #we can still record from the lever until monitoring is turned
