@@ -14,6 +14,7 @@ class Experiment:
     def __init__(self, csv_location, output_loc = None, start_index = 0):
         self.path_to_scripts ='/home/pi/RPI_operant/run_scripts'
         self.file = csv_location
+        self.file_temp = self.file.split('.csv')[0]+'_tmp.csv'
         self.location = start_index
         self.experiment_status = pd.read_csv(self.file)
         
@@ -168,7 +169,7 @@ class Experiment:
         
         #update experiment csv
         self.experiment_status.loc[self.experiment_status.index ==self.exp_index, 'var_changes'] = new_str
-        self.experiment_status.to_csv(self.file, index = False)
+        self.save_file()
         
         #update current row, since we've made changes
         self.cur_row = self.unfinished.iloc[[self.unfinished_loc]]
@@ -211,7 +212,7 @@ class Experiment:
             for key in track_changes.keys():
                 if key in self.experiment_status.columns:
                     self.experiment_status.loc[self.experiment_status.index ==self.exp_index, key] = track_changes[key]
-                self.experiment_status.to_csv(self.file, index = False)
+                self.save_file()
     
     def modify_vars(self, var_dict):
         '''to manually update variables. these will get put in the var_change column, as well'''
@@ -331,8 +332,16 @@ class Experiment:
     def update_rounds(self, round_number):
         print(f'\n\n\n\n-------updating csv log, new round completed {round_number}----------\n\n\n')
         self.experiment_status.loc[self.experiment_status.index ==self.exp_index, 'rounds_completed'] = round_number
-        self.experiment_status.to_csv(self.file, index = False)
+        self.save_file()
     
+    def save_file(self):
+
+        self.experiment_status.to_csv(self.file_temp, index = False)
+        if len(open(self.file_temp).readlines()) > 0:
+            os.popen(f'cp {self.file_temp} {self.file}')
+            os.popen(f'rm {self.file_temp}')
+        else:
+            print('\n\n\ error saving experiment status! check experiment CSV file \n\n')
     
     def track_script_progress(self):
         
@@ -348,7 +357,7 @@ class Experiment:
     def experiment_finished(self):
         
         self.experiment_status.loc[self.experiment_status.index == self.exp_index, 'done'] = True
-        self.experiment_status.to_csv(self.file, index = False)
+        self.save_file()
     
     
     def run(self):
@@ -360,7 +369,7 @@ class Experiment:
         date = datetime.datetime.now()
         fdate = '%s_%s_%s__%s_%s'%(date.month, date.day, date.year, date.hour, date.minute)
         self.experiment_status.loc[self.experiment_status.index ==self.exp_index, 'run_time'] = fdate
-        self.experiment_status.to_csv(self.file, index = False)
+        self.save_file()
         self.module.run_script(setup_dict)
         self.experiment_finished()
         

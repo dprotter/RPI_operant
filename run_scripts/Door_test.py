@@ -199,7 +199,7 @@ def run_script(setup_dictionary = None):
     
     fn.analyze()
     fn.clean_up(wait = True)
-    
+    time.sleep(1)
 
     
     

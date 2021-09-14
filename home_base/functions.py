@@ -1165,6 +1165,8 @@ class runtime_functions:
                         workers.remove(element)
                     else:
                         pass
+                    print(f'$$$$$$$$$$$$ currently {len(workers)} threads running via pool executor $$$$$$$$$$$$')
+                
             time.sleep(0.025)
         
         time.sleep(1)
