@@ -719,11 +719,11 @@ class runtime_functions:
                 if not self.interrupt:
                     #send the lever_ID to the lever_q to trigger a  do_stuff.put in
                     #the main thread/loop
-                    self.click_on()
+                    #self.click_on()
                     while not GPIO.input(pins["lever_%s"%lever_ID]) and self.monitor:
                         'hanging till lever not pressed'
                         time.sleep(0.05)
-                    self.click_off()
+                    #self.click_off()
                     lever = 0
                     self.lever_press_queue.put(lever_ID)
 
