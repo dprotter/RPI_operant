@@ -728,7 +728,7 @@ class runtime_functions:
                     self.lever_press_queue.put(lever_ID)
 
                     self.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.round, lever_ID, time.time()-self.start_time))
-                    self.serial_sender.send_data('lever_press_' + lever_ID)
+                    #self.serial_sender.send_data('lever_press_' + lever_ID)
 
                 else:
                     #we can still record from the lever until monitoring is turned
