@@ -16,7 +16,7 @@ class sender(threading.Thread):
     def __init__(self, port = '/dev/serial0', baud = 9600, commandFile = '~/RPI_operant/home_base/bonsai_commands.csv'):
         # Set the initial properties
         print('initializing sender')
-        super().__init__()
+        #super().__init__()
         self.finished = False
         self.sending = False
         
