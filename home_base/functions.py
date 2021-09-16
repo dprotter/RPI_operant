@@ -740,7 +740,7 @@ class runtime_functions:
                         time.sleep(0.05)
                     lever = 0
 
-            time.sleep(0.01)
+            #time.sleep(0.01)
         print('halting monitoring of %s lever'%lever_ID)
     
     def wait(self, worker, func_name):
