@@ -729,7 +729,7 @@ class runtime_functions:
 
                     self.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.round, lever_ID, time.time()-self.start_time))
                     self.serial_sender.send_data('lever_press_' + lever_ID)
-                    time.sleep(0.01)
+                    
 
                 else:
                     #we can still record from the lever until monitoring is turned
@@ -741,7 +741,7 @@ class runtime_functions:
                         time.sleep(0.05)
                     lever = 0
 
-            
+            time.sleep(0.01)
         print('halting monitoring of %s lever'%lever_ID)
     
     def wait(self, worker, func_name):
