@@ -708,10 +708,15 @@ class runtime_functions:
                     self.lever_press_queue.put(lever_ID)
 
                     self.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.round, lever_ID, time.time()-self.start_time))
+<<<<<<< HEAD
                     while not GPIO.input(pins["lever_%s"%lever_ID]) and self.monitor:
                         'hanging till lever not pressed'
                         time.sleep(0.05)
                     lever = 0
+=======
+                    self.serial_sender.send_data('lever_press_' + lever_ID)
+                    
+>>>>>>> ca41c5e997199422180addac2032a723acabbf02
                 else:
                     #we can still record from the lever until monitoring is turned
                     #off. note that this wont place anything in the lever_press queue,
@@ -721,8 +726,13 @@ class runtime_functions:
                         'hanging till lever not pressed'
                         time.sleep(0.05)
                     lever = 0
+<<<<<<< HEAD
 
             time.sleep(25/1000.0)
+=======
+            time.sleep(0.01)
+
+>>>>>>> ca41c5e997199422180addac2032a723acabbf02
         print('halting monitoring of %s lever'%lever_ID)
     
     def wait(self, worker, func_name):
