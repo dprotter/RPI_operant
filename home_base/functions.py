@@ -190,7 +190,7 @@ class runtime_functions:
     def __init__(self):
         self.pi = pigpio.pi()
         self.serial_sender = sender()
-        self.serial_sender.start()
+        #self.serial_sender.start()
         #our queues for doign stuff and saving stuff
         
         self.timestamp_queue = queue.Queue()
