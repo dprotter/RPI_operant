@@ -1,6 +1,6 @@
 """ 
 Date Created : 8/5/2021
-Date Modified: 8/5/2021
+Date Modified: 9/16/2021
 Author: Ryan Cameron, David Protter, Sarah ???
 Description: This script is the main wrapper for the simulation of the operant cage hardware. It connects to the actual operant cage hardware, and simulates a vole going through the different tests, so that the pipeline from the raspberry pi to the arduino and into bonsai can be tested.
 
@@ -10,6 +10,11 @@ Code located at - https://github.com/donaldsonlab/Operant-Cage
 """
 
 # Imports
+import sys
+sys.path.append('/home/pi/')
+
+import RPI_operant.home_base.functions as FN
+fn = FN.runtime_functions()
 
 # Create vole object
 
