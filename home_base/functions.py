@@ -191,6 +191,7 @@ class runtime_functions:
         self.pi = pigpio.pi()
         self.serial_sender = sender()
         self.serial_sender.start()
+        
         #our queues for doign stuff and saving stuff
         
         self.timestamp_queue = queue.Queue()
@@ -733,7 +734,7 @@ class runtime_functions:
                         'hanging till lever not pressed'
                         time.sleep(0.05)
                     lever = 0
-            time.sleep(0.075)
+            time.sleep(25/1000.0)
 
         print('halting monitoring of %s lever'%lever_ID)
     
@@ -1089,7 +1090,7 @@ class runtime_functions:
                             csv_writer.writerow(line)
                             time.sleep(0.005)
                     print('\n\n')
-                time.sleep(0.2)
+                time.sleep(0.01)
 
 
     def countdown_timer(self, time_interval, next_event):
@@ -1158,8 +1159,11 @@ class runtime_functions:
                    #thread_it
                    pass
                 else:
+                    print('\nvvvvvvvvvvvvvvvvvv')
                     workers += [worker_and_info]
                     print(f'currently {len(workers)} threads running via pool executor')
+                    print(workers)
+                    print('/n/n^^^^^^^^^^^^^^^')
 
             for element in workers:
                 worker, name, init_round = element

@@ -7,7 +7,7 @@ import queue
 import atexit
 import threading
 # Sender class
-class sender(threading.Thread):
+class sender():
     # SENDER is the object that sends information to Bonsai which includes timestamps and information on what event has occured. The arduino will take the serial commands and turn them into the correct signals for Bonsai.
     # INPUTS: port (str) - path of the serial port to connect to, defaults to GPIO serial of the pi
     #         baud (int) - Baud rate that the serial port runs on (default 9600 to match arduino)
@@ -16,7 +16,6 @@ class sender(threading.Thread):
     def __init__(self, port = '/dev/serial0', baud = 9600, commandFile = '~/RPI_operant/home_base/bonsai_commands.csv'):
         # Set the initial properties
         print('initializing sender')
-        super().__init__()
         self.finished = False
         self.sending = False
         
@@ -44,6 +43,9 @@ class sender(threading.Thread):
         
         self.active = True
 
+    def start(self):
+        wrt = threading.Thread(target = self.run, daemon = True)
+        wrt.start()
 
     def busy(self):
         return self.sending
@@ -61,12 +63,14 @@ class sender(threading.Thread):
                 command = self.command_stack.get()
                 
                 self._send_data(command)
-                time.sleep(0.05)
+                
+            time.sleep(0.05)
 
         while not self.command_stack.empty():
             
             command = self.command_stack.get()
             self._send_data(command)
+            self.sleep(0.05)
         self.active = False
 
     def send_data(self, command):
@@ -112,6 +116,7 @@ if __name__ == "__main__":
 
     # Initialize the object
     obj = sender()
+    obj.start()
 
     # Print info to terminal
     print('Starting Flash...')
@@ -120,7 +125,7 @@ if __name__ == "__main__":
     # Endlessly send the same command to test
     while True:
         data = "lever_out_door_1"
-        obj._send_data(data)
+        obj.send_data(data)
         print('Sent Command: ' + data)
         time.sleep(3) # Pause for ease of reading and to test the log
 
