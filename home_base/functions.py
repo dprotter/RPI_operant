@@ -1159,11 +1159,12 @@ class runtime_functions:
                    #thread_it
                    pass
                 else:
-                    print('\nvvvvvvvvvvvvvvvvvv')
+                    
                     workers += [worker_and_info]
+                    """print('\nvvvvvvvvvvvvvvvvvv')
                     print(f'currently {len(workers)} threads running via pool executor')
                     print(workers)
-                    print('/n/n^^^^^^^^^^^^^^^')
+                    print('\n\n^^^^^^^^^^^^^^^')"""
 
             for element in workers:
                 worker, name, init_round = element
