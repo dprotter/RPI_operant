@@ -162,6 +162,7 @@ def run_script(setup_dictionary = None):
 
             print('no lever press')
             fn.buzz(**pellet_buzz)
+            time.sleep(delay)
             fn.dispense_pellet()
             
         approx_time = key_values['round_time'] - (time.time() - round_start)
