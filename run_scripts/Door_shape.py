@@ -228,6 +228,7 @@ def run_script(setup_dictionary = None):
     
     fn.analyze()
     fn.clean_up()
+    time.sleep(1)
     
     
 if __name__ == '__main__':
