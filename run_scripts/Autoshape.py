@@ -25,7 +25,7 @@ key_values = {'num_rounds': 20,
               'door_open_tone_hz':10000,
               'round_start_tone_time':1, 
               'round_start_tone_hz':5000,
-              'delay by day':[0,0,1,1,2],
+              'delay by day':[0,1,1,3,5],
               'delay default':2}
 
 key_values_def = {'num_rounds':'number of rounds', 
@@ -142,10 +142,11 @@ def run_script(setup_dictionary = None):
                 #retract lever
                 fn.monitor = False
                 fn.retract_levers(lever_ID='food')
+                fn.buzz(**pellet_buzz)
                 
                 #do not give reward until after delay
                 time.sleep(delay)
-                fn.buzz(**pellet_buzz)
+                
                 fn.dispense_pellet()
                 
                 #get the lever press tuple just to clear the queue
