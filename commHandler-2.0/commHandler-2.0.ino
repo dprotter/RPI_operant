@@ -65,7 +65,7 @@ void loop () {
     if (myserial.available()) {
         ch = myserial.read();
         sdata += (char)ch;
-            
+        
         if (ch == '\r') { // End of the command, full line has been recieved and is ready to go
             sdata.trim();
 
@@ -140,6 +140,10 @@ void commands (String command) {
       Firmata.sendAnalog(messagePin, vals[8]);
       digitalWrite(cross_door_2_pin, HIGH);
       //delay(50);
+    }
+    else if (command == "startup_test") {
+      // Startup code for debugging
+      digitalWrite(13, HIGH);
     }
     else {
       // Send a 0 value
