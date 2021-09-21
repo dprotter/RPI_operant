@@ -191,6 +191,7 @@ class runtime_functions:
         self.pi = pigpio.pi()
         self.serial_sender = sender()
         self.serial_sender.start()
+        
         #our queues for doign stuff and saving stuff
         
         self.timestamp_queue = queue.Queue()
@@ -289,10 +290,7 @@ class runtime_functions:
             wrt = threading.Thread(target = self.flush_to_CSV, daemon = True)
             wrt.start()
 
-            or1 = threading.Thread(target = self.override_door_1, daemon = True)
-            or2 = threading.Thread(target = self.override_door_2, daemon = True)
-            or1.start()
-            or2.start()
+            self.override_doors(self)
 
     def check_key_value_dictionaries(self, key_values, key_values_def, key_val_names_order):
         '''resolve issues if people add values to the key value dictionary and dont define them or put them in the name order list'''
@@ -551,11 +549,12 @@ class runtime_functions:
         
 
 
-    #### run in a dedicated thread so we can open the doors whenever necessary
-    def override_door_1(self):
+    #### run in a dedicated thread so we can open the doors whenever necessary  
+    @thread_it
+    def override_doors(self):
         
 
-        while True:
+        while not self.done:
             if not GPIO.input(pins['door_1_override_open_switch']):
                 self.door_override['door_1'] = True
                 servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['open']
@@ -568,16 +567,7 @@ class runtime_functions:
                 while not GPIO.input(pins[f'door_1_override_close_switch']):
                     time.sleep(0.05)
                 servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['stop']
-            self.door_override['door_1'] = False
-
-
-            time.sleep(0.25)
-
-    #### run in a dedicated thread so we can open the doors whenever necessary
-    def override_door_2(self):
-        
-
-        while True:
+            
             if not GPIO.input(pins['door_2_override_open_switch']):
                 self.door_override['door_2'] = True
                 servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['open']
@@ -590,11 +580,13 @@ class runtime_functions:
                 while not GPIO.input(pins['door_2_override_close_switch']):
                     time.sleep(0.05)
                 servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['stop']
+            
+            
             self.door_override['door_2'] = False
+            self.door_override['door_1'] = False
 
 
             time.sleep(0.25)
-
 
     def monitor_beam_breaks(self):
         '''monitor any beam breaks until monitor_beams is set to False'''
@@ -667,7 +659,8 @@ class runtime_functions:
                 break
         self.monitor_beams = False
         time.sleep(0.05)
-
+    
+    @thread_it
     def click_on(self):
 
         hz = 900
@@ -680,6 +673,7 @@ class runtime_functions:
 
         self.pi.set_PWM_dutycycle(pins['speaker_tone'], 0)
     
+    @thread_it
     def click_off(self):
         hz = 900
         self.pi.set_PWM_dutycycle(pins['speaker_tone'], 255/2)
@@ -712,6 +706,7 @@ class runtime_functions:
         
         while self.monitor:
             if not GPIO.input(pins["lever_%s"%lever_ID]):
+                
                 lever +=1
 
             #just guessing on this value, should probably check somehow empirically
@@ -719,11 +714,11 @@ class runtime_functions:
                 if not self.interrupt:
                     #send the lever_ID to the lever_q to trigger a  do_stuff.put in
                     #the main thread/loop
-                    self.click_on()
+                    self.click_on(self)
                     while not GPIO.input(pins["lever_%s"%lever_ID]) and self.monitor:
                         print('hanging till lever not pressed')
-                        time.sleep(0.05)
-                    self.click_off()
+                        time.sleep(0.075)
+                    self.click_off(self)
                     lever = 0
                     self.lever_press_queue.put(lever_ID)
 
@@ -739,7 +734,7 @@ class runtime_functions:
                         'hanging till lever not pressed'
                         time.sleep(0.05)
                     lever = 0
-            time.sleep(0.01)
+            time.sleep(25/1000.0)
 
         print('halting monitoring of %s lever'%lever_ID)
     
@@ -1164,8 +1159,11 @@ class runtime_functions:
                    #thread_it
                    pass
                 else:
+                    print('\nvvvvvvvvvvvvvvvvvv')
                     workers += [worker_and_info]
                     print(f'currently {len(workers)} threads running via pool executor')
+                    print(workers)
+                    print('/n/n^^^^^^^^^^^^^^^')
 
             for element in workers:
                 worker, name, init_round = element
