@@ -29,7 +29,7 @@ key_values = {'num_rounds': 0,
               'door_open_tone_hz':10000,
               'round_start_tone_time':1, 
               'round_start_tone_hz':5000,
-              'delay by day':[1,1,2,3,5],
+              'delay by day':[1,2,3,5,5],
               'delay default':5}
 
 key_values['num_rounds'] = 2 * key_values['repetitions'] * key_values['sets']
