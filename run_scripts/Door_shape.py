@@ -29,7 +29,7 @@ key_values = {'num_rounds': 0,
               'door_open_tone_hz':10000,
               'round_start_tone_time':1, 
               'round_start_tone_hz':5000,
-              'delay by day':[5],
+              'delay by day':[1,1,2,3,5],
               'delay default':5}
 
 key_values['num_rounds'] = 2 * key_values['repetitions'] * key_values['sets']
@@ -40,6 +40,7 @@ key_values_def = {'num_rounds':'number of rounds',
                   'round_time':'total round length',
                   'time_II':'time after levers out before reward',
                   'move_time':'seconds to move the vole back to the lever room',
+                  'ITI':'time immediately preceeding the start of a new round',
                   'pellet_tone_time':'in s', 
                   'pellet_tone_hz':'in hz',
                   'door_close_tone_time':'in s', 
@@ -53,7 +54,7 @@ key_values_def = {'num_rounds':'number of rounds',
 
 #for display purposes. put values you think are most likely to be changed early
 key_val_names_order = ['num_rounds', 'repetitions','round_time', 'time_II', 'move_time','pellet_tone_time',
-                        'pellet_tone_hz','door_close_tone_time','door_close_tone_hz',
+                        'ITI','pellet_tone_hz','door_close_tone_time','door_close_tone_hz',
                         'door_open_tone_time','door_open_tone_hz', 'round_start_tone_time',
                         'round_start_tone_hz']
 
@@ -70,9 +71,15 @@ def setup(setup_dictionary = default_setup_dict, key_val_names_order = key_val_n
     
     fn.setup_pins()
     
+    ####vvvvvvvv reversed vvvvvvv########
+    fn.reverse_lever_position()
+    
+    
     fn.setup_experiment(setup_dictionary)
-    fn.reverse
 
+
+
+    
     return setup_dictionary
     
 
@@ -234,7 +241,7 @@ def run_script(setup_dictionary = None):
             time.sleep(1)
         print('\nvole should be moved now')
 
-        #time to move the animal
+        
         ITI_start = time.time()
         approx_time_left = np.round(key_values['ITI'] - (time.time()-ITI_start))
         fn.countdown_timer(time_interval=approx_time_left, next_event = 'next round')
@@ -260,6 +267,7 @@ if __name__ == '__main__':
         key_values['time_II'] = 5
         key_values['repetitions'] = 2
         key_values['move_time'] = 4
+        key_values['ITI'] = 4
         exp = default_setup_dict['experiment']
         day = input(f'Which {exp} training day is this? (for training)\n')
         day = int(day)

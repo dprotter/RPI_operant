@@ -174,6 +174,7 @@ def run_script(setup_dictionary = None):
         
         fn.countdown_timer(time_interval = key_values['time_II'], 
                             next_event = 'levers retracted')
+        
         while time.time() - time_II_start < key_values['time_II']:
             if lever_d1.presses_reached or lever_d2.presses_reached:
                 if not press:

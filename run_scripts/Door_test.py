@@ -16,9 +16,10 @@ default_setup_dict = {'vole':'000','day':1, 'experiment':'Door_test',
 setup_dictionary = None
 
 key_values = {'num_rounds': 30,
-              'round_time':90, 
+              'round_time':75, 
               'time_II':30,
               'move_time':20,
+              'ITI':30,
               'pellet_tone_time':1, 
               'pellet_tone_hz':2500,
               'door_close_tone_time':1, 
@@ -27,8 +28,8 @@ key_values = {'num_rounds': 30,
               'door_open_tone_hz':10000,
               'round_start_tone_time':1, 
               'round_start_tone_hz':5000,
-              'delay by day':[1],
-              'delay default':1}
+              'delay by day':[5],
+              'delay default':5}
 
 key_values_def = {'num_rounds':'number of rounds',
                   'round_time':'total round length',
@@ -129,7 +130,7 @@ def run_script(setup_dictionary = None):
         #round start buzz
         fn.timestamp_queue.put(f'{fn.round}, Starting new round, {time.time()-fn.start_time}') 
         fn.buzz(**round_buzz, wait = True)
-        fn.monitor_first_beam_breaks()
+        
         
         fn.extend_lever(lever_ID = ['door_1', 'door_2'])
         fn.monitor_levers(lever_ID = ['door_1', 'door_2'])
@@ -151,6 +152,7 @@ def run_script(setup_dictionary = None):
                 #retract lever
                 fn.monitor = False
                 fn.retract_levers(lever_ID = ['door_1', 'door_2'])
+                fn.monitor_first_beam_breaks()
                 
                 #do not give reward until after delay
                 time.sleep(delay)
@@ -196,11 +198,19 @@ def run_script(setup_dictionary = None):
         
         move_ani_start = time.time()
         approx_time_left = np.round(key_values['move_time'] - (time.time()-move_ani_start) )
-        fn.countdown_timer(time_interval=approx_time_left, next_event = 'next round')
+        fn.countdown_timer(time_interval=approx_time_left, next_event = 'ITI')
 
         while time.time() - move_ani_start < key_values['move_time']:
             time.sleep(1)
         print('\nvole should be moved now')
+
+        ITI_start = time.time()
+        approx_time_left = np.round(key_values['ITI'] - (time.time()-ITI_start))
+        fn.countdown_timer(time_interval=approx_time_left, next_event = 'next round')
+        fn.timestamp_queue.put(f'{fn.round}, start of ITI, {time.time()-fn.start_time}')
+
+        while time.time() - ITI_start < key_values['ITI']:
+            time.sleep(1)
     
     fn.analyze()
     fn.clean_up(wait = True)
@@ -218,6 +228,7 @@ if __name__ == '__main__':
         key_values['round_time'] = 10
         key_values['time_II'] = 5
         key_values['move_time'] = 4
+        key_values['ITI'] = 5
         exp = default_setup_dict['experiment']
         day = input(f'Which {exp} day is this? (for training)\n')
         day = int(day)
