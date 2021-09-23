@@ -351,6 +351,26 @@ class runtime_functions:
                 if verbose:
                     print(k + ": OUT")
 
+    def reverse_lever_position(self):
+        '''this function will switch the levers so that the lever
+        farther from a door is the lever that opens it, rather than
+        the lever closest to the door.'''
+        
+        lever_d1_pin = pins['lever_door_1']
+        lever_d2_pin = pins['lever_door_2']
+        pins['lever_door_1'] = lever_d2_pin
+        pins['lever_door_2'] = lever_d1_pin
+        
+        lever_angles_d1 = lever_anlges['door_1']
+        lever_angles_d2 = lever_anlges['door_2']
+        lever_angles['door_1'] = lever_angles_d2
+        lever_angles['door_2'] = lever_angles_d1
+        
+        servo_lever_d1 = servo_dict['lever_door_1']
+        servo_lever_d2 = servo_dict['lever_door_2']
+        servo_dict['lever_door_1'] = servo_lever_d2
+        servo_dict['lever_door_2'] = servo_lever_d1
+    
     def close_doors(self, door_ID = None, wait = False):
         '''close a door. can past a list of door IDs to open more than one door at once.'''
 
