@@ -73,7 +73,8 @@ def setup(setup_dictionary = default_setup_dict, key_val_names_order = key_val_n
     fn.setup_experiment(setup_dictionary)
 
 
-    fn.pins
+    ####vvvvvvvv reversed vvvvvvv########
+    fn.reverse_lever_position()
 
     return setup_dictionary
     

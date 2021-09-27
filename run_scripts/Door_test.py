@@ -15,7 +15,8 @@ default_setup_dict = {'vole':'000','day':1, 'experiment':'Door_test',
 
 setup_dictionary = None
 
-key_values = {'num_rounds': 30,
+key_values = {'fixed_ratio':1,
+              'num_rounds': 30,
               'round_time':90, 
               'time_II':30,
               'move_time':20,
@@ -30,7 +31,8 @@ key_values = {'num_rounds': 30,
               'delay by day':[1],
               'delay default':1}
 
-key_values_def = {'num_rounds':'number of rounds',
+key_values_def = {'fixed_ratio':'number of presses required to receive reward',
+                  'num_rounds':'number of rounds',
                   'round_time':'total round length',
                   'time_II':'time after levers out before reward',
                   'move_time':'seconds to move the vole back to the lever room',
@@ -46,7 +48,7 @@ key_values_def = {'num_rounds':'number of rounds',
                   'delay default':'delay between lever press and reward if beyond delay by day length'}
 
 #for display purposes. put values you think are most likely to be changed early
-key_val_names_order = ['num_rounds', 'time_II', 'move_time','pellet_tone_time',
+key_val_names_order = ['fixed_ratio','num_rounds', 'time_II', 'move_time','pellet_tone_time',
                         'pellet_tone_hz','door_close_tone_time','door_close_tone_hz',
                         'door_open_tone_time','door_open_tone_hz', 'round_start_tone_time',
                         'round_start_tone_hz']
@@ -64,6 +66,11 @@ def setup(setup_dictionary = default_setup_dict,
     
     fn.setup_pins()
     fn.setup_experiment(setup_dictionary)
+
+    ####vvvvvvvv reversed vvvvvvv########
+    fn.reverse_lever_position()
+
+    
     return setup_dictionary
     
 
@@ -114,7 +121,7 @@ def run_script(setup_dictionary = None):
 
     #start at round 1 instead of the pythonic default of 0 for readability
     for i in range(1, key_values['num_rounds']+1,1):
-
+        presses = {'door_1':0, 'door_2':0}
         round_start = time.time()
         
         fn.round = i
@@ -137,33 +144,36 @@ def run_script(setup_dictionary = None):
                             next_event = 'levers retracted')
         while time.time() - time_II_start < key_values['time_II']:
             if not fn.lever_press_queue.empty() and not press:
-
                 #get which door was pressed    
                 lever_press = fn.lever_press_queue.get()
+                presses[lever_press] += 1
+                print(f'\n{presses[lever_press]} of {key_values["fixed_ratio"]} presses for {lever_press} \n')
 
-                fn.pulse_sync_line(length = 0.025, event_name = 'lever_press')
-                
-                #retract lever
-                fn.monitor = False
-                fn.retract_levers(lever_ID = ['door_1', 'door_2'])
-                
-                #do not give reward until after delay
-                time.sleep(delay)
-                fn.buzz(**door_open_buzz, wait = True)
+                if presses[lever_press] >= key_values['fixed_ratio']:
 
-                #open the door of the lever that was pressed 
-                fn.open_door(door_ID = lever_press)
+                    fn.pulse_sync_line(length = 0.025, event_name = 'lever_press')
+                    
+                    #retract lever
+                    fn.monitor = False
+                    fn.retract_levers(lever_ID = ['door_1', 'door_2'])
+                    
+                    #do not give reward until after delay
+                    time.sleep(delay)
+                    fn.buzz(**door_open_buzz, wait = True)
 
-                approx_time_left = np.round(key_values['round_time'] - (time.time()-round_start) )
-                fn.countdown_timer(time_interval = approx_time_left, next_event = 'move animal')
+                    #open the door of the lever that was pressed 
+                    fn.open_door(door_ID = lever_press)
 
-                press = True
+                    approx_time_left = np.round(key_values['round_time'] - (time.time()-round_start) )
+                    fn.countdown_timer(time_interval = approx_time_left, next_event = 'move animal')
+
+                    press = True
                 
             time.sleep(0.05)
             
         #if the vole didnt press:
         if press == False:
-            print('no lever press')
+            print('fixed ratio not reached')
             fn.monitor = False
             
             fn.retract_levers(lever_ID = ['door_1', 'door_2'])
