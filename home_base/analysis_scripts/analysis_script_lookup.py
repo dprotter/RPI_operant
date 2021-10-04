@@ -9,7 +9,8 @@ def script_lookup(experiment):
              'Autoshape':autoshape,
              'Door_shape':door_shape,
              'Magazine':magazine,
-             'progressive_ratio':progressive_ratio}
+             'progressive_ratio':progressive_ratio,
+             'Autoshape_contingent':autoshape_contingent}
 
     return table[experiment]()
 
@@ -26,6 +27,15 @@ def magazine():
 def autoshape():
     try:
         import RPI_operant.home_base.analysis_scripts.autoshape_analysis as autoshape
+    except:
+        traceback.print_exc()
+        print('couldnt import Autoshape analysis script')
+        raise
+    return autoshape
+
+def autoshape_contingent():
+    try:
+        import RPI_operant.home_base.analysis_scripts.autoshape_contingent_analysis as autoshape
     except:
         traceback.print_exc()
         print('couldnt import Autoshape analysis script')
