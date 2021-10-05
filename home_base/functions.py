@@ -26,7 +26,7 @@ from RPI_operant.home_base.operant_cage_settings import (kit, pins,
 import RPI_operant.home_base.analysis.analysis_functions as af
 import RPI_operant.home_base.analysis.analyze as ana
 from RPI_operant.home_base.lookup_classes import Operant_event_strings as oes
-from RPI_operant.home_base.bonsai_serial_sender import sender
+from RPI_operant.home_base.bonsai_serial_sender_fake import sender
 
 
 class lever:
