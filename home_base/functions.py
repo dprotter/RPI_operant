@@ -351,6 +351,28 @@ class runtime_functions:
                 if verbose:
                     print(k + ": OUT")
 
+    def reverse_lever_position(self):
+        '''this function will switch the levers so that the lever
+        farther from a door is the lever that opens it, rather than
+        the lever closest to the door.'''
+        
+        lever_d1_pin = pins['lever_door_1']
+        lever_d2_pin = pins['lever_door_2']
+        pins['lever_door_1'] = lever_d2_pin
+        pins['lever_door_2'] = lever_d1_pin
+        
+        lever_angles_d1 = lever_angles['door_1']
+        lever_angles_d2 = lever_angles['door_2']
+        lever_angles['door_1'] = lever_angles_d2
+        lever_angles['door_2'] = lever_angles_d1
+        
+        servo_lever_d1 = servo_dict['lever_door_1']
+        servo_lever_d2 = servo_dict['lever_door_2']
+        servo_dict['lever_door_1'] = servo_lever_d2
+        servo_dict['lever_door_2'] = servo_lever_d1
+        
+    
+
     def close_doors(self, door_ID = None, wait = False):
         '''close a door. can past a list of door IDs to open more than one door at once.'''
 
@@ -751,7 +773,7 @@ class runtime_functions:
             while not worker.done():
                 time.sleep(0.025)
         done = time.time()
-        print(f'"{func_name}" complete at {done - self.start_time} in {done - start}')
+        print(f'\n"{func_name}" complete at {done - self.start_time} in {done - start}\n')
         
 
     def test_threading(self, message, wait = False):
@@ -852,7 +874,6 @@ class runtime_functions:
         
 
     def buzz(self, buzz_length, hz, name, wait = False):
-        print('time to buzz')
         worker = self._buzz(self, buzz_length = buzz_length, hz = hz, name = name)
         if wait:
             name = inspect.currentframe().f_code.co_name
@@ -866,8 +887,6 @@ class runtime_functions:
         buzz_len = kwargs['buzz_length']
         hz = kwargs['hz']
         name = kwargs['name']
-
-        print(f'starting {name} tone {hz} hz')
 
         #set a 50% duty cycle, pass desired hz
         self.pi.set_PWM_dutycycle(pins['speaker_tone'], 255/2)
@@ -900,9 +919,9 @@ class runtime_functions:
         if not self.pellet_state:
             
             if not GPIO.input(pins['read_pellet']):
-                print('attempting to dispense pellet, but sensor already reading blocked.')
+                print('\nattempting to dispense pellet, but sensor already reading blocked.')
 
-            print('%i, starting pellet dispensing %f'%(self.round, time.time()-self.start_time))
+            
 
             #we're just gonna turn the servo on and keep monitoring. probably
             #want this to be a little slow
@@ -920,7 +939,7 @@ class runtime_functions:
                 if read > 2:
                     servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
                     self.timestamp_queue.put('%i, Pellet dispensed, %f'%(self.round, time.time()-self.start_time))
-                    print('Pellet dispensed, %f'%(time.time()-self.start_time))
+                    print('\nPellet dispensed, %f'%(time.time()-self.start_time))
 
                     #now there is a pellet!
                     self.pellet_state = True
@@ -937,7 +956,7 @@ class runtime_functions:
             self.timestamp_queue.put(f'{self.round}, Pellet dispense failure, {time.time()-self.start_time}')
             return None
         else:
-            print("skipping pellet dispense due to pellet not retrieved")
+            print("\nskipping pellet dispense due to pellet not retrieved")
             self.timestamp_queue.put(f'{self.round}, skip pellet dispense, {time.time()-self.start_time}')
             return None
 
