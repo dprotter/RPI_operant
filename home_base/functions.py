@@ -26,6 +26,7 @@ from RPI_operant.home_base.operant_cage_settings import (kit, pins,
 import RPI_operant.home_base.analysis.analysis_functions as af
 import RPI_operant.home_base.analysis.analyze as ana
 from RPI_operant.home_base.lookup_classes import Operant_event_strings as oes
+from RPI_operant.home_base.bonsai_serial_sender_fake import sender
 
 
 class lever:
@@ -172,12 +173,13 @@ class lever:
         while self.end_monitor == False:
             if not GPIO.input(self.pin):
                 print(f'{self.name}pressed!')
-                self.rtf.click()
-                self.lever_presses.put('pressed')
+                self.rtf.click_on()
+                
                 while not GPIO.input(self.pin) and self.end_monitor == False:
                     '''waiting for vole to get off lever'''
                     time.sleep(0.025)
-
+                self.rtf.click_off()
+                self.lever_presses.put('pressed')
                 time.sleep(self.inter_press_timeout)
             time.sleep(0.025)
         print(f'\n:::::: done watching a pin for {self.name}:::::\n')
@@ -187,6 +189,8 @@ class runtime_functions:
     
     def __init__(self):
         self.pi = pigpio.pi()
+        self.serial_sender = sender()
+        self.serial_sender.start()
         
         #our queues for doign stuff and saving stuff
         
@@ -286,10 +290,7 @@ class runtime_functions:
             wrt = threading.Thread(target = self.flush_to_CSV, daemon = True)
             wrt.start()
 
-            or1 = threading.Thread(target = self.override_door_1, daemon = True)
-            or2 = threading.Thread(target = self.override_door_2, daemon = True)
-            or1.start()
-            or2.start()
+            self.override_doors(self)
 
     def check_key_value_dictionaries(self, key_values, key_values_def, key_val_names_order):
         '''resolve issues if people add values to the key value dictionary and dont define them or put them in the name order list'''
@@ -349,6 +350,28 @@ class runtime_functions:
                 GPIO.setup(pins[k], GPIO.OUT)
                 if verbose:
                     print(k + ": OUT")
+
+    def reverse_lever_position(self):
+        '''this function will switch the levers so that the lever
+        farther from a door is the lever that opens it, rather than
+        the lever closest to the door.'''
+        
+        lever_d1_pin = pins['lever_door_1']
+        lever_d2_pin = pins['lever_door_2']
+        pins['lever_door_1'] = lever_d2_pin
+        pins['lever_door_2'] = lever_d1_pin
+        
+        lever_angles_d1 = lever_angles['door_1']
+        lever_angles_d2 = lever_angles['door_2']
+        lever_angles['door_1'] = lever_angles_d2
+        lever_angles['door_2'] = lever_angles_d1
+        
+        servo_lever_d1 = servo_dict['lever_door_1']
+        servo_lever_d2 = servo_dict['lever_door_2']
+        servo_dict['lever_door_1'] = servo_lever_d2
+        servo_dict['lever_door_2'] = servo_lever_d1
+        
+    
 
     def close_doors(self, door_ID = None, wait = False):
         '''close a door. can past a list of door IDs to open more than one door at once.'''
@@ -548,11 +571,12 @@ class runtime_functions:
         
 
 
-    #### run in a dedicated thread so we can open the doors whenever necessary
-    def override_door_1(self):
+    #### run in a dedicated thread so we can open the doors whenever necessary  
+    @thread_it
+    def override_doors(self):
         
 
-        while True:
+        while not self.done:
             if not GPIO.input(pins['door_1_override_open_switch']):
                 self.door_override['door_1'] = True
                 servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['open']
@@ -565,16 +589,7 @@ class runtime_functions:
                 while not GPIO.input(pins[f'door_1_override_close_switch']):
                     time.sleep(0.05)
                 servo_dict['door_1'].throttle = continuous_servo_speeds['door_1']['stop']
-            self.door_override['door_1'] = False
-
-
-            time.sleep(0.1)
-
-    #### run in a dedicated thread so we can open the doors whenever necessary
-    def override_door_2(self):
-        
-
-        while True:
+            
             if not GPIO.input(pins['door_2_override_open_switch']):
                 self.door_override['door_2'] = True
                 servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['open']
@@ -587,11 +602,13 @@ class runtime_functions:
                 while not GPIO.input(pins['door_2_override_close_switch']):
                     time.sleep(0.05)
                 servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['stop']
+            
+            
             self.door_override['door_2'] = False
+            self.door_override['door_1'] = False
 
 
-            time.sleep(0.1)
-
+            time.sleep(0.25)
 
     def monitor_beam_breaks(self):
         '''monitor any beam breaks until monitor_beams is set to False'''
@@ -610,6 +627,7 @@ class runtime_functions:
             #if led blocked (1 -> 0) and last state was unblocked, write timestamp
             if not GPIO.input(pins['read_ir_1']) and not beam_1:
                 self.timestamp_queue.put(f'{self.round}, beam_break_1_crossed, {time.time()-self.start_time}')
+                self.serial_sender.send_data('cross_door_1')
                 beam_1 = True
             
             #led no longer blocked
@@ -623,6 +641,7 @@ class runtime_functions:
             #if led blocked (1 -> 0) and last state was unblocked, write timestamp
             if not GPIO.input(pins['read_ir_2']) and not beam_2:
                 self.timestamp_queue.put(f'{self.round}, beam_break_2_crossed, {time.time()-self.start_time}')
+                self.serial_sender.send_data('cross_door_2')
                 beam_2 = True
             
             #led no longer blocked
@@ -650,24 +669,36 @@ class runtime_functions:
         while self.monitor_beams:
             if not GPIO.input(pins['read_ir_1']) and not beam_1:
                 self.timestamp_queue.put(f'{self.round},{oes.beam_break_1}, {time.time()-self.start_time}')
+                self.serial_sender.send_data('cross_door_1')
                 beam_1 = True
                 break
             
 
             if not GPIO.input(pins['read_ir_2']) and not beam_2:
                 self.timestamp_queue.put(f'{self.round},{oes.beam_break_2}, {time.time()-self.start_time}')
+                self.serial_sender.send_data('cross_door_2')
                 beam_2 = True
                 break
         self.monitor_beams = False
         time.sleep(0.05)
-
-    def click(self):
+    
+    @thread_it
+    def click_on(self):
 
         hz = 900
         self.pi.set_PWM_dutycycle(pins['speaker_tone'], 255/2)
         self.pi.set_PWM_frequency(pins['speaker_tone'], int(8000))
 
         time.sleep(0.02)
+        self.pi.set_PWM_frequency(pins['speaker_tone'], int(hz))
+        time.sleep(0.02)
+
+        self.pi.set_PWM_dutycycle(pins['speaker_tone'], 0)
+    
+    @thread_it
+    def click_off(self):
+        hz = 900
+        self.pi.set_PWM_dutycycle(pins['speaker_tone'], 255/2)
         self.pi.set_PWM_frequency(pins['speaker_tone'], int(hz))
         time.sleep(0.02)
         self.pi.set_PWM_frequency(pins['speaker_tone'], int(hz/3))
@@ -697,6 +728,7 @@ class runtime_functions:
         
         while self.monitor:
             if not GPIO.input(pins["lever_%s"%lever_ID]):
+                
                 lever +=1
 
             #just guessing on this value, should probably check somehow empirically
@@ -704,14 +736,17 @@ class runtime_functions:
                 if not self.interrupt:
                     #send the lever_ID to the lever_q to trigger a  do_stuff.put in
                     #the main thread/loop
-                    self.click()
+                    self.click_on(self)
+                    while not GPIO.input(pins["lever_%s"%lever_ID]) and self.monitor:
+                        print('hanging till lever not pressed')
+                        time.sleep(0.075)
+                    self.click_off(self)
+                    lever = 0
                     self.lever_press_queue.put(lever_ID)
 
                     self.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.round, lever_ID, time.time()-self.start_time))
-                    while not GPIO.input(pins["lever_%s"%lever_ID]) and self.monitor:
-                        'hanging till lever not pressed'
-                        time.sleep(0.05)
-                    lever = 0
+                    self.serial_sender.send_data('lever_press_' + lever_ID)
+                    
                 else:
                     #we can still record from the lever until monitoring is turned
                     #off. note that this wont place anything in the lever_press queue,
@@ -721,8 +756,8 @@ class runtime_functions:
                         'hanging till lever not pressed'
                         time.sleep(0.05)
                     lever = 0
-
             time.sleep(25/1000.0)
+
         print('halting monitoring of %s lever'%lever_ID)
     
     def wait(self, worker, func_name):
@@ -738,7 +773,7 @@ class runtime_functions:
             while not worker.done():
                 time.sleep(0.025)
         done = time.time()
-        print(f'"{func_name}" complete at {done - self.start_time} in {done - start}')
+        print(f'\n"{func_name}" complete at {done - self.start_time} in {done - start}\n')
         
 
     def test_threading(self, message, wait = False):
@@ -793,6 +828,8 @@ class runtime_functions:
  
         print(f'\n\n**** extending lever {lever_ID}: extend[ {extend} ], retract[ {retract} ]**** ')
         self.timestamp_queue.put('%i, Levers out, %f'%(self.round, time.time()-self.start_time))
+        self.serial_sender.send_data('lever_out_' + lever_ID)
+        
         servo_dict[f'lever_{lever_ID}'].angle = extend_start
         time.sleep(0.05)
         servo_dict[f'lever_{lever_ID}'].angle = extend
@@ -837,7 +874,6 @@ class runtime_functions:
         
 
     def buzz(self, buzz_length, hz, name, wait = False):
-        print('time to buzz')
         worker = self._buzz(self, buzz_length = buzz_length, hz = hz, name = name)
         if wait:
             name = inspect.currentframe().f_code.co_name
@@ -851,8 +887,6 @@ class runtime_functions:
         buzz_len = kwargs['buzz_length']
         hz = kwargs['hz']
         name = kwargs['name']
-
-        print(f'starting {name} tone {hz} hz')
 
         #set a 50% duty cycle, pass desired hz
         self.pi.set_PWM_dutycycle(pins['speaker_tone'], 255/2)
@@ -885,9 +919,9 @@ class runtime_functions:
         if not self.pellet_state:
             
             if not GPIO.input(pins['read_pellet']):
-                print('attempting to dispense pellet, but sensor already reading blocked.')
+                print('\nattempting to dispense pellet, but sensor already reading blocked.')
 
-            print('%i, starting pellet dispensing %f'%(self.round, time.time()-self.start_time))
+            
 
             #we're just gonna turn the servo on and keep monitoring. probably
             #want this to be a little slow
@@ -905,7 +939,7 @@ class runtime_functions:
                 if read > 2:
                     servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
                     self.timestamp_queue.put('%i, Pellet dispensed, %f'%(self.round, time.time()-self.start_time))
-                    print('Pellet dispensed, %f'%(time.time()-self.start_time))
+                    print('\nPellet dispensed, %f'%(time.time()-self.start_time))
 
                     #now there is a pellet!
                     self.pellet_state = True
@@ -922,7 +956,7 @@ class runtime_functions:
             self.timestamp_queue.put(f'{self.round}, Pellet dispense failure, {time.time()-self.start_time}')
             return None
         else:
-            print("skipping pellet dispense due to pellet not retrieved")
+            print("\nskipping pellet dispense due to pellet not retrieved")
             self.timestamp_queue.put(f'{self.round}, skip pellet dispense, {time.time()-self.start_time}')
             return None
 
@@ -961,6 +995,7 @@ class runtime_functions:
         servo_dict['door_2'].throttle = continuous_servo_speeds['door_2']['stop']
         servo_dict['dispense_pellet'].throttle = continuous_servo_speeds['dispense_pellet']['stop']
         self.monitor = False
+        self.serial_sender.shutdown()
         time.sleep(2)
         self.done = True
 
@@ -981,9 +1016,7 @@ class runtime_functions:
         else:
             workers+= [self._breakpoint_monitor_lever(self, lever_ID = lever_ID)]
         
-        if wait:
-            name = inspect.currentframe().f_code.co_name
-            self.wait(workers, name)
+
 
     @thread_it
     def _breakpoint_monitor_lever(self, *args, **kwargs):
@@ -1044,6 +1077,7 @@ class runtime_functions:
             if read_retr > 5 and self.pellet_state:
                 self.pulse_sync_line(length = 0.05, event_name = 'pellet retrieved')
                 self.timestamp_queue.put(f'{self.round}, pellet retrieved, {time.time()-self.start_time}')
+                self.serial_sender.send_data('pellet_retrieved')
                 print(f'\n\n\nPellet taken! {(time.time()-self.start_time)}\n\n\n')
                 #no pellet in trough
                 self.pellet_state = False
@@ -1144,7 +1178,12 @@ class runtime_functions:
                    #thread_it
                    pass
                 else:
+                    
                     workers += [worker_and_info]
+                    """print('\nvvvvvvvvvvvvvvvvvv')
+                    print(f'currently {len(workers)} threads running via pool executor')
+                    print(workers)
+                    print('\n\n^^^^^^^^^^^^^^^')"""
 
             for element in workers:
                 worker, name, init_round = element
@@ -1165,6 +1204,8 @@ class runtime_functions:
                         workers.remove(element)
                     else:
                         pass
+                    print(f'$$$$$$$$$$$$ currently {len(workers)} threads running via pool executor $$$$$$$$$$$$')
+                
             time.sleep(0.025)
         
         time.sleep(1)

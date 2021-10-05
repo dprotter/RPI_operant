@@ -154,6 +154,7 @@ def run_script(setup_dictionary = None):
         fn.pellet_state = False
     fn.analyze()
     fn.clean_up()
+    time.sleep(1)
     
     
     

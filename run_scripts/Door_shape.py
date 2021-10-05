@@ -17,9 +17,10 @@ default_setup_dict = {'vole':'000','day':1, 'experiment':'Door_shape',
 key_values = {'num_rounds': 0,
               'repetitions':5,
               'sets':2,
-              'round_time':90, 
+              'round_time':75, 
               'time_II':30,
               'move_time':20,
+              'ITI':10,
               'pellet_tone_time':1, 
               'pellet_tone_hz':2500,
               'door_close_tone_time':1, 
@@ -28,7 +29,7 @@ key_values = {'num_rounds': 0,
               'door_open_tone_hz':10000,
               'round_start_tone_time':1, 
               'round_start_tone_hz':5000,
-              'delay by day':[0,0,1,1,2],
+              'delay by day':[1],
               'delay default':1}
 
 key_values['num_rounds'] = 2 * key_values['repetitions'] * key_values['sets']
@@ -70,6 +71,11 @@ def setup(setup_dictionary = default_setup_dict, key_val_names_order = key_val_n
     fn.setup_pins()
     
     fn.setup_experiment(setup_dictionary)
+
+
+    ####vvvvvvvv reversed vvvvvvv########
+    fn.reverse_lever_position()
+
     return setup_dictionary
     
 
@@ -149,7 +155,7 @@ def run_script(setup_dictionary = None):
         #round start buzz
         fn.timestamp_queue.put(f'{fn.round}, Starting new round, {time.time()-fn.start_time}') 
         fn.buzz(**round_buzz, wait = True)
-        fn.monitor_first_beam_breaks()
+        
         
         #extend and monitor for presses on whichever door lever we are using on this round
         fn.extend_lever(lever_ID = this_door)
@@ -166,15 +172,16 @@ def run_script(setup_dictionary = None):
 
         while time.time() - time_II_start < key_values['time_II']:
             if not fn.lever_press_queue.empty() and not press:
-                
+                fn.monitor_first_beam_breaks()
                 #retract lever
                 fn.monitor = False
                 
                 fn.pulse_sync_line(length = 0.025, event_name = 'lever_press')
                 fn.retract_levers(lever_ID=this_door)
+                fn.buzz(**door_open_buzz, wait = True)
                 #do not give reward until after delay
                 time.sleep(delay)
-                fn.buzz(**door_open_buzz, wait = True)
+                
                 
                 #get the lever press tuple just to clear the queue
                 lever_press = fn.lever_press_queue.get()
@@ -187,11 +194,15 @@ def run_script(setup_dictionary = None):
             
         #if the vole didnt press:
         if press == False:
+
+            fn.monitor_first_beam_breaks()
+
             print('no lever press')
             fn.monitor = False
             
             fn.retract_levers(lever_ID = this_door)
             fn.buzz(**door_open_buzz, wait = True)
+            time.sleep(delay)
             fn.open_door(door_ID = this_door)
             
         fn.monitor = False
@@ -220,14 +231,25 @@ def run_script(setup_dictionary = None):
         #time to move the animal
         move_ani_start = time.time()
         approx_time_left = np.round(key_values['move_time'] - (time.time()-move_ani_start))
-        fn.countdown_timer(time_interval=approx_time_left, next_event = 'next round')
+        fn.countdown_timer(time_interval=approx_time_left, next_event = 'ITI')
 
         while time.time() - move_ani_start < key_values['move_time']:
             time.sleep(1)
         print('\nvole should be moved now')
+
+        #time to move the animal
+        ITI_start = time.time()
+        approx_time_left = np.round(key_values['ITI'] - (time.time()-ITI_start))
+        fn.countdown_timer(time_interval=approx_time_left, next_event = 'next round')
+        fn.timestamp_queue.put(f'{fn.round}, start of ITI, {time.time()-fn.start_time}')
+
+        while time.time() - ITI_start < key_values['ITI']:
+            time.sleep(1)
+        
     
     fn.analyze()
     fn.clean_up()
+    time.sleep(1)
     
     
 if __name__ == '__main__':
