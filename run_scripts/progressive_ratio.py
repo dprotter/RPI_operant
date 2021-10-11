@@ -275,6 +275,7 @@ if __name__ == '__main__':
         
         default_setup_dict['vole'] = vole
         default_setup_dict['user'] = user
+        default_setup_dict['day'] = day
         default_setup_dict['output_directory'] = '/home/pi/Operant_Output/script_runs/'
 
     setup_dict = setup()
