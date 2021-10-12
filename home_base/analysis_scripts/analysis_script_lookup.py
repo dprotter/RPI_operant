@@ -10,7 +10,8 @@ def script_lookup(experiment):
              'Door_shape':door_shape,
              'Magazine':magazine,
              'progressive_ratio':progressive_ratio,
-             'Autoshape_contingent':autoshape_contingent}
+             'Autoshape_contingent':autoshape_contingent,
+             'Door_shape_contingent':autoshape_contingent}
 
     return table[experiment]()
 
@@ -51,6 +52,16 @@ def door_shape():
         print('couldnt import door_shape analysis script')
         raise
     return door_shape
+
+def door_shape_contingent():
+    try:
+        print('importing door_shape analysis module')
+        import RPI_operant.home_base.analysis_scripts.door_shape_contingent_analysis as door_shape_contingent
+    except:
+        traceback.print_exc()
+        print('couldnt import door_shape_contingent analysis script')
+        raise
+    return door_shape_contingent
     
 def door_test():
     try:
