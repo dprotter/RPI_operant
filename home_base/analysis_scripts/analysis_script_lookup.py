@@ -11,7 +11,7 @@ def script_lookup(experiment):
              'Magazine':magazine,
              'progressive_ratio':progressive_ratio,
              'Autoshape_contingent':autoshape_contingent,
-             'Door_shape_contingent':autoshape_contingent}
+             'Door_shape_contingent':door_shape_contingent}
 
     return table[experiment]()
 

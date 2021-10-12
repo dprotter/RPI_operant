@@ -199,21 +199,22 @@ def run_script(setup_dictionary = None):
             fn.retract_levers(lever_ID = this_door)
 
         fn.monitor = False
-
-        approx_time = key_values['reward_time'] - (time.time() - round_start)
-        fn.countdown_timer(time_interval=approx_time, next_event='end of social interaction')
+        if press:
+            approx_time = key_values['reward_time'] - (time.time() - round_start)
+            fn.countdown_timer(time_interval=approx_time, next_event='end of social interaction')
         
-        #give the voles interaction time
-        while time.time() - round_start < key_values['reward_time']:
-            time.sleep(0.5)
+            #give the voles interaction time
+            while time.time() - round_start < key_values['reward_time']:
+                time.sleep(0.5)
 
         #must stop monitoring beams so we dont trip them when moving the animal
         #(doesnt really matter when only using monitor_first_beam_breaks(), but if continuously monitoring
         # this would be important)
         fn.monitor_beams = False
-
-        fn.buzz(**door_close_buzz)
-        fn.close_door(door_ID = this_door, wait = True)
+        
+        if press:
+            fn.buzz(**door_close_buzz)
+            fn.close_door(door_ID = this_door, wait = True)
         
         time.sleep(0.5)
         
@@ -252,8 +253,8 @@ if __name__ == '__main__':
     if test_run.lower() in ['y', 'yes']:
         print('ok, test it is!')
         key_values['num_rounds'] = 4
-        key_values['round_time'] = 15
-        key_values['time_II'] = 5
+        key_values['round_time'] = 10
+
         key_values['repetitions'] = 2
         key_values['move_time'] = 4
         key_values['ITI'] = 4
