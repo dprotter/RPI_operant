@@ -151,7 +151,7 @@ def run_script(setup_dictionary = None):
         #reset our info about whether the animal has pressed
         press = False
 
-        while time.time() - time_II_start < key_values['round_time']:
+        while time.time() - time_II_start < key_values['round_time'] and not press:
             if not fn.lever_press_queue.empty() and not press:
                 #get the lever press tuple just to clear the queue
                 lever_press = fn.lever_press_queue.get()
@@ -169,7 +169,7 @@ def run_script(setup_dictionary = None):
                 fn.open_door(door_ID = lever_press, wait = True)
                 
                 press = True
-                
+            
             time.sleep(0.05)
             
         #if the vole didnt press:
@@ -179,11 +179,11 @@ def run_script(setup_dictionary = None):
 
         fn.monitor = False
         if press:
-            approx_time = key_values['reward_time'] - (time.time() - round_start)
+            approx_time = key_values['round_time'] - (time.time() - round_start)
             fn.countdown_timer(time_interval=approx_time, next_event='end of social interaction')
         
             #give the voles interaction time
-            while time.time() - round_start < key_values['reward_time']:
+            while time.time() - time_II_start < key_values['round_time']:
                 time.sleep(0.5)
 
         #must stop monitoring beams so we dont trip them when moving the animal
@@ -258,8 +258,8 @@ if __name__ == '__main__':
             if check.lower() in ['y', 'yes']:
                 no_vole = False
 
-
-        day = input('Which magazine training day is this? (starts at day 1)\n')
+        exp = default_setup_dict['experiment']
+        day = input(f'Which {exp} training day is this? (starts at day 1)\n')
         day = int(day)
         
         
