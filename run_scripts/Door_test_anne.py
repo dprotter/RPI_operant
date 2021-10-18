@@ -124,12 +124,6 @@ def run_script(setup_dictionary = None):
     key_values['num_rounds'] = int(key_values['num_rounds'])
     ### master looper ###
     print(f"range for looping: {[i for i in range(1, key_values['num_rounds']+1,1)]}")
-    
-    rep_count = 0
-    this_door = 'door_1'
-    next_door = 'door_2'
-
-
 
     
     #start at round 1 instead of the pythonic default of 0 for readability
@@ -167,12 +161,12 @@ def run_script(setup_dictionary = None):
                 fn.monitor = False
                 
                 fn.pulse_sync_line(length = 0.025, event_name = 'lever_press')
-                fn.retract_levers(lever_ID=this_door)
+                fn.retract_levers(lever_ID=['door_1', 'door_2'])
                 fn.buzz(**door_open_buzz, wait = True)
                 #do not give reward until after delay
                 time.sleep(delay)
 
-                fn.open_door(door_ID = lever_press)
+                fn.open_door(door_ID = lever_press, wait = True)
                 
                 press = True
                 
@@ -199,7 +193,7 @@ def run_script(setup_dictionary = None):
         
         if press:
             fn.buzz(**door_close_buzz)
-            fn.close_door(door_ID = this_door, wait = True)
+            fn.close_door(door_ID = lever_press, wait = True)
         
         time.sleep(0.5)
         
@@ -238,8 +232,9 @@ if __name__ == '__main__':
     if test_run.lower() in ['y', 'yes']:
         print('ok, test it is!')
         key_values['num_rounds'] = 4
-        key_values['round_time'] = 10
+        key_values['round_time'] = 20
         key_values['move_time'] = 4
+        key_values['reward_time'] = 3
         key_values['ITI'] = 4
         exp = default_setup_dict['experiment']
         day = input(f'Which {exp} training day is this? (for training)\n')
