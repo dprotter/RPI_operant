@@ -137,7 +137,7 @@ def run_script(setup_dictionary = None):
         while time.time() - time_II_start < key_values['time_II']:
             if not fn.lever_press_queue.empty() and not press:
                 
-                fn.pulse_sync_line(length = 0.025, event_name = 'lever_press')
+                #fn.pulse_sync_line(length = 0.025, event_name = 'lever_press')
                 
                 #retract lever
                 fn.monitor = False

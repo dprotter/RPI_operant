@@ -151,7 +151,7 @@ def run_script(setup_dictionary = None):
 
                 if presses[lever_press] >= key_values['fixed_ratio']:
 
-                    fn.pulse_sync_line(length = 0.025, event_name = 'lever_press')
+                    #fn.pulse_sync_line(length = 0.025, event_name = 'lever_press')
                     
                     #retract lever
                     fn.monitor = False

@@ -12,10 +12,10 @@ fn.start_time = time.time()
 fn.round = 0
 
 
-or1 = threading.Thread(target = fn.override_door_1, daemon = True)
-or2 = threading.Thread(target = fn.override_door_2, daemon = True)
+or1 = threading.Thread(target = fn.override_doors, daemon = True)
+#or2 = threading.Thread(target = fn.override_door_2, daemon = True)
 or1.start()
-or2.start()
+#or2.start()
 
 
 fn.setup_pins()
