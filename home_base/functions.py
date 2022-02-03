@@ -695,7 +695,7 @@ class runtime_functions:
 
         self.pi.set_PWM_dutycycle(pins['speaker_tone'], 0)
     
-    @thread_it
+    
     def click_off(self):
         hz = 900
         self.pi.set_PWM_dutycycle(pins['speaker_tone'], 255/2)
@@ -742,7 +742,7 @@ class runtime_functions:
                     while not GPIO.input(pins["lever_%s"%lever_ID]) and self.monitor:
                         print('hanging till lever not pressed')
                         time.sleep(0.075)
-                    self.click_off(self)
+                    self.click_off()
                     lever = 0
                     self.lever_press_queue.put(lever_ID)
 
@@ -934,7 +934,7 @@ class runtime_functions:
             #set a timeout on dispensing. with this, that will be a bit less than
             #6 attempts to disp, but does give the vole 2 sec in which they could nose
             #poke and trigger this as "dispensed"
-            while time.time()-timeout < 3:
+            while time.time()-timeout < 4:
 
                 if not GPIO.input(pins['read_pellet']):
                     read +=1

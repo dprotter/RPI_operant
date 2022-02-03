@@ -96,6 +96,10 @@ def run_script(setup_dictionary = None):
         #reset our info about whether the animal has pressed
         press = False
 
+        if not fn.lever_press_queue.empty():
+            while not fn.lever_press_queue.empty(): #get the lever press tuple just to clear the queue
+                lever_press = fn.lever_press_queue.get()
+                
         round_start = time.time()
         fn.round = i
         fn.pulse_sync_line(length = 0.1, event_name = 'new_round')
