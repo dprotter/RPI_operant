@@ -116,7 +116,9 @@ def run_script(setup_dictionary = None):
         round_start = time.time()
         fn.round = i
         print("#-#-#-#-#-# new round #%i!!!-#-#-#-#-#"%i)
-        
+        if not fn.lever_press_queue.empty():
+            while not fn.lever_press_queue.empty(): #get the lever press tuple just to clear the queue
+                _ = fn.lever_press_queue.get()
         #round start buzz
         fn.timestamp_queue.put(f'{fn.round}, Starting new round, {time.time()-fn.start_time}') 
         fn.buzz(**round_buzz, wait = True)
