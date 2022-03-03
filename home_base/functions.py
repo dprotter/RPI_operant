@@ -738,7 +738,7 @@ class runtime_functions:
                     #the main thread/loop
                     self.click_on(self)
                     self.pulse_sync_line(length = 0.025, event_name = 'lever_press')
-                    self.timestamp_queue.put('%i, %s lever pressed, %f'%(self.round, lever_ID, time.time()-self.start_time))
+                    self.timestamp_queue.put('%i, %s lever pressed productive, %f'%(self.round, lever_ID, time.time()-self.start_time))
                     start_time = time.time()
                     while not GPIO.input(pins["lever_%s"%lever_ID]) and self.monitor and time.time()-start_time < 1.5:
                         print('hanging till lever not pressed')
