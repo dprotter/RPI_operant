@@ -54,7 +54,8 @@ class Operant_event_strings:
     door2_open_failure = ' door_2 open failure'
     door2_close = ' door_2 close begin'
 
-    food_leverpress_prod = ' food lever pressed'
+    food_leverpress_prod = ' food lever pressed productive'
+    food_leverpress = ' food lever pressed'
     disp = ' Pellet dispensed'
     retr = ' pellet retrieved'
 

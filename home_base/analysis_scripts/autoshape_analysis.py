@@ -9,12 +9,22 @@ import numpy as np
 
 def run_analysis(data_raw, head, by_round_fname, summary_fname):
     data = data_raw
+    
+    #quick hack for some issues in specific datasets where some days used the string " food lever pressed" and some used " food lever pressed productive"
+    if len(data.loc[data.Event == oes.food_leverpress_prod]) == len(data.loc[data.Event == oes.food_leverpress]):
+        press_string = oes.food_leverpress_prod
+    elif len(data.loc[data.Event == oes.food_leverpress_prod]) > len(data.loc[data.Event == oes.food_leverpress]): 
+        press_string = oes.food_leverpress_prod
+    else:
+        press_string = oes.food_leverpress
+    
     #calculations: food lever lat, pellet lat, percent press
     event_1 = oes.lever_out
-    event_2 = oes.food_leverpress_prod
+    event_2 = press_string
     
     col_name = 'food_lever_press_latency'
     
+
     new_col, new_data = af.latency_by_round(data, event_1, event_2, 
                                              new_col_name = col_name, 
                                              selected_by = event_2)
@@ -40,7 +50,7 @@ def run_analysis(data_raw, head, by_round_fname, summary_fname):
 
     '''calculate the values for the days summary'''
     #calculate number of presses
-    total_presses = len(data.loc[data.Event == oes.food_leverpress_prod])
+    total_presses = len(data.loc[data.Event == press_string])
     summary += [['total number of lever presses', 'total_lever_press', total_presses]]
     
     non_presses = total_rounds - total_presses
